@@ -1,0 +1,47 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-landtrust_db}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-landtrust_secret_2026}
+      TZ: Asia/Dhaka
+    volumes:
+      - landtrust_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-landtrust_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PORT: 8085
+      DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-landtrust_db}
+      DB_USERNAME: ${POSTGRES_USER:-postgres}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-landtrust_secret_2026}
+      JWT_SECRET: ${JWT_SECRET:-LandTrustBhumiSetuSecretKeyForJwtAuthentication2026NoakhaliBangladeshSecureKey998877}
+      TZ: Asia/Dhaka
+    expose:
+      - "8085"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - backend
+    expose:
+      - "80"
+
+volumes:
+  landtrust_pgdata:
