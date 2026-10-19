@@ -20,6 +20,8 @@ public class MemberPortalController {
     private final LandInquiryRepository inquiryRepository;
     private final ServiceProposalRepository proposalRepository;
     private final CommissionEntryRepository commissionRepository;
+    private final FinancialTransactionRepository transactionRepository;
+    private final NotificationRepository notificationRepository;
 
     public MemberPortalController(
             UserRepository userRepository,
@@ -27,18 +29,109 @@ public class MemberPortalController {
             BuyerRequirementRepository requirementRepository,
             LandInquiryRepository inquiryRepository,
             ServiceProposalRepository proposalRepository,
-            CommissionEntryRepository commissionRepository) {
+            CommissionEntryRepository commissionRepository,
+            FinancialTransactionRepository transactionRepository,
+            NotificationRepository notificationRepository) {
         this.userRepository = userRepository;
         this.listingRepository = listingRepository;
         this.requirementRepository = requirementRepository;
         this.inquiryRepository = inquiryRepository;
         this.proposalRepository = proposalRepository;
         this.commissionRepository = commissionRepository;
+        this.transactionRepository = transactionRepository;
+        this.notificationRepository = notificationRepository;
     }
 
     private UserEntity currentUser(Authentication auth) {
         UserEntity u = (UserEntity) auth.getPrincipal();
         return userRepository.findById(u.getId()).orElse(u);
+    }
+
+    // ==================== NOTIFICATIONS & PAYMENT RESUBMISSION ====================
+
+    @GetMapping("/notifications")
+    public ResponseEntity<Map<String, Object>> getMyNotifications(Authentication auth) {
+        UserEntity user = currentUser(auth);
+        List<NotificationEntity> list = notificationRepository.findByUserIdOrderByCreatedAtDesc(user.getId());
+        long unreadCount = notificationRepository.countByUserIdAndReadStatusFalse(user.getId());
+        Map<String, Object> res = new LinkedHashMap<>();
+        res.put("unreadCount", unreadCount);
+        res.put("notifications", list);
+        return ResponseEntity.ok(res);
+    }
+
+    @PutMapping("/notifications/read-all")
+    public ResponseEntity<?> markNotificationsRead(Authentication auth) {
+        UserEntity user = currentUser(auth);
+        List<NotificationEntity> list = notificationRepository.findByUserIdOrderByCreatedAtDesc(user.getId());
+        for (NotificationEntity n : list) {
+            if (!n.isReadStatus()) {
+                n.setReadStatus(true);
+                notificationRepository.save(n);
+            }
+        }
+        return ResponseEntity.ok(Map.of("message", "সকল নোটিফিকেশন পঠিত হিসেবে চিহ্নিত হয়েছে।"));
+    }
+
+    @PutMapping("/resubmit-payment")
+    public ResponseEntity<?> resubmitPayment(Authentication auth, @RequestBody Map<String, String> body) {
+        UserEntity user = currentUser(auth);
+        String paymentMethod = body.getOrDefault("paymentMethod", user.getPaymentMethod());
+        String senderPhone = body.getOrDefault("senderPhone", user.getSenderPhone()).trim();
+        String transactionId = body.getOrDefault("transactionId", "").trim();
+
+        if (transactionId.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "সঠিক ট্রানজেকশন আইডি (TrxID) প্রদান করুন।"));
+        }
+
+        user.setPaymentMethod(paymentMethod);
+        user.setSenderPhone(senderPhone.isBlank() ? user.getPhoneNumber() : senderPhone);
+        user.setTransactionId(transactionId);
+        user.setAccountStatus("PAYMENT_SUBMITTED");
+        user.setAdminNote("সদস্য পুনরায় সংশোধিত TrxID (" + transactionId + ") জমা দিয়েছেন — যাচাইয়ের অপেক্ষায়।");
+        user = userRepository.save(user);
+
+        List<FinancialTransactionEntity> userTxns = transactionRepository.findByUserIdOrderByCreatedAtDesc(user.getId());
+        boolean updatedExisting = false;
+        for (FinancialTransactionEntity t : userTxns) {
+            if ("REG_FEE_FUND".equals(t.getFundBucket()) && !"APPROVED".equals(t.getStatus())) {
+                t.setPaymentMethod(paymentMethod);
+                t.setSenderPhone(user.getSenderPhone());
+                t.setTransactionId(transactionId);
+                t.setStatus("PENDING_VERIFICATION");
+                t.setDescription(user.getRole() + " নিবন্ধন ফি (পুনঃজমা: " + user.getFullName() + ")");
+                transactionRepository.save(t);
+                updatedExisting = true;
+                break;
+            }
+        }
+
+        if (!updatedExisting) {
+            FinancialTransactionEntity txn = new FinancialTransactionEntity();
+            txn.setUserId(user.getId());
+            txn.setUserName(user.getFullName());
+            txn.setUserRole(user.getRole());
+            txn.setFundBucket("REG_FEE_FUND");
+            txn.setTxnType("CREDIT");
+            txn.setAmountBdt(user.getRegistrationFeeAmount() != null ? user.getRegistrationFeeAmount() : new BigDecimal("500"));
+            txn.setPaymentMethod(paymentMethod);
+            txn.setSenderPhone(user.getSenderPhone());
+            txn.setTransactionId(transactionId);
+            txn.setDescription(user.getRole() + " নিবন্ধন ফি (পুনঃজমা: " + user.getFullName() + ")");
+            txn.setStatus("PENDING_VERIFICATION");
+            transactionRepository.save(txn);
+        }
+
+        NotificationEntity n = new NotificationEntity();
+        n.setUserId(user.getId());
+        n.setTitle("সংশোধিত TrxID জমা হয়েছে");
+        n.setMessage("আপনার নতুন TrxID (" + transactionId + ") যাচাইয়ের জন্য অ্যাডমিনের কাছে পাঠানো হয়েছে।");
+        notificationRepository.save(n);
+
+        return ResponseEntity.ok(Map.of(
+                "user", PublicAndAuthController.sanitizeUser(user),
+                "message", "সংশোধিত পেমেন্ট তথ্য সফলভাবে জমা হয়েছে! অ্যাডমিন যাচাই করে সক্রিয় করবেন।"
+        ));
     }
 
     // ==================== SELLER ENDPOINTS ====================
@@ -53,19 +146,40 @@ public class MemberPortalController {
     public ResponseEntity<?> createListing(Authentication auth, @RequestBody Map<String, Object> body) {
         UserEntity user = currentUser(auth);
 
+        String upazila = (String) body.getOrDefault("upazila", "নোয়াখালী সদর");
+        String khatianNo = ((String) body.getOrDefault("khatianNo", "")).trim();
+        String dagNo = ((String) body.getOrDefault("dagNo", "")).trim();
+
         LandListingEntity listing = new LandListingEntity();
         listing.setSellerId(user.getId());
         listing.setSellerName(user.getFullName());
         listing.setSellerPhone(user.getPhoneNumber());
         listing.setTitle((String) body.getOrDefault("title", "জমি বিক্রয়ের বিজ্ঞাপন"));
         listing.setDistrict((String) body.getOrDefault("district", "নোয়াখালী"));
-        listing.setUpazila((String) body.getOrDefault("upazila", "নোয়াখালী সদর"));
+        listing.setUpazila(upazila);
         listing.setAreaName((String) body.getOrDefault("areaName", ""));
         listing.setMouzaName((String) body.getOrDefault("mouzaName", ""));
-        listing.setKhatianNo((String) body.getOrDefault("khatianNo", ""));
-        listing.setDagNo((String) body.getOrDefault("dagNo", ""));
+        listing.setKhatianNo(khatianNo);
+        listing.setDagNo(dagNo);
         listing.setMutationInfo((String) body.getOrDefault("mutationInfo", "নামজারি ও খাজনা হালনাগাদ"));
         listing.setLandType((String) body.getOrDefault("landType", "আবাসিক"));
+
+        // Automatic Duplicate Khatian / Dag Detection within the same Upazila
+        if (!khatianNo.isBlank() || !dagNo.isBlank()) {
+            List<LandListingEntity> existingAll = listingRepository.findAll();
+            for (LandListingEntity ex : existingAll) {
+                if ("REJECTED".equals(ex.getListingStatus())) continue;
+                if (upazila.equalsIgnoreCase(ex.getUpazila())) {
+                    boolean khatianMatch = !khatianNo.isBlank() && ex.getKhatianNo() != null && khatianNo.equalsIgnoreCase(ex.getKhatianNo().trim());
+                    boolean dagMatch = !dagNo.isBlank() && ex.getDagNo() != null && dagNo.equalsIgnoreCase(ex.getDagNo().trim());
+                    if (khatianMatch || dagMatch) {
+                        listing.setDuplicateSuspected(true);
+                        listing.setDuplicateNote("সম্ভাব্য ডুপ্লিকেট: বিজ্ঞাপন #" + ex.getId() + " (" + ex.getTitle() + " - বিক্রেতা: " + ex.getSellerName() + ") এর খতিয়ান/দাগ নম্বরের সাথে মিল পাওয়া গেছে।");
+                        break;
+                    }
+                }
+            }
+        }
 
         BigDecimal areaDecimal = parseDecimal(body.get("areaDecimal"), new BigDecimal("10"));
         BigDecimal expectedPrice = parseDecimal(body.get("expectedPriceBdt"), new BigDecimal("1000000"));
@@ -80,7 +194,10 @@ public class MemberPortalController {
         }
         listing.setRoadAccessInfo((String) body.getOrDefault("roadAccessInfo", "১২ ফুট পাকা রাস্তা সংলগ্ন"));
         listing.setDescription((String) body.getOrDefault("description", ""));
-        listing.setImageUrl((String) body.getOrDefault("imageUrl", "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800"));
+        String imgUrl = (String) body.getOrDefault("imageUrl", "");
+        listing.setImageUrl(imgUrl.isBlank() ? "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800" : imgUrl);
+        listing.setPrivateDocumentUrl((String) body.getOrDefault("privateDocumentUrl", ""));
+        listing.setPrivateDocumentName((String) body.getOrDefault("privateDocumentName", ""));
         listing.setProposedServiceFeeBdt(proposedFee);
         listing.setVerificationStatus("SUBMITTED");
         listing.setListingStatus("SUBMITTED");
@@ -145,17 +262,26 @@ public class MemberPortalController {
             return ResponseEntity.badRequest().body(Map.of("message", "জমির বিজ্ঞাপন পাওয়া যায়নি।"));
         }
 
+        LandListingEntity land = listingOpt.get();
         LandInquiryEntity inquiry = new LandInquiryEntity();
         inquiry.setListingId(listingId);
-        inquiry.setListingTitle(listingOpt.get().getTitle());
+        inquiry.setListingTitle(land.getTitle());
         inquiry.setBuyerId(user.getId());
         inquiry.setBuyerName(user.getFullName());
         inquiry.setBuyerPhone(user.getPhoneNumber());
-        inquiry.setOfferedBudgetBdt(parseDecimal(body.get("offeredBudgetBdt"), listingOpt.get().getExpectedPriceBdt()));
+        inquiry.setOfferedBudgetBdt(parseDecimal(body.get("offeredBudgetBdt"), land.getExpectedPriceBdt()));
         inquiry.setMessage((String) body.getOrDefault("message", "এই জমিটি পরিদর্শন ও ক্রয়ের ব্যাপারে আগ্রহী।"));
         inquiry.setStatus("PENDING");
 
         inquiry = inquiryRepository.save(inquiry);
+
+        // Notify seller (without exposing buyer's phone number!)
+        NotificationEntity sellerNotif = new NotificationEntity();
+        sellerNotif.setUserId(land.getSellerId());
+        sellerNotif.setTitle("আপনার জমিতে একজন ক্রেতা আগ্রহ প্রকাশ করেছেন!");
+        sellerNotif.setMessage("‘" + land.getTitle() + "’ বিজ্ঞাপনে একজন যাচাইকৃত ক্রেতা ৳" + inquiry.getOfferedBudgetBdt() + " বাজেটে আগ্রহ প্রকাশ করেছেন। অ্যাডমিন মধ্যস্থতা করছেন।");
+        notificationRepository.save(sellerNotif);
+
         return ResponseEntity.ok(inquiry);
     }
 

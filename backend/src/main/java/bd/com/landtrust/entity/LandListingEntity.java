@@ -53,7 +53,18 @@ public class LandListingEntity {
     @Column(length = 2000)
     private String description;
 
+    @Column(columnDefinition = "TEXT")
     private String imageUrl;
+
+    @Column(columnDefinition = "TEXT")
+    private String privateDocumentUrl; // Only visible to Admin & Seller (never exposed publicly)
+
+    private String privateDocumentName;
+
+    private boolean duplicateSuspected = false;
+
+    @Column(length = 1000)
+    private String duplicateNote;
 
     // Proposed fixed service fee offered by seller to Bhumi Setu
     private BigDecimal proposedServiceFeeBdt = BigDecimal.ZERO;
@@ -108,6 +119,14 @@ public class LandListingEntity {
     public void setDescription(String description) { this.description = description; }
     public String getImageUrl() { return imageUrl; }
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+    public String getPrivateDocumentUrl() { return privateDocumentUrl; }
+    public void setPrivateDocumentUrl(String privateDocumentUrl) { this.privateDocumentUrl = privateDocumentUrl; }
+    public String getPrivateDocumentName() { return privateDocumentName; }
+    public void setPrivateDocumentName(String privateDocumentName) { this.privateDocumentName = privateDocumentName; }
+    public boolean isDuplicateSuspected() { return duplicateSuspected; }
+    public void setDuplicateSuspected(boolean duplicateSuspected) { this.duplicateSuspected = duplicateSuspected; }
+    public String getDuplicateNote() { return duplicateNote; }
+    public void setDuplicateNote(String duplicateNote) { this.duplicateNote = duplicateNote; }
     public BigDecimal getProposedServiceFeeBdt() { return proposedServiceFeeBdt; }
     public void setProposedServiceFeeBdt(BigDecimal proposedServiceFeeBdt) { this.proposedServiceFeeBdt = proposedServiceFeeBdt; }
     public String getVerificationStatus() { return verificationStatus; }

@@ -24,6 +24,7 @@ public class PublicAndAuthController {
     private final LandListingRepository listingRepository;
     private final BuyerRequirementRepository requirementRepository;
     private final FinancialTransactionRepository transactionRepository;
+    private final NotificationRepository notificationRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
@@ -35,6 +36,7 @@ public class PublicAndAuthController {
             LandListingRepository listingRepository,
             BuyerRequirementRepository requirementRepository,
             FinancialTransactionRepository transactionRepository,
+            NotificationRepository notificationRepository,
             PasswordEncoder passwordEncoder,
             JwtService jwtService) {
         this.userRepository = userRepository;
@@ -44,6 +46,7 @@ public class PublicAndAuthController {
         this.listingRepository = listingRepository;
         this.requirementRepository = requirementRepository;
         this.transactionRepository = transactionRepository;
+        this.notificationRepository = notificationRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
     }
@@ -252,6 +255,20 @@ public class PublicAndAuthController {
         txn.setStatus("PENDING_VERIFICATION");
         transactionRepository.save(txn);
 
+        NotificationEntity n = new NotificationEntity();
+        n.setUserId(user.getId());
+        n.setTitle("ভূমি সেতুতে স্বাগতম!");
+        n.setMessage("আপনার নিবন্ধন ও TrxID (" + user.getTransactionId() + ") জমা হয়েছে। অ্যাডমিন যাচাই করে আপনার অ্যাকাউন্ট সক্রিয় করবেন।");
+        notificationRepository.save(n);
+
+        if (user.getReferredByOfficerId() != null) {
+            NotificationEntity on = new NotificationEntity();
+            on.setUserId(user.getReferredByOfficerId());
+            on.setTitle("নতুন রেফারেল সদস্য যুক্ত হয়েছেন");
+            on.setMessage(user.getFullName() + " (" + user.getRole() + ") আপনার রেফারেল কোড ব্যবহার করে নিবন্ধন করেছেন।");
+            notificationRepository.save(on);
+        }
+
         String token = jwtService.generateToken(user);
         return ResponseEntity.ok(Map.of(
                 "token", token,
@@ -271,9 +288,10 @@ public class PublicAndAuthController {
         }
 
         UserEntity user = userOpt.get();
-        if ("REJECTED".equals(user.getAccountStatus()) || "SUSPENDED".equals(user.getAccountStatus())) {
+        // Only block SUSPENDED users from logging in; REJECTED users are allowed to log in to view adminNote and resubmit corrected TrxID
+        if ("SUSPENDED".equals(user.getAccountStatus())) {
             return ResponseEntity.status(403).body(Map.of(
-                    "message", "আপনার অ্যাকাউন্টটি বর্তমানে স্থগিত বা বাতিল অবস্থায় রয়েছে। অ্যাডমিনের সাথে যোগাযোগ করুন।"
+                    "message", "আপনার অ্যাকাউন্টটি বর্তমানে স্থগিত (Suspended) অবস্থায় রয়েছে। অ্যাডমিনের সাথে যোগাযোগ করুন।"
             ));
         }
 

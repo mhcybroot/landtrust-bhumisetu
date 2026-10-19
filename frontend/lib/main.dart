@@ -53,6 +53,10 @@ class _MainShellScreenState extends State<MainShellScreen> {
   @override
   void initState() {
     super.initState();
+    final refParam = Uri.base.queryParameters['ref'];
+    if (refParam != null && refParam.trim().isNotEmpty && ApiService.currentUser == null) {
+      _selectedIndex = 3;
+    }
     _loadInitialData();
   }
 
@@ -88,6 +92,7 @@ class _MainShellScreenState extends State<MainShellScreen> {
   Widget build(BuildContext context) {
     final user = ApiService.currentUser;
     final isAdmin = user != null && user['role'] == 'ADMIN';
+    final isMobile = MediaQuery.of(context).size.width < 750;
 
     return Scaffold(
       appBar: PreferredSize(
@@ -97,78 +102,133 @@ class _MainShellScreenState extends State<MainShellScreen> {
             color: Color(0xFF0B4F32),
             boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 6)],
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 20),
+          padding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 20),
           child: SafeArea(
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 // Brand Logo & Slogan
-                InkWell(
-                  onTap: () => setState(() => _selectedIndex = 0),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Colors.amber.shade600,
-                          borderRadius: BorderRadius.circular(10),
+                Flexible(
+                  child: InkWell(
+                    onTap: () => setState(() => _selectedIndex = 0),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.amber.shade600,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(Icons.landscape, color: Color(0xFF0B4F32), size: 24),
                         ),
-                        child: const Icon(Icons.landscape, color: Color(0xFF0B4F32), size: 26),
-                      ),
-                      const SizedBox(width: 12),
-                      const Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'ভূমি সেতু (LandTrust)',
-                            style: TextStyle(color: Colors.white, fontSize: 19, fontWeight: FontWeight.bold),
+                        const SizedBox(width: 10),
+                        Flexible(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'ভূমি সেতু (LandTrust)',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: isMobile ? 16 : 19,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const Text(
+                                'ক্রেতা-বিক্রেতার বিশ্বস্ত সংযোগ • নোয়াখালী',
+                                style: TextStyle(color: Colors.white70, fontSize: 11),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
                           ),
-                          Text(
-                            'ক্রেতা-বিক্রেতার বিশ্বস্ত সংযোগ • নোয়াখালী',
-                            style: TextStyle(color: Colors.white70, fontSize: 12),
-                          ),
-                        ],
-                      ),
-                    ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
 
-                // Navigation Buttons
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: [
-                      _navButton(0, Icons.home, 'হোম ও জমি অনুসন্ধান'),
-                      _navButton(1, Icons.assignment, 'জমি কিনতে চাই (${_requirements.length})'),
-                      _navButton(2, Icons.policy, 'নিয়মাবলি ও ফি'),
-                      if (user == null)
-                        _navButton(3, Icons.person_add_alt_1, 'নিবন্ধন / লগইন')
-                      else ...[
-                        _navButton(
-                          3,
-                          isAdmin ? Icons.admin_panel_settings : Icons.dashboard_customize,
-                          isAdmin ? 'অ্যাডমিন প্যানেল' : 'আমার পোর্টাল (${user['role']})',
-                        ),
-                        const SizedBox(width: 8),
-                        TextButton.icon(
-                          style: TextButton.styleFrom(foregroundColor: Colors.amberAccent),
-                          onPressed: () {
-                            ApiService.logout();
-                            setState(() => _selectedIndex = 0);
-                          },
-                          icon: const Icon(Icons.logout, size: 18),
-                          label: const Text('লগআউট'),
-                        ),
+                // Navigation Buttons (Desktop/Tablet) or Quick Logout (Mobile)
+                if (!isMobile)
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        _navButton(0, Icons.home, 'হোম ও জমি অনুসন্ধান'),
+                        _navButton(1, Icons.assignment, 'জমি কিনতে চাই (${_requirements.length})'),
+                        _navButton(2, Icons.policy, 'নিয়মাবলি ও ফি'),
+                        if (user == null)
+                          _navButton(3, Icons.person_add_alt_1, 'নিবন্ধন / লগইন')
+                        else ...[
+                          _navButton(
+                            3,
+                            isAdmin ? Icons.admin_panel_settings : Icons.dashboard_customize,
+                            isAdmin ? 'অ্যাডমিন প্যানেল' : 'আমার পোর্টাল (${user['role']})',
+                          ),
+                          const SizedBox(width: 8),
+                          TextButton.icon(
+                            style: TextButton.styleFrom(foregroundColor: Colors.amberAccent),
+                            onPressed: () {
+                              ApiService.logout();
+                              setState(() => _selectedIndex = 0);
+                            },
+                            icon: const Icon(Icons.logout, size: 18),
+                            label: const Text('লগআউট'),
+                          ),
+                        ],
                       ],
-                    ],
+                    ),
+                  )
+                else if (user != null)
+                  TextButton.icon(
+                    style: TextButton.styleFrom(foregroundColor: Colors.amberAccent),
+                    onPressed: () {
+                      ApiService.logout();
+                      setState(() => _selectedIndex = 0);
+                    },
+                    icon: const Icon(Icons.logout, size: 18),
+                    label: const Text('লগআউট', style: TextStyle(fontSize: 12)),
                   ),
-                ),
               ],
             ),
           ),
         ),
       ),
+      bottomNavigationBar: isMobile
+          ? NavigationBar(
+              selectedIndex: _selectedIndex,
+              onDestinationSelected: (idx) => setState(() => _selectedIndex = idx),
+              backgroundColor: Colors.white,
+              indicatorColor: const Color(0xFFD8F3DC),
+              destinations: [
+                const NavigationDestination(
+                  icon: Icon(Icons.home_outlined),
+                  selectedIcon: Icon(Icons.home, color: Color(0xFF0B4F32)),
+                  label: 'জমি খুঁজুন',
+                ),
+                NavigationDestination(
+                  icon: const Icon(Icons.assignment_outlined),
+                  selectedIcon: const Icon(Icons.assignment, color: Color(0xFF0B4F32)),
+                  label: 'কিনতে চাই (${_requirements.length})',
+                ),
+                const NavigationDestination(
+                  icon: Icon(Icons.policy_outlined),
+                  selectedIcon: Icon(Icons.policy, color: Color(0xFF0B4F32)),
+                  label: 'নিয়ম ও ফি',
+                ),
+                NavigationDestination(
+                  icon: Icon(user == null ? Icons.person_add_alt_1_outlined : (isAdmin ? Icons.admin_panel_settings_outlined : Icons.dashboard_outlined)),
+                  selectedIcon: Icon(
+                    user == null ? Icons.person_add_alt_1 : (isAdmin ? Icons.admin_panel_settings : Icons.dashboard_customize),
+                    color: const Color(0xFF0B4F32),
+                  ),
+                  label: user == null ? 'নিবন্ধন/লগইন' : (isAdmin ? 'অ্যাডমিন' : 'আমার পোর্টাল'),
+                ),
+              ],
+            )
+          : null,
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : IndexedStack(
@@ -463,16 +523,10 @@ class _MainShellScreenState extends State<MainShellScreen> {
             children: [
               ClipRRect(
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-                child: Image.network(
-                  l['imageUrl'] ?? 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800',
+                child: ApiService.buildSmartImage(
+                  l['imageUrl'] as String?,
                   height: 185,
                   width: double.infinity,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, _, _) => Container(
-                    height: 185,
-                    color: const Color(0xFFE8F5E9),
-                    child: const Center(child: Icon(Icons.landscape, size: 54, color: Color(0xFF0B4F32))),
-                  ),
                 ),
               ),
               Positioned(
@@ -698,6 +752,13 @@ class _MainShellScreenState extends State<MainShellScreen> {
                 ],
               ),
               const SizedBox(height: 20),
+              if (_requirements.isEmpty)
+                const Card(
+                  child: Padding(
+                    padding: EdgeInsets.all(32),
+                    child: Center(child: Text('বর্তমানে কোনো প্রকাশিত ক্রেতার চাহিদা নেই। নতুন চাহিদা নিবন্ধন করুন!')),
+                  ),
+                ),
               ..._requirements.map((r) => Card(
                     margin: const EdgeInsets.only(bottom: 14),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
@@ -709,9 +770,11 @@ class _MainShellScreenState extends State<MainShellScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(
-                                '${r['preferredUpazila']}, ${r['preferredDistrict']} — ${r['landType']} জমি প্রয়োজন',
-                                style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Color(0xFF0B4F32)),
+                              Expanded(
+                                child: Text(
+                                  '${r['preferredUpazila']}, ${r['preferredDistrict']} — ${r['landType']} জমি প্রয়োজন',
+                                  style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Color(0xFF0B4F32)),
+                                ),
                               ),
                               Chip(
                                 label: Text(r['purchaseTimeline'] ?? 'জরুরি'),
@@ -874,12 +937,21 @@ class _AuthAndRegisterViewState extends State<_AuthAndRegisterView> {
   final _fullNameCtrl = TextEditingController();
   final _phoneCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
+  String _district = 'নোয়াখালী';
   String _upazila = 'নোয়াখালী সদর';
   final _addressCtrl = TextEditingController();
-  final _referralCodeCtrl = TextEditingController(text: 'LT-NOA-1001');
+  late final TextEditingController _referralCodeCtrl;
   String _selectedPaymentMethod = 'বিকাশ (bKash)';
   final _senderPhoneCtrl = TextEditingController();
   final _trxIdCtrl = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    // Auto-fill referral code if user opened a referral link (?ref=LT-NOA-1001), otherwise empty by default
+    final refFromUrl = Uri.base.queryParameters['ref'] ?? '';
+    _referralCodeCtrl = TextEditingController(text: refFromUrl.trim());
+  }
 
   Future<void> _quickDemoLogin(String phone, String pass) async {
     setState(() => _submitting = true);
@@ -899,12 +971,44 @@ class _AuthAndRegisterViewState extends State<_AuthAndRegisterView> {
   Widget build(BuildContext context) {
     final settings = (widget.config['settings'] as Map<String, dynamic>?) ?? {};
     final paymentMethods = (widget.config['paymentMethods'] as List<dynamic>?) ?? [];
+    final locations = (widget.config['locations'] as List<dynamic>?) ?? [];
+
+    final districts = locations.isNotEmpty
+        ? locations.map((l) => l['districtNameBn'].toString()).toSet().toList()
+        : ['নোয়াখালী'];
+    if (!districts.contains(_district)) {
+      _district = districts.first;
+    }
+
+    final upazilasForDistrict = locations
+        .where((l) => l['districtNameBn'] == _district)
+        .map((l) => l['upazilaNameBn'].toString())
+        .toSet()
+        .toList();
+    final upazilas = upazilasForDistrict.isNotEmpty
+        ? upazilasForDistrict
+        : [
+            'নোয়াখালী সদর', 'বেগমগঞ্জ', 'চাটখিল', 'কোম্পানীগঞ্জ',
+            'সেনবাগ', 'সোনাইমুড়ী', 'কবিরহাট', 'সুবর্ণচর', 'হাতিয়া'
+          ];
+    if (!upazilas.contains(_upazila)) {
+      _upazila = upazilas.first;
+    }
+
+    final paymentOptions = paymentMethods.isNotEmpty
+        ? paymentMethods.map((pm) => pm['providerName'].toString()).toSet().toList()
+        : ['বিকাশ (bKash)', 'নগদ (Nagad)', 'ইসলামী ব্যাংক পিএলসি'];
+    if (!paymentOptions.contains(_selectedPaymentMethod)) {
+      _selectedPaymentMethod = paymentOptions.first;
+    }
 
     final currentRoleFee = switch (_selectedRole) {
       'SELLER' => settings['sellerRegistrationFee'] ?? 500,
       'MARKETING_OFFICER' => settings['officerRegistrationFee'] ?? 300,
       _ => settings['buyerRegistrationFee'] ?? 500,
     };
+
+    final refFromUrl = Uri.base.queryParameters['ref'] ?? '';
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
@@ -914,6 +1018,30 @@ class _AuthAndRegisterViewState extends State<_AuthAndRegisterView> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              if (refFromUrl.trim().isNotEmpty)
+                Container(
+                  width: double.infinity,
+                  margin: const EdgeInsets.only(bottom: 14),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.amber.shade100,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.amber.shade700),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.card_giftcard, color: Color(0xFF0B4F32)),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'আপনি রেফারেল লিংকের মাধ্যমে এসেছেন! রেফারেল কোড (${refFromUrl.trim()}) স্বয়ংক্রিয়ভাবে যুক্ত করা হয়েছে।',
+                          style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0B4F32)),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
               // 1-Click Demo Login Bar for Testing All 4 Roles
               Container(
                 padding: const EdgeInsets.all(16),
@@ -976,7 +1104,7 @@ class _AuthAndRegisterViewState extends State<_AuthAndRegisterView> {
                         padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
                       onPressed: () => setState(() => _isLogin = false),
-                      child: const Text('নতুন সদস্য নিবন্ধন (ক্রেতা / বিক্রেতা / মার্কেটিং অফিসার)', style: TextStyle(fontWeight: FontWeight.bold)),
+                      child: const Text('নতুন সদস্য নিবন্ধন', style: TextStyle(fontWeight: FontWeight.bold)),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -988,7 +1116,7 @@ class _AuthAndRegisterViewState extends State<_AuthAndRegisterView> {
                         padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
                       onPressed: () => setState(() => _isLogin = true),
-                      child: const Text('পুরাতন সদস্য লগইন (মোবাইল ও পাসওয়ার্ড)', style: TextStyle(fontWeight: FontWeight.bold)),
+                      child: const Text('পুরাতন সদস্য লগইন', style: TextStyle(fontWeight: FontWeight.bold)),
                     ),
                   ),
                 ],
@@ -1060,42 +1188,47 @@ class _AuthAndRegisterViewState extends State<_AuthAndRegisterView> {
                         ),
                         const SizedBox(height: 18),
 
-                        Row(
+                        Wrap(
+                          spacing: 12,
+                          runSpacing: 12,
                           children: [
-                            Expanded(
+                            SizedBox(
+                              width: 410,
                               child: TextField(
                                 controller: _fullNameCtrl,
                                 decoration: const InputDecoration(labelText: 'পূর্ণ নাম *', border: OutlineInputBorder()),
                               ),
                             ),
-                            const SizedBox(width: 12),
-                            Expanded(
+                            SizedBox(
+                              width: 410,
                               child: TextField(
                                 controller: _phoneCtrl,
                                 decoration: const InputDecoration(labelText: 'মোবাইল নম্বর (01XXXXXXXXX) *', border: OutlineInputBorder()),
                               ),
                             ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        Row(
-                          children: [
-                            Expanded(
+                            SizedBox(
+                              width: 270,
                               child: TextField(
                                 controller: _passCtrl,
                                 obscureText: true,
                                 decoration: const InputDecoration(labelText: 'পাসওয়ার্ড দিন *', border: OutlineInputBorder()),
                               ),
                             ),
-                            const SizedBox(width: 12),
-                            Expanded(
+                            SizedBox(
+                              width: 265,
+                              child: DropdownButtonFormField<String>(
+                                initialValue: _district,
+                                decoration: const InputDecoration(labelText: 'জেলা', border: OutlineInputBorder()),
+                                items: districts.map((d) => DropdownMenuItem(value: d, child: Text(d))).toList(),
+                                onChanged: (v) => setState(() => _district = v!),
+                              ),
+                            ),
+                            SizedBox(
+                              width: 270,
                               child: DropdownButtonFormField<String>(
                                 initialValue: _upazila,
-                                decoration: const InputDecoration(labelText: 'উপজেলা (নোয়াখালী)', border: OutlineInputBorder()),
-                                items: const [
-                                  'নোয়াখালী সদর', 'বেগমগঞ্জ', 'চাটখিল', 'কোম্পানীগঞ্জ',
-                                  'সেনবাগ', 'সোনাইমুড়ী', 'কবিরহাট', 'সুবর্ণচর', 'হাতিয়া'
-                                ].map((u) => DropdownMenuItem(value: u, child: Text(u))).toList(),
+                                decoration: const InputDecoration(labelText: 'উপজেলা', border: OutlineInputBorder()),
+                                items: upazilas.map((u) => DropdownMenuItem(value: u, child: Text(u))).toList(),
                                 onChanged: (v) => setState(() => _upazila = v!),
                               ),
                             ),
@@ -1113,7 +1246,7 @@ class _AuthAndRegisterViewState extends State<_AuthAndRegisterView> {
                           TextField(
                             controller: _referralCodeCtrl,
                             decoration: const InputDecoration(
-                              labelText: 'মার্কেটিং অফিসারের রেফারেল কোড (থাকলে দিন, যেমন: LT-NOA-1001)',
+                              labelText: 'মার্কেটিং অফিসারের রেফারেল কোড (ঐচ্ছিক, যেমন: LT-NOA-1001)',
                               helperText: 'রেফারেল কোড দিলে সংশ্লিষ্ট মার্কেটিং অফিসারের পোর্টালে আপনার নাম ও কমিশন যুক্ত হবে',
                               border: OutlineInputBorder(),
                               prefixIcon: Icon(Icons.card_giftcard),
@@ -1152,29 +1285,28 @@ class _AuthAndRegisterViewState extends State<_AuthAndRegisterView> {
                         ),
                         const SizedBox(height: 14),
 
-                        Row(
+                        Wrap(
+                          spacing: 12,
+                          runSpacing: 12,
                           children: [
-                            Expanded(
+                            SizedBox(
+                              width: 265,
                               child: DropdownButtonFormField<String>(
                                 initialValue: _selectedPaymentMethod,
                                 decoration: const InputDecoration(labelText: 'পেমেন্টের মাধ্যম', border: OutlineInputBorder()),
-                                items: const [
-                                  DropdownMenuItem(value: 'বিকাশ (bKash)', child: Text('বিকাশ (bKash)')),
-                                  DropdownMenuItem(value: 'নগদ (Nagad)', child: Text('নগদ (Nagad)')),
-                                  DropdownMenuItem(value: 'ইসলামী ব্যাংক পিএলসি', child: Text('ব্যাংক ট্রান্সফার')),
-                                ],
+                                items: paymentOptions.map((p) => DropdownMenuItem(value: p, child: Text(p))).toList(),
                                 onChanged: (v) => setState(() => _selectedPaymentMethod = v!),
                               ),
                             ),
-                            const SizedBox(width: 12),
-                            Expanded(
+                            SizedBox(
+                              width: 270,
                               child: TextField(
                                 controller: _senderPhoneCtrl,
                                 decoration: const InputDecoration(labelText: 'যে নম্বর থেকে টাকা পাঠিয়েছেন *', border: OutlineInputBorder()),
                               ),
                             ),
-                            const SizedBox(width: 12),
-                            Expanded(
+                            SizedBox(
+                              width: 270,
                               child: TextField(
                                 controller: _trxIdCtrl,
                                 decoration: const InputDecoration(labelText: 'ট্রানজ্যাকশন আইডি (TrxID) *', border: OutlineInputBorder()),
@@ -1246,6 +1378,12 @@ class _AuthAndRegisterViewState extends State<_AuthAndRegisterView> {
   }
 
   Future<void> _submitRegistration() async {
+    if (_trxIdCtrl.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('অনুগ্রহ করে পেমেন্টের ট্রানজ্যাকশন আইডি (TrxID) প্রদান করুন।')),
+      );
+      return;
+    }
     setState(() => _submitting = true);
     try {
       await ApiService.register({
@@ -1253,13 +1391,13 @@ class _AuthAndRegisterViewState extends State<_AuthAndRegisterView> {
         'phoneNumber': _phoneCtrl.text.trim(),
         'password': _passCtrl.text,
         'role': _selectedRole,
-        'district': 'নোয়াখালী',
+        'district': _district,
         'upazila': _upazila,
         'address': _addressCtrl.text.trim(),
         'referralCode': _selectedRole == 'MARKETING_OFFICER' ? '' : _referralCodeCtrl.text.trim(),
         'paymentMethod': _selectedPaymentMethod,
         'senderPhone': _senderPhoneCtrl.text.trim().isEmpty ? _phoneCtrl.text.trim() : _senderPhoneCtrl.text.trim(),
-        'transactionId': _trxIdCtrl.text.trim().isEmpty ? 'TRX-${DateTime.now().millisecondsSinceEpoch % 100000}' : _trxIdCtrl.text.trim(),
+        'transactionId': _trxIdCtrl.text.trim(),
       });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

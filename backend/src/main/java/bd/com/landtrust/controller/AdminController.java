@@ -25,6 +25,7 @@ public class AdminController {
     private final ServiceProposalRepository proposalRepository;
     private final CommissionEntryRepository commissionRepository;
     private final FinancialTransactionRepository transactionRepository;
+    private final NotificationRepository notificationRepository;
 
     public AdminController(
             UserRepository userRepository,
@@ -36,7 +37,8 @@ public class AdminController {
             LandInquiryRepository inquiryRepository,
             ServiceProposalRepository proposalRepository,
             CommissionEntryRepository commissionRepository,
-            FinancialTransactionRepository transactionRepository) {
+            FinancialTransactionRepository transactionRepository,
+            NotificationRepository notificationRepository) {
         this.userRepository = userRepository;
         this.settingRepository = settingRepository;
         this.paymentMethodRepository = paymentMethodRepository;
@@ -47,6 +49,16 @@ public class AdminController {
         this.proposalRepository = proposalRepository;
         this.commissionRepository = commissionRepository;
         this.transactionRepository = transactionRepository;
+        this.notificationRepository = notificationRepository;
+    }
+
+    private void notifyUser(Long userId, String title, String message) {
+        if (userId == null) return;
+        NotificationEntity n = new NotificationEntity();
+        n.setUserId(userId);
+        n.setTitle(title);
+        n.setMessage(message);
+        notificationRepository.save(n);
     }
 
     private SystemSettingEntity getSettings() {
@@ -272,6 +284,17 @@ public class AdminController {
         user.setAdminNote(adminNote);
         user = userRepository.save(user);
 
+        if ("ACTIVE".equals(newStatus)) {
+            notifyUser(user.getId(), "অভিনন্দন! আপনার অ্যাকাউন্ট সক্রিয় হয়েছে",
+                    "আপনার নিবন্ধন ফি (TrxID: " + user.getTransactionId() + ") যাচাই সম্পন্ন হয়েছে। এখন আপনি পূর্ণ সুবিধা ব্যবহার করতে পারবেন।");
+        } else if ("REJECTED".equals(newStatus)) {
+            notifyUser(user.getId(), "পেমেন্ট যাচাই ব্যর্থ / সংশোধন প্রয়োজন",
+                    "আপনার অ্যাকাউন্ট/TrxID বাতিল করা হয়েছে। কারণ: " + (adminNote != null ? adminNote : "TrxID মেলেনি") + "। ড্যাশবোর্ড থেকে সঠিক TrxID পুনরায় জমা দিন।");
+        } else if ("SUSPENDED".equals(newStatus)) {
+            notifyUser(user.getId(), "অ্যাকাউন্ট সাময়িকভাবে স্থগিত",
+                    "অ্যাডমিন আপনার অ্যাকাউন্ট স্থগিত করেছেন। নোট: " + (adminNote != null ? adminNote : ""));
+        }
+
         // If user is activated (ACTIVE), approve their pending registration fee transaction
         if ("ACTIVE".equals(newStatus)) {
             List<FinancialTransactionEntity> userTxns = transactionRepository.findByUserIdOrderByCreatedAtDesc(user.getId());
@@ -309,6 +332,8 @@ public class AdminController {
                         commissionRepository.save(comm);
 
                         syncOfficerCommissionTotals(officer.getId());
+                        notifyUser(officer.getId(), "রেফারেল নিবন্ধন সম্মানী অনুমোদিত!",
+                                "আপনার রেফারকৃত সদস্য " + user.getFullName() + " যাচাইকৃত হওয়ায় আপনার তহবিলে ৳" + settings.getReferralVerifiedBonusFixed() + " সম্মানী যোগ হয়েছে।");
                     }
                 }
             }
@@ -331,17 +356,22 @@ public class AdminController {
 
         LandListingEntity listing = opt.get();
         if (body.containsKey("listingStatus")) {
-            // Supports SUBMITTED, UNDER_REVIEW, APPROVED_PUBLISHED, RESERVED, SOLD, SUSPENDED, REJECTED at any stage!
             listing.setListingStatus(body.get("listingStatus"));
         }
         if (body.containsKey("verificationStatus")) {
-            // Supports SUBMITTED, DOC_CHECKED, FIELD_VERIFIED
             listing.setVerificationStatus(body.get("verificationStatus"));
         }
         if (body.containsKey("adminRemark")) {
             listing.setAdminRemark(body.get("adminRemark"));
         }
-        return ResponseEntity.ok(listingRepository.save(listing));
+        listing = listingRepository.save(listing);
+
+        notifyUser(listing.getSellerId(),
+                "জমির বিজ্ঞাপনের স্ট্যাটাস আপডেট: " + listing.getTitle(),
+                "বিজ্ঞাপনের বর্তমান অবস্থা: " + listing.getListingStatus() + " (ব্যাজ: " + listing.getVerificationStatus() + ")।"
+                        + (listing.getAdminRemark() != null && !listing.getAdminRemark().isBlank() ? " নোট: " + listing.getAdminRemark() : ""));
+
+        return ResponseEntity.ok(listing);
     }
 
     // ==================== BUYER REQUIREMENTS (APPROVE / SUSPEND / REJECT AT ANY STAGE) ====================
@@ -358,20 +388,55 @@ public class AdminController {
 
         BuyerRequirementEntity req = opt.get();
         if (body.containsKey("status")) {
-            // Supports SUBMITTED, ACTIVE, MATCHED, FULFILLED, SUSPENDED, REJECTED at any stage!
             req.setStatus(body.get("status"));
         }
         if (body.containsKey("adminRemark")) {
             req.setAdminRemark(body.get("adminRemark"));
         }
-        return ResponseEntity.ok(requirementRepository.save(req));
+        req = requirementRepository.save(req);
+
+        notifyUser(req.getBuyerId(),
+                "জমির চাহিদাপত্রের স্ট্যাটাস আপডেট (" + req.getPreferredUpazila() + ")",
+                "আপনার চাহিদাপত্রের বর্তমান অবস্থা: " + req.getStatus() + "।"
+                        + (req.getAdminRemark() != null && !req.getAdminRemark().isBlank() ? " নোট: " + req.getAdminRemark() : ""));
+
+        return ResponseEntity.ok(req);
     }
 
     // ==================== MEDIATED INQUIRIES ====================
 
     @GetMapping("/inquiries")
-    public ResponseEntity<List<LandInquiryEntity>> getAllInquiries() {
-        return ResponseEntity.ok(inquiryRepository.findAllByOrderByCreatedAtDesc());
+    public ResponseEntity<List<Map<String, Object>>> getAllInquiries() {
+        List<LandInquiryEntity> list = inquiryRepository.findAllByOrderByCreatedAtDesc();
+        Map<Long, LandListingEntity> listingMap = listingRepository.findAll().stream()
+                .collect(Collectors.toMap(LandListingEntity::getId, l -> l, (a, b) -> a));
+
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (LandInquiryEntity inq : list) {
+            Map<String, Object> m = new LinkedHashMap<>();
+            m.put("id", inq.getId());
+            m.put("listingId", inq.getListingId());
+            m.put("listingTitle", inq.getListingTitle());
+            m.put("buyerId", inq.getBuyerId());
+            m.put("buyerName", inq.getBuyerName());
+            m.put("buyerPhone", inq.getBuyerPhone());
+            m.put("offeredBudgetBdt", inq.getOfferedBudgetBdt());
+            m.put("message", inq.getMessage());
+            m.put("status", inq.getStatus());
+            m.put("adminNote", inq.getAdminNote());
+            m.put("createdAt", inq.getCreatedAt());
+
+            LandListingEntity land = listingMap.get(inq.getListingId());
+            if (land != null) {
+                m.put("sellerId", land.getSellerId());
+                m.put("sellerName", land.getSellerName());
+                m.put("sellerPhone", land.getSellerPhone());
+                m.put("expectedPriceBdt", land.getExpectedPriceBdt());
+                m.put("upazila", land.getUpazila());
+            }
+            result.add(m);
+        }
+        return ResponseEntity.ok(result);
     }
 
     @PutMapping("/inquiries/{id}/status")
@@ -381,7 +446,13 @@ public class AdminController {
         LandInquiryEntity inq = opt.get();
         if (body.containsKey("status")) inq.setStatus(body.get("status"));
         if (body.containsKey("adminNote")) inq.setAdminNote(body.get("adminNote"));
-        return ResponseEntity.ok(inquiryRepository.save(inq));
+        inq = inquiryRepository.save(inq);
+
+        notifyUser(inq.getBuyerId(),
+                "জমিতে আগ্রহ প্রকাশের আপডেট: " + inq.getListingTitle(),
+                "অবস্থা: " + inq.getStatus() + (inq.getAdminNote() != null && !inq.getAdminNote().isBlank() ? " | অ্যাডমিন নোট: " + inq.getAdminNote() : ""));
+
+        return ResponseEntity.ok(inq);
     }
 
     // ==================== SPECIAL SERVICE PROPOSALS ====================
@@ -411,6 +482,12 @@ public class AdminController {
         }
 
         p = proposalRepository.save(p);
+
+        notifyUser(p.getUserId(),
+                "বিশেষ সেবা প্রস্তাবের আপডেট: " + p.getProposalTitle(),
+                "প্রস্তাবের বর্তমান অবস্থা: " + p.getStatus()
+                        + (p.getAdminCounterFeeBdt() != null ? " | পাল্টা প্রস্তাবিত ফি: ৳" + p.getAdminCounterFeeBdt() : "")
+                        + (p.getAdminNote() != null && !p.getAdminNote().isBlank() ? " | নোট: " + p.getAdminNote() : ""));
 
         // If marked COMPLETED, optionally record service revenue if not already recorded
         if ("COMPLETED".equals(p.getStatus())) {
@@ -485,6 +562,11 @@ public class AdminController {
 
         entry = commissionRepository.save(entry);
         syncOfficerCommissionTotals(officer.getId());
+
+        notifyUser(officer.getId(),
+                "নতুন কমিশন অনুমোদিত হয়েছে: ৳" + finalCommission,
+                "রেফারকৃত সদস্য " + referredUser.getFullName() + " এর বিপরীতে ৳" + finalCommission + " কমিশন অনুমোদিত হয়েছে (" + note + ")।");
+
         return ResponseEntity.ok(entry);
     }
 
@@ -519,6 +601,11 @@ public class AdminController {
         transactionRepository.save(txn);
 
         syncOfficerCommissionTotals(entry.getOfficerId());
+
+        notifyUser(entry.getOfficerId(),
+                "কমিশন পরিশোধ সম্পন্ন: ৳" + entry.getCommissionAmountBdt(),
+                "আপনার ৳" + entry.getCommissionAmountBdt() + " সম্মানী পরিশোধ করা হয়েছে। রেফারেন্স: " + paymentRef);
+
         return ResponseEntity.ok(entry);
     }
 
@@ -572,10 +659,21 @@ public class AdminController {
 
     // ==================== MULTI-DISTRICT / UPAZILA EXPANSION ====================
 
+    @GetMapping("/locations")
+    public ResponseEntity<List<LocationEntity>> getAllLocations() {
+        return ResponseEntity.ok(locationRepository.findByActiveTrueOrderByDistrictNameBnAscUpazilaNameBnAsc());
+    }
+
     @PostMapping("/locations")
     public ResponseEntity<LocationEntity> addLocation(@RequestBody LocationEntity loc) {
         loc.setActive(true);
         return ResponseEntity.ok(locationRepository.save(loc));
+    }
+
+    @DeleteMapping("/locations/{id}")
+    public ResponseEntity<?> deleteLocation(@PathVariable Long id) {
+        locationRepository.deleteById(id);
+        return ResponseEntity.ok(Map.of("message", "উপজেলা মুছে ফেলা হয়েছে।"));
     }
 
     private BigDecimal parseDecimal(Object val, BigDecimal fallback) {

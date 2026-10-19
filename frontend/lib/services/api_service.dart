@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 class ApiService {
@@ -16,8 +17,64 @@ class ApiService {
       }
       return '${Uri.base.origin}/api';
     }
-    // Android / Waydroid local bridge IP
-    return 'http://192.168.240.1:8085/api';
+    // Live Dokploy production server for Android / Waydroid
+    return 'http://45.132.241.64:9999/api';
+  }
+
+  static String get publicWebOrigin {
+    if (kIsWeb && Uri.base.port != 8086) {
+      return Uri.base.origin;
+    }
+    return 'http://45.132.241.64:9999';
+  }
+
+  static Widget buildSmartImage(
+    String? url, {
+    double? height,
+    double? width,
+    BoxFit fit = BoxFit.cover,
+    BorderRadius? borderRadius,
+  }) {
+    final fallback = Container(
+      height: height,
+      width: width,
+      color: const Color(0xFFD8F3DC),
+      child: const Center(
+        child: Icon(Icons.landscape_rounded, size: 44, color: Color(0xFF1B5E20)),
+      ),
+    );
+    Widget img = fallback;
+    if (url != null && url.trim().isNotEmpty) {
+      if (url.startsWith('data:image/')) {
+        try {
+          final commaIdx = url.indexOf(',');
+          if (commaIdx != -1) {
+            final bytes = base64Decode(url.substring(commaIdx + 1));
+            img = Image.memory(
+              bytes,
+              height: height,
+              width: width,
+              fit: fit,
+              errorBuilder: (_, _, _) => fallback,
+            );
+          }
+        } catch (_) {
+          img = fallback;
+        }
+      } else {
+        img = Image.network(
+          url,
+          height: height,
+          width: width,
+          fit: fit,
+          errorBuilder: (_, _, _) => fallback,
+        );
+      }
+    }
+    if (borderRadius != null) {
+      return ClipRRect(borderRadius: borderRadius, child: img);
+    }
+    return img;
   }
 
   static String? token;
@@ -122,6 +179,31 @@ class ApiService {
     currentUser = null;
   }
 
+  // ==================== NOTIFICATIONS & PAYMENT RESUBMIT ====================
+
+  static Future<Map<String, dynamic>> getMyNotifications() async {
+    final res = await http.get(Uri.parse('$baseUrl/portal/notifications'), headers: _headers);
+    return jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
+  }
+
+  static Future<void> markNotificationsRead() async {
+    await http.put(Uri.parse('$baseUrl/portal/notifications/read-all'), headers: _headers);
+  }
+
+  static Future<Map<String, dynamic>> resubmitPayment(Map<String, String> payload) async {
+    final res = await http.put(
+      Uri.parse('$baseUrl/portal/resubmit-payment'),
+      headers: _headers,
+      body: jsonEncode(payload),
+    );
+    final data = jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
+    if (res.statusCode == 200) {
+      currentUser = data['user'] as Map<String, dynamic>?;
+      return data;
+    }
+    throw Exception(data['message'] ?? 'পেমেন্ট তথ্য জমা দিতে সমস্যা হয়েছে');
+  }
+
   // ==================== MEMBER PORTAL ENDPOINTS ====================
 
   static Future<List<dynamic>> getMyListings() async {
@@ -134,6 +216,14 @@ class ApiService {
       Uri.parse('$baseUrl/portal/listings'),
       headers: _headers,
       body: jsonEncode(payload),
+    );
+    return jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
+  }
+
+  static Future<Map<String, dynamic>> closeListing(int id) async {
+    final res = await http.put(
+      Uri.parse('$baseUrl/portal/listings/$id/close'),
+      headers: _headers,
     );
     return jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
   }
@@ -227,6 +317,24 @@ class ApiService {
     await http.delete(Uri.parse('$baseUrl/admin/payment-methods/$id'), headers: _headers);
   }
 
+  static Future<List<dynamic>> getAdminLocations() async {
+    final res = await http.get(Uri.parse('$baseUrl/admin/locations'), headers: _headers);
+    return jsonDecode(utf8.decode(res.bodyBytes)) as List<dynamic>;
+  }
+
+  static Future<Map<String, dynamic>> addAdminLocation(Map<String, dynamic> payload) async {
+    final res = await http.post(
+      Uri.parse('$baseUrl/admin/locations'),
+      headers: _headers,
+      body: jsonEncode(payload),
+    );
+    return jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
+  }
+
+  static Future<void> deleteAdminLocation(int id) async {
+    await http.delete(Uri.parse('$baseUrl/admin/locations/$id'), headers: _headers);
+  }
+
   static Future<List<dynamic>> getAdminUsers({String? role}) async {
     final uri = role == null || role.isEmpty
         ? Uri.parse('$baseUrl/admin/users')
@@ -278,6 +386,20 @@ class ApiService {
       Uri.parse('$baseUrl/admin/requirements/$id/status'),
       headers: _headers,
       body: jsonEncode({'status': status, 'adminRemark': remark}),
+    );
+    return jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
+  }
+
+  static Future<List<dynamic>> getAdminInquiries() async {
+    final res = await http.get(Uri.parse('$baseUrl/admin/inquiries'), headers: _headers);
+    return jsonDecode(utf8.decode(res.bodyBytes)) as List<dynamic>;
+  }
+
+  static Future<Map<String, dynamic>> updateAdminInquiryStatus(int id, String status, String note) async {
+    final res = await http.put(
+      Uri.parse('$baseUrl/admin/inquiries/$id/status'),
+      headers: _headers,
+      body: jsonEncode({'status': status, 'adminNote': note}),
     );
     return jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
   }

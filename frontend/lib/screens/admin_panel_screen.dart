@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../services/api_service.dart';
 
 class AdminPanelScreen extends StatefulWidget {
@@ -18,10 +19,12 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
   List<dynamic> _users = [];
   List<dynamic> _listings = [];
   List<dynamic> _requirements = [];
+  List<dynamic> _inquiries = [];
   List<dynamic> _commissions = [];
   List<dynamic> _proposals = [];
   List<dynamic> _transactions = [];
   List<dynamic> _paymentMethods = [];
+  List<dynamic> _locations = [];
 
   @override
   void initState() {
@@ -37,19 +40,23 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
         ApiService.getAdminUsers(),
         ApiService.getAdminListings(),
         ApiService.getAdminRequirements(),
+        ApiService.getAdminInquiries(),
         ApiService.getAdminCommissions(),
         ApiService.getAdminProposals(),
         ApiService.getAdminTransactions(),
         ApiService.getAdminPaymentMethods(),
+        ApiService.getAdminLocations(),
       ]);
       _dashboard = results[0] as Map<String, dynamic>;
       _users = results[1] as List<dynamic>;
       _listings = results[2] as List<dynamic>;
       _requirements = results[3] as List<dynamic>;
-      _commissions = results[4] as List<dynamic>;
-      _proposals = results[5] as List<dynamic>;
-      _transactions = results[6] as List<dynamic>;
-      _paymentMethods = results[7] as List<dynamic>;
+      _inquiries = results[4] as List<dynamic>;
+      _commissions = results[5] as List<dynamic>;
+      _proposals = results[6] as List<dynamic>;
+      _transactions = results[7] as List<dynamic>;
+      _paymentMethods = results[8] as List<dynamic>;
+      _locations = results[9] as List<dynamic>;
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('অ্যাডমিন ডেটা লোড ত্রুটি: $e')));
@@ -68,10 +75,10 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
     final tabs = [
       (Icons.dashboard, 'ড্যাশবোর্ড ও ম্যাচিং'),
       (Icons.people, 'সদস্য ও TrxID যাচাই (${_users.length})'),
-      (Icons.landscape, 'জমি ও চাহিদা (Suspend/Reject)'),
+      (Icons.landscape, 'জমি, চাহিদা ও ইনকোয়ারি (${_inquiries.length})'),
       (Icons.share, 'রেফারেল ও কমিশন (${_commissions.length})'),
       (Icons.account_balance, 'বিশেষ প্রস্তাব ও আর্থিক লেজার'),
-      (Icons.settings, 'ফি, পেমেন্ট নম্বর ও সেটিংস'),
+      (Icons.settings, 'ফি, পেমেন্ট ও জেলা/উপজেলা সেটিংস'),
     ];
 
     return SingleChildScrollView(
@@ -104,7 +111,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                         ),
                         SizedBox(height: 4),
                         Text(
-                          'সদস্য অনুমোদন, যেকোনো পর্যায়ে বিজ্ঞাপন স্থগিত/বাতিল, রেফারেল কমিশন নির্ধারণ ও ৩-খাত আর্থিক ব্যবস্থাপনা',
+                          'সদস্য অনুমোদন, ডুপ্লিকেট দাগ/খতিয়ান যাচাই, ইনকোয়ারি মধ্যস্থতা, রেফারেল কমিশন ও ৩-খাত আর্থিক ব্যবস্থাপনা',
                           style: TextStyle(color: Colors.white70, fontSize: 13),
                         ),
                       ],
@@ -330,6 +337,11 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                           'অফিসারের নিজস্ব রেফারেল কোড: ${u['myReferralCode']} • মোট অর্জিত কমিশন: ৳${u['totalEarnedCommission']} • পরিশোধিত: ৳${u['totalPaidCommission']}',
                           style: TextStyle(fontSize: 13, color: Colors.indigo.shade800, fontWeight: FontWeight.w600),
                         ),
+                      if ((u['adminNote'] ?? '').toString().isNotEmpty)
+                        Text(
+                          'অ্যাডমিন নোট: ${u['adminNote']}',
+                          style: const TextStyle(fontSize: 12, color: Colors.black54),
+                        ),
                     ],
                   ),
                   Wrap(
@@ -357,7 +369,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                         OutlinedButton(
                           style: OutlinedButton.styleFrom(foregroundColor: Colors.red.shade700),
                           onPressed: () async {
-                            await ApiService.updateUserStatus(id, 'REJECTED', 'অ্যাডমিন কর্তৃক বাতিল');
+                            await ApiService.updateUserStatus(id, 'REJECTED', 'প্রদত্ত TrxID সঠিক নয় — অনুগ্রহ করে সঠিক TrxID পুনরায় জমা দিন');
                             _loadAllAdminData();
                           },
                           child: const Text('বাতিল (Reject)'),
@@ -374,117 +386,175 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
     );
   }
 
-  // ==================== TAB 2: LISTINGS & REQUIREMENTS (ANYTIME SUSPEND / REJECT) ====================
+  // ==================== TAB 2: LISTINGS, REQUIREMENTS & BUYER INQUIRIES ====================
   Widget _buildListingsAndRequirementsTab() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          '১. সকল জমির বিজ্ঞাপন (অ্যাডমিন যেকোনো পর্যায়ে অনুমোদন, Suspend বা Reject করতে পারবেন)',
+          '১. সকল জমির বিজ্ঞাপন (ডুপ্লিকেট দাগ/খতিয়ান সতর্কতা, গোপনীয় দলিল দর্শন ও যেকোনো পর্যায়ে নিয়ন্ত্রণ)',
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 10),
-        ..._listings.map((l) {
-          final id = l['id'] as int;
-          return Card(
-            margin: const EdgeInsets.only(bottom: 12),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Wrap(
-                    spacing: 12,
-                    runSpacing: 8,
-                    alignment: WrapAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        '${l['title']} (বিক্রেতা: ${l['sellerName']} - ${l['sellerPhone']})',
-                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        if (_listings.isEmpty)
+          const Card(child: Padding(padding: EdgeInsets.all(16), child: Text('কোনো জমির বিজ্ঞাপন জমা পড়েনি।')))
+        else
+          ..._listings.map((l) {
+            final id = l['id'] as int;
+            final isDup = l['duplicateSuspected'] == true;
+            final hasPrivateDoc = (l['privateDocumentUrl'] ?? '').toString().isNotEmpty;
+
+            return Card(
+              margin: const EdgeInsets.only(bottom: 12),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (isDup)
+                      Container(
+                        width: double.infinity,
+                        margin: const EdgeInsets.only(bottom: 10),
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.red.shade50,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.red.shade300),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.warning_amber_rounded, color: Colors.red.shade800),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                l['duplicateNote'] ?? 'সতর্কতা: একই মৌজা, খতিয়ান ও দাগে একাধিক বিজ্ঞাপন শনাক্ত হয়েছে!',
+                                style: TextStyle(color: Colors.red.shade900, fontWeight: FontWeight.bold, fontSize: 13),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                      Wrap(
-                        spacing: 8,
-                        children: [
-                          _badge(l['verificationStatus']),
-                          _badge(l['listingStatus']),
-                        ],
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'অবস্থান: ${l['areaName']}, ${l['upazila']} • মৌজা: ${l['mouzaName']} • পরিমাণ: ${l['areaDecimal']} শতাংশ (${l['landType']}) • মূল্য: ৳${l['expectedPriceBdt']} • প্রস্তাবিত পারিশ্রমিক: ৳${l['proposedServiceFeeBdt']}',
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'গোপনীয় দলিল ও খতিয়ান তথ্য: খতিয়ান: ${l['khatianNo']} | দাগ: ${l['dagNo']} | নামজারি: ${l['mutationInfo']}',
-                    style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF0B4F32)),
-                  ),
-                  const SizedBox(height: 10),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      // Verification Badges
-                      ActionChip(
-                        label: const Text('🔵 কাগজপত্র যাচাইকৃত'),
-                        onPressed: () async {
-                          await ApiService.updateListingStatus(id, verificationStatus: 'DOC_CHECKED');
-                          _loadAllAdminData();
-                          widget.onConfigChanged();
-                        },
-                      ),
-                      ActionChip(
-                        label: const Text('🟢 সরেজমিনে ও নথি যাচাইকৃত'),
-                        onPressed: () async {
-                          await ApiService.updateListingStatus(id, verificationStatus: 'FIELD_VERIFIED');
-                          _loadAllAdminData();
-                          widget.onConfigChanged();
-                        },
-                      ),
-                      // Lifecycle Statuses + Anytime Suspend/Reject
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(backgroundColor: Colors.green.shade700, foregroundColor: Colors.white),
-                        onPressed: () async {
-                          await ApiService.updateListingStatus(id, listingStatus: 'APPROVED_PUBLISHED');
-                          _loadAllAdminData();
-                          widget.onConfigChanged();
-                        },
-                        child: const Text('প্রকাশ করুন (Publish)'),
-                      ),
-                      OutlinedButton(
-                        onPressed: () async {
-                          await ApiService.updateListingStatus(id, listingStatus: 'SOLD');
-                          _loadAllAdminData();
-                          widget.onConfigChanged();
-                        },
-                        child: const Text('বিক্রি সম্পন্ন (SOLD)'),
-                      ),
-                      OutlinedButton(
-                        style: OutlinedButton.styleFrom(foregroundColor: Colors.orange.shade900),
-                        onPressed: () async {
-                          await ApiService.updateListingStatus(id, listingStatus: 'SUSPENDED', adminRemark: 'অ্যাডমিন কর্তৃক স্থগিত (Suspended)');
-                          _loadAllAdminData();
-                          widget.onConfigChanged();
-                        },
-                        child: const Text('স্থগিত (Suspend)'),
-                      ),
-                      OutlinedButton(
-                        style: OutlinedButton.styleFrom(foregroundColor: Colors.red.shade700),
-                        onPressed: () async {
-                          await ApiService.updateListingStatus(id, listingStatus: 'REJECTED', adminRemark: 'অ্যাডমিন কর্তৃক বাতিল (Rejected)');
-                          _loadAllAdminData();
-                          widget.onConfigChanged();
-                        },
-                        child: const Text('বাতিল (Reject)'),
-                      ),
-                    ],
-                  ),
-                ],
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        ApiService.buildSmartImage(
+                          l['imageUrl']?.toString(),
+                          width: 95,
+                          height: 75,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Wrap(
+                                spacing: 12,
+                                runSpacing: 8,
+                                alignment: WrapAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    '${l['title']} (বিক্রেতা: ${l['sellerName']} - ${l['sellerPhone']})',
+                                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                  ),
+                                  Wrap(
+                                    spacing: 8,
+                                    children: [
+                                      _badge(l['verificationStatus']),
+                                      _badge(l['listingStatus']),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                'অবস্থান: ${l['areaName']}, ${l['upazila']} (${l['district'] ?? 'নোয়াখালী'}) • মৌজা: ${l['mouzaName']} • পরিমাণ: ${l['areaDecimal']} শতাংশ (${l['landType']}) • মূল্য: ৳${l['expectedPriceBdt']} • প্রস্তাবিত পারিশ্রমিক: ৳${l['proposedServiceFeeBdt']}',
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'গোপনীয় দলিল ও খতিয়ান তথ্য: খতিয়ান: ${l['khatianNo']} | দাগ: ${l['dagNo']} | নামজারি: ${l['mutationInfo']}',
+                                style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF0B4F32)),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        if (hasPrivateDoc)
+                          ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.teal.shade800,
+                              foregroundColor: Colors.white,
+                            ),
+                            onPressed: () => _showPrivateDocDialog(l),
+                            icon: const Icon(Icons.description, size: 16),
+                            label: Text('গোপনীয় দলিল দেখুন (${l['privateDocumentName'] ?? 'ডকুমেন্ট'})'),
+                          ),
+                        // Verification Badges
+                        ActionChip(
+                          label: const Text('🔵 কাগজপত্র যাচাইকৃত'),
+                          onPressed: () async {
+                            await ApiService.updateListingStatus(id, verificationStatus: 'DOC_CHECKED');
+                            _loadAllAdminData();
+                            widget.onConfigChanged();
+                          },
+                        ),
+                        ActionChip(
+                          label: const Text('🟢 সরেজমিনে ও নথি যাচাইকৃত'),
+                          onPressed: () async {
+                            await ApiService.updateListingStatus(id, verificationStatus: 'FIELD_VERIFIED');
+                            _loadAllAdminData();
+                            widget.onConfigChanged();
+                          },
+                        ),
+                        // Lifecycle Statuses + Anytime Suspend/Reject
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(backgroundColor: Colors.green.shade700, foregroundColor: Colors.white),
+                          onPressed: () async {
+                            await ApiService.updateListingStatus(id, listingStatus: 'APPROVED_PUBLISHED');
+                            _loadAllAdminData();
+                            widget.onConfigChanged();
+                          },
+                          child: const Text('প্রকাশ করুন (Publish)'),
+                        ),
+                        OutlinedButton(
+                          onPressed: () async {
+                            await ApiService.updateListingStatus(id, listingStatus: 'SOLD');
+                            _loadAllAdminData();
+                            widget.onConfigChanged();
+                          },
+                          child: const Text('বিক্রি সম্পন্ন (SOLD)'),
+                        ),
+                        OutlinedButton(
+                          style: OutlinedButton.styleFrom(foregroundColor: Colors.orange.shade900),
+                          onPressed: () async {
+                            await ApiService.updateListingStatus(id, listingStatus: 'SUSPENDED', adminRemark: 'অ্যাডমিন কর্তৃক স্থগিত (Suspended)');
+                            _loadAllAdminData();
+                            widget.onConfigChanged();
+                          },
+                          child: const Text('স্থগিত (Suspend)'),
+                        ),
+                        OutlinedButton(
+                          style: OutlinedButton.styleFrom(foregroundColor: Colors.red.shade700),
+                          onPressed: () async {
+                            await ApiService.updateListingStatus(id, listingStatus: 'REJECTED', adminRemark: 'অ্যাডমিন কর্তৃক বাতিল (Rejected)');
+                            _loadAllAdminData();
+                            widget.onConfigChanged();
+                          },
+                          child: const Text('বাতিল (Reject)'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-          );
-        }),
+            );
+          }),
 
         const SizedBox(height: 24),
         const Text(
@@ -492,69 +562,230 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 10),
-        ..._requirements.map((r) {
-          final id = r['id'] as int;
-          return Card(
-            margin: const EdgeInsets.only(bottom: 10),
-            child: Padding(
-              padding: const EdgeInsets.all(14),
-              child: Wrap(
-                spacing: 14,
-                runSpacing: 10,
-                alignment: WrapAlignment.spaceBetween,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'ক্রেতা: ${r['buyerName']} (${r['buyerPhone']}) — ${r['preferredUpazila']} (${r['landType']})',
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-                      ),
-                      Text(
-                        'পরিমাণ: ${r['minAreaDecimal']}–${r['maxAreaDecimal']} শতাংশ • বাজেট: ৳${r['minBudgetBdt']}–৳${r['maxBudgetBdt']} • প্রস্তাবিত পারিশ্রমিক: ৳${r['proposedServiceFeeBdt']}',
-                      ),
-                    ],
-                  ),
-                  Wrap(
-                    spacing: 8,
-                    children: [
-                      _badge(r['status']),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(backgroundColor: Colors.green.shade700, foregroundColor: Colors.white),
-                        onPressed: () async {
-                          await ApiService.updateRequirementStatus(id, 'ACTIVE', 'অনুমোদিত');
-                          _loadAllAdminData();
-                          widget.onConfigChanged();
-                        },
-                        child: const Text('সক্রিয় (ACTIVE)'),
-                      ),
-                      OutlinedButton(
-                        style: OutlinedButton.styleFrom(foregroundColor: Colors.orange.shade900),
-                        onPressed: () async {
-                          await ApiService.updateRequirementStatus(id, 'SUSPENDED', 'স্থগিত');
-                          _loadAllAdminData();
-                          widget.onConfigChanged();
-                        },
-                        child: const Text('Suspend'),
-                      ),
-                      OutlinedButton(
-                        style: OutlinedButton.styleFrom(foregroundColor: Colors.red.shade700),
-                        onPressed: () async {
-                          await ApiService.updateRequirementStatus(id, 'REJECTED', 'বাতিল');
-                          _loadAllAdminData();
-                          widget.onConfigChanged();
-                        },
-                        child: const Text('Reject'),
-                      ),
-                    ],
-                  ),
-                ],
+        if (_requirements.isEmpty)
+          const Card(child: Padding(padding: EdgeInsets.all(16), child: Text('কোনো ক্রেতার চাহিদা জমা পড়েনি।')))
+        else
+          ..._requirements.map((r) {
+            final id = r['id'] as int;
+            return Card(
+              margin: const EdgeInsets.only(bottom: 10),
+              child: Padding(
+                padding: const EdgeInsets.all(14),
+                child: Wrap(
+                  spacing: 14,
+                  runSpacing: 10,
+                  alignment: WrapAlignment.spaceBetween,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'ক্রেতা: ${r['buyerName']} (${r['buyerPhone']}) — ${r['preferredUpazila']} (${r['landType']})',
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                        ),
+                        Text(
+                          'পরিমাণ: ${r['minAreaDecimal']}–${r['maxAreaDecimal']} শতাংশ • বাজেট: ৳${r['minBudgetBdt']}–৳${r['maxBudgetBdt']} • প্রস্তাবিত পারিশ্রমিক: ৳${r['proposedServiceFeeBdt']}',
+                        ),
+                      ],
+                    ),
+                    Wrap(
+                      spacing: 8,
+                      children: [
+                        _badge(r['status']),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(backgroundColor: Colors.green.shade700, foregroundColor: Colors.white),
+                          onPressed: () async {
+                            await ApiService.updateRequirementStatus(id, 'ACTIVE', 'অনুমোদিত');
+                            _loadAllAdminData();
+                            widget.onConfigChanged();
+                          },
+                          child: const Text('সক্রিয় (ACTIVE)'),
+                        ),
+                        OutlinedButton(
+                          style: OutlinedButton.styleFrom(foregroundColor: Colors.orange.shade900),
+                          onPressed: () async {
+                            await ApiService.updateRequirementStatus(id, 'SUSPENDED', 'স্থগিত');
+                            _loadAllAdminData();
+                            widget.onConfigChanged();
+                          },
+                          child: const Text('Suspend'),
+                        ),
+                        OutlinedButton(
+                          style: OutlinedButton.styleFrom(foregroundColor: Colors.red.shade700),
+                          onPressed: () async {
+                            await ApiService.updateRequirementStatus(id, 'REJECTED', 'বাতিল');
+                            _loadAllAdminData();
+                            widget.onConfigChanged();
+                          },
+                          child: const Text('Reject'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
+            );
+          }),
+
+        const SizedBox(height: 28),
+        Text(
+          '৩. ক্রেতাদের আগ্রহ প্রকাশ ও মধ্যস্থতা (Buyer Inquiries — ${_inquiries.length})',
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 10),
+        if (_inquiries.isEmpty)
+          const Card(
+            child: Padding(
+              padding: EdgeInsets.all(16),
+              child: Text('এখনো কোনো ক্রেতা জমির বিপরীতে আগ্রহ (Inquiry) প্রকাশ করেননি।'),
             ),
-          );
-        }),
+          )
+        else
+          ..._inquiries.map((inq) {
+            final id = inq['id'] as int;
+            return Card(
+              margin: const EdgeInsets.only(bottom: 12),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Wrap(
+                      spacing: 12,
+                      runSpacing: 8,
+                      alignment: WrapAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'জমি: ${inq['listingTitle']} (${inq['upazila'] ?? ''}) — মূল দাম: ৳${inq['expectedPriceBdt'] ?? '-'}',
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                        ),
+                        _badge(inq['status']),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'ক্রেতা: ${inq['buyerName']} (মোবাইল: ${inq['buyerPhone']})  ⟷  বিক্রেতা: ${inq['sellerName'] ?? 'N/A'} (মোবাইল: ${inq['sellerPhone'] ?? 'N/A'})',
+                      style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF0B4F32)),
+                    ),
+                    const SizedBox(height: 4),
+                    Text('ক্রেতার প্রস্তাবিত বাজেট: ৳${inq['offeredPriceBdt']} • বার্তা: ${inq['message'] ?? ''}'),
+                    if ((inq['adminNote'] ?? '').toString().isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Text(
+                          'অ্যাডমিন মধ্যস্থতা নোট: ${inq['adminNote']}',
+                          style: TextStyle(color: Colors.blue.shade900, fontWeight: FontWeight.w600, fontSize: 13),
+                        ),
+                      ),
+                    const SizedBox(height: 10),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        OutlinedButton.icon(
+                          icon: const Icon(Icons.phone_in_talk, size: 16),
+                          label: const Text('যোগাযোগ হয়েছে (CONTACTED)'),
+                          onPressed: () async {
+                            await ApiService.updateAdminInquiryStatus(
+                              id,
+                              'CONTACTED',
+                              'ক্রেতা ও বিক্রেতা উভয়ের সাথে প্রাথমিক আলোচনা সম্পন্ন হয়েছে।',
+                            );
+                            _loadAllAdminData();
+                          },
+                        ),
+                        OutlinedButton.icon(
+                          icon: const Icon(Icons.pin_drop_outlined, size: 16),
+                          label: const Text('সরেজমিনে পরিদর্শন (SITE_VISIT)'),
+                          onPressed: () async {
+                            await ApiService.updateAdminInquiryStatus(
+                              id,
+                              'SITE_VISIT_SCHEDULED',
+                              'সরেজমিনে জমি পরিদর্শনের তারিখ নির্ধারিত হয়েছে।',
+                            );
+                            _loadAllAdminData();
+                          },
+                        ),
+                        ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green.shade700,
+                            foregroundColor: Colors.white,
+                          ),
+                          icon: const Icon(Icons.handshake, size: 16),
+                          label: const Text('লেনদেন সম্পন্ন (DEAL_CLOSED)'),
+                          onPressed: () async {
+                            await ApiService.updateAdminInquiryStatus(
+                              id,
+                              'DEAL_CLOSED',
+                              'উভয় পক্ষের সম্মতিতে সফলভাবে জমি ক্রয়-বিক্রয় সম্পন্ন হয়েছে।',
+                            );
+                            _loadAllAdminData();
+                            widget.onConfigChanged();
+                          },
+                        ),
+                        OutlinedButton(
+                          style: OutlinedButton.styleFrom(foregroundColor: Colors.red.shade700),
+                          onPressed: () async {
+                            await ApiService.updateAdminInquiryStatus(
+                              id,
+                              'REJECTED',
+                              'বাজেট বা শর্তের অমিলের কারণে ইনকোয়ারিটি বাতিল করা হয়েছে।',
+                            );
+                            _loadAllAdminData();
+                          },
+                          child: const Text('বাতিল (Reject)'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }),
       ],
+    );
+  }
+
+  void _showPrivateDocDialog(Map<String, dynamic> listing) {
+    final docUrl = (listing['privateDocumentUrl'] ?? '').toString();
+    final docName = (listing['privateDocumentName'] ?? 'গোপনীয় দলিল/খতিয়ান').toString();
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('📄 $docName — ${listing['title']}'),
+        content: SizedBox(
+          width: 600,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'বিক্রেতা: ${listing['sellerName']} (${listing['sellerPhone']}) | খতিয়ান: ${listing['khatianNo']} | দাগ: ${listing['dagNo']}',
+                  style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0B4F32)),
+                ),
+                const SizedBox(height: 12),
+                if (docUrl.startsWith('data:image/') || docUrl.startsWith('http'))
+                  ApiService.buildSmartImage(docUrl, width: 560, height: 420, fit: BoxFit.contain)
+                else
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade100,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text('সংযুক্ত ফাইল: $docName (${(docUrl.length / 1024).toStringAsFixed(1)} KB)'),
+                  ),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('বন্ধ করুন')),
+        ],
+      ),
     );
   }
 
@@ -575,64 +806,93 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
               'মার্কেটিং অফিসারদের রেফারেল ও কমিশন ব্যবস্থাপনা (Fixed ও Percentage % উভয়ই)',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF0B4F32),
-                foregroundColor: Colors.white,
-              ),
-              onPressed: () => _showAwardCommissionDialog(referredMembers),
-              icon: const Icon(Icons.add_card),
-              label: const Text('নতুন কমিশন প্রদান করুন (নির্দিষ্ট টাকা বা %)'),
+            Wrap(
+              spacing: 10,
+              children: [
+                OutlinedButton.icon(
+                  onPressed: _showCommissionsCsvDialog,
+                  icon: const Icon(Icons.table_view, size: 18),
+                  label: const Text('📊 CSV রিপোর্ট কপি'),
+                ),
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF0B4F32),
+                    foregroundColor: Colors.white,
+                  ),
+                  onPressed: () => _showAwardCommissionDialog(referredMembers),
+                  icon: const Icon(Icons.add_card),
+                  label: const Text('নতুন কমিশন প্রদান করুন (নির্দিষ্ট টাকা বা %)'),
+                ),
+              ],
             ),
           ],
         ),
         const SizedBox(height: 14),
-        ..._commissions.map((c) {
-          final id = c['id'] as int;
-          final isPaid = c['status'] == 'PAID';
-          return Card(
-            margin: const EdgeInsets.only(bottom: 10),
-            child: ListTile(
-              leading: CircleAvatar(
-                backgroundColor: isPaid ? Colors.green.shade50 : Colors.orange.shade50,
-                child: Icon(
-                  isPaid ? Icons.check_circle : Icons.pending_actions,
-                  color: isPaid ? Colors.green.shade700 : Colors.orange.shade800,
+        if (_commissions.isEmpty)
+          const Card(
+            child: Padding(
+              padding: EdgeInsets.all(16),
+              child: Text('এখনো কোনো কমিশন রেকর্ড তৈরি হয়নি।'),
+            ),
+          )
+        else
+          ..._commissions.map((c) {
+            final id = c['id'] as int;
+            final isPaid = c['status'] == 'PAID';
+            return Card(
+              margin: const EdgeInsets.only(bottom: 10),
+              child: ListTile(
+                leading: CircleAvatar(
+                  backgroundColor: isPaid ? Colors.green.shade50 : Colors.orange.shade50,
+                  child: Icon(
+                    isPaid ? Icons.check_circle : Icons.pending_actions,
+                    color: isPaid ? Colors.green.shade700 : Colors.orange.shade800,
+                  ),
+                ),
+                title: Text(
+                  'অফিসার: ${c['officerName']} (${c['referralCode']}) ➔ রেফারকৃত সদস্য: ${c['referredUserName']} (${c['referredUserRole']})',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                subtitle: Text(
+                  'ধরন: ${c['commissionType']} • মূল অঙ্ক: ৳${c['baseDealAmountBdt']} • হার: ${c['percentageRate']}% • নোট: ${c['note'] ?? ''}',
+                ),
+                trailing: Wrap(
+                  spacing: 10,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    Text(
+                      '৳${c['commissionAmountBdt']}',
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF0B4F32)),
+                    ),
+                    if (isPaid)
+                      _badge('PAID (${c['paymentReference'] ?? ''})')
+                    else
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.green.shade700, foregroundColor: Colors.white),
+                        onPressed: () async {
+                          await ApiService.payCommission(id, 'BKASH-PAID-${DateTime.now().millisecondsSinceEpoch % 10000}');
+                          _loadAllAdminData();
+                        },
+                        child: const Text('পরিশোধ করুন (Pay)'),
+                      ),
+                  ],
                 ),
               ),
-              title: Text(
-                'অফিসার: ${c['officerName']} (${c['referralCode']}) ➔ রেফারকৃত সদস্য: ${c['referredUserName']} (${c['referredUserRole']})',
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-              subtitle: Text(
-                'ধরন: ${c['commissionType']} • মূল অঙ্ক: ৳${c['baseDealAmountBdt']} • হার: ${c['percentageRate']}% • নোট: ${c['note'] ?? ''}',
-              ),
-              trailing: Wrap(
-                spacing: 10,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                children: [
-                  Text(
-                    '৳${c['commissionAmountBdt']}',
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF0B4F32)),
-                  ),
-                  if (isPaid)
-                    _badge('PAID (${c['paymentReference'] ?? ''})')
-                  else
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(backgroundColor: Colors.green.shade700, foregroundColor: Colors.white),
-                      onPressed: () async {
-                        await ApiService.payCommission(id, 'BKASH-PAID-${DateTime.now().millisecondsSinceEpoch % 10000}');
-                        _loadAllAdminData();
-                      },
-                      child: const Text('পরিশোধ করুন (Pay)'),
-                    ),
-                ],
-              ),
-            ),
-          );
-        }),
+            );
+          }),
       ],
     );
+  }
+
+  void _showCommissionsCsvDialog() {
+    final buffer = StringBuffer();
+    buffer.writeln('ID,OfficerName,ReferralCode,ReferredMember,Role,CommissionType,BaseDealBDT,PercentRate,CommissionBDT,Status,PaymentRef');
+    for (final c in _commissions) {
+      buffer.writeln(
+        '${c['id']},"${c['officerName']}","${c['referralCode']}","${c['referredUserName']}","${c['referredUserRole']}","${c['commissionType']}",${c['baseDealAmountBdt']},${c['percentageRate']},${c['commissionAmountBdt']},"${c['status']}","${c['paymentReference'] ?? ''}"',
+      );
+    }
+    _showCsvExportModal('মার্কেটিং অফিসার কমিশন রিপোর্ট (CSV)', buffer.toString());
   }
 
   void _showAwardCommissionDialog(List<dynamic> referredMembers) {
@@ -743,84 +1003,94 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          '১. বিশেষ সেবা ও নির্দিষ্ট পারিশ্রমিকের প্রস্তাবনা (গ্রহণ / পাল্টা প্রস্তাব / সম্পন্ন)',
+          '১. বিশেষ সেবা ও নির্দিষ্ট পারিশ্রমিকের প্রস্তাবনা (গ্রহণ / পাল্টা প্রস্তাব / চুক্তিপত্র সনদ)',
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 10),
-        ..._proposals.map((p) {
-          final id = p['id'] as int;
-          return Card(
-            margin: const EdgeInsets.only(bottom: 10),
-            child: Padding(
-              padding: const EdgeInsets.all(14),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          '${p['proposalTitle']} — ${p['userName']} (${p['userRole']}, ${p['userPhone']})',
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+        if (_proposals.isEmpty)
+          const Card(child: Padding(padding: EdgeInsets.all(16), child: Text('কোনো বিশেষ প্রস্তাব জমা পড়েনি।')))
+        else
+          ..._proposals.map((p) {
+            final id = p['id'] as int;
+            return Card(
+              margin: const EdgeInsets.only(bottom: 10),
+              child: Padding(
+                padding: const EdgeInsets.all(14),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            '${p['proposalTitle']} — ${p['userName']} (${p['userRole']}, ${p['userPhone']})',
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                          ),
                         ),
-                      ),
-                      _badge(p['status']),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Text(p['scopeDescription'] ?? ''),
-                  const SizedBox(height: 4),
-                  Text(
-                    'গ্রাহকের প্রস্তাব: ৳${p['customerProposedFeeBdt']}  |  পাল্টা প্রস্তাব: ৳${p['adminCounterFeeBdt'] ?? '-'}  |  চূড়ান্ত সম্মত: ৳${p['finalAgreedFeeBdt'] ?? '-'}',
-                    style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0B4F32)),
-                  ),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    children: [
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(backgroundColor: Colors.green.shade700, foregroundColor: Colors.white),
-                        onPressed: () async {
-                          await ApiService.updateAdminProposal(id, {
-                            'status': 'MUTUALLY_AGREED',
-                            'finalAgreedFeeBdt': p['customerProposedFeeBdt'],
-                            'adminNote': 'অ্যাডমিন প্রস্তাবটি গ্রহণ করেছেন।',
-                          });
-                          _loadAllAdminData();
-                        },
-                        child: const Text('প্রস্তাব গ্রহণ করুন'),
-                      ),
-                      OutlinedButton(
-                        onPressed: () => _showCounterOfferDialog(p),
-                        child: const Text('পাল্টা প্রস্তাব দিন (Counter Offer)'),
-                      ),
-                      OutlinedButton(
-                        onPressed: () async {
-                          await ApiService.updateAdminProposal(id, {'status': 'COMPLETED'});
-                          _loadAllAdminData();
-                        },
-                        child: const Text('কাজ সম্পন্ন ও আয় যুক্ত (COMPLETED)'),
-                      ),
-                      OutlinedButton(
-                        style: OutlinedButton.styleFrom(foregroundColor: Colors.red.shade700),
-                        onPressed: () async {
-                          await ApiService.updateAdminProposal(id, {'status': 'REJECTED'});
-                          _loadAllAdminData();
-                        },
-                        child: const Text('বাতিল (Reject)'),
-                      ),
-                    ],
-                  ),
-                ],
+                        _badge(p['status']),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(p['scopeDescription'] ?? ''),
+                    const SizedBox(height: 4),
+                    Text(
+                      'গ্রাহকের প্রস্তাব: ৳${p['customerProposedFeeBdt']}  |  পাল্টা প্রস্তাব: ৳${p['adminCounterFeeBdt'] ?? '-'}  |  চূড়ান্ত সম্মত: ৳${p['finalAgreedFeeBdt'] ?? '-'}',
+                      style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0B4F32)),
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(backgroundColor: Colors.green.shade700, foregroundColor: Colors.white),
+                          onPressed: () async {
+                            await ApiService.updateAdminProposal(id, {
+                              'status': 'MUTUALLY_AGREED',
+                              'finalAgreedFeeBdt': p['customerProposedFeeBdt'],
+                              'adminNote': 'অ্যাডমিন প্রস্তাবটি গ্রহণ করেছেন।',
+                            });
+                            _loadAllAdminData();
+                          },
+                          child: const Text('প্রস্তাব গ্রহণ করুন'),
+                        ),
+                        OutlinedButton(
+                          onPressed: () => _showCounterOfferDialog(p),
+                          child: const Text('পাল্টা প্রস্তাব দিন (Counter Offer)'),
+                        ),
+                        OutlinedButton(
+                          onPressed: () async {
+                            await ApiService.updateAdminProposal(id, {'status': 'COMPLETED'});
+                            _loadAllAdminData();
+                          },
+                          child: const Text('কাজ সম্পন্ন ও আয় যুক্ত (COMPLETED)'),
+                        ),
+                        OutlinedButton.icon(
+                          icon: const Icon(Icons.description_outlined, size: 16),
+                          label: const Text('📜 লিখিত চুক্তিপত্র সনদ'),
+                          onPressed: () => _showProposalCertificateDialog(p),
+                        ),
+                        OutlinedButton(
+                          style: OutlinedButton.styleFrom(foregroundColor: Colors.red.shade700),
+                          onPressed: () async {
+                            await ApiService.updateAdminProposal(id, {'status': 'REJECTED'});
+                            _loadAllAdminData();
+                          },
+                          child: const Text('বাতিল (Reject)'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-          );
-        }),
+            );
+          }),
 
         const SizedBox(height: 24),
         Wrap(
           spacing: 12,
+          runSpacing: 10,
           alignment: WrapAlignment.spaceBetween,
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
@@ -828,46 +1098,124 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
               '২. সকল আর্থিক লেনদেন ও লেজার রেকর্ড (Financial Transactions)',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            ElevatedButton.icon(
-              onPressed: _showAddExpenseDialog,
-              icon: const Icon(Icons.add),
-              label: const Text('নতুন পরিচালন ব্যয় / আয় যুক্ত করুন'),
+            Wrap(
+              spacing: 10,
+              children: [
+                OutlinedButton.icon(
+                  onPressed: _showTransactionsCsvDialog,
+                  icon: const Icon(Icons.table_view, size: 18),
+                  label: const Text('📊 আর্থিক লেজার CSV কপি'),
+                ),
+                ElevatedButton.icon(
+                  onPressed: _showAddExpenseDialog,
+                  icon: const Icon(Icons.add),
+                  label: const Text('নতুন পরিচালন ব্যয় / আয় যুক্ত করুন'),
+                ),
+              ],
             ),
           ],
         ),
         const SizedBox(height: 10),
-        ..._transactions.map((t) => Card(
-              margin: const EdgeInsets.only(bottom: 8),
-              child: ListTile(
-                leading: Icon(
-                  t['txnType'] == 'CREDIT' ? Icons.arrow_downward : Icons.arrow_upward,
-                  color: t['txnType'] == 'CREDIT' ? Colors.green.shade700 : Colors.red.shade700,
-                ),
-                title: Text(
-                  '${t['description']} — খাত: ${t['fundBucket']}',
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                subtitle: Text(
-                  'গ্রাহক/সদস্য: ${t['userName'] ?? 'N/A'} • মাধ্যম: ${t['paymentMethod']} • TrxID: ${t['transactionId'] ?? 'N/A'}',
-                ),
-                trailing: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      '${t['txnType'] == 'CREDIT' ? '+' : '-'}৳${t['amountBdt']}',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 15,
-                        color: t['txnType'] == 'CREDIT' ? Colors.green.shade800 : Colors.red.shade800,
+        if (_transactions.isEmpty)
+          const Card(child: Padding(padding: EdgeInsets.all(16), child: Text('কোনো আর্থিক লেনদেন রেকর্ড নেই।')))
+        else
+          ..._transactions.map((t) => Card(
+                margin: const EdgeInsets.only(bottom: 8),
+                child: ListTile(
+                  leading: Icon(
+                    t['txnType'] == 'CREDIT' ? Icons.arrow_downward : Icons.arrow_upward,
+                    color: t['txnType'] == 'CREDIT' ? Colors.green.shade700 : Colors.red.shade700,
+                  ),
+                  title: Text(
+                    '${t['description']} — খাত: ${t['fundBucket']}',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: Text(
+                    'গ্রাহক/সদস্য: ${t['userName'] ?? 'N/A'} • মাধ্যম: ${t['paymentMethod']} • TrxID: ${t['transactionId'] ?? 'N/A'}',
+                  ),
+                  trailing: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        '${t['txnType'] == 'CREDIT' ? '+' : '-'}৳${t['amountBdt']}',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                          color: t['txnType'] == 'CREDIT' ? Colors.green.shade800 : Colors.red.shade800,
+                        ),
                       ),
-                    ),
-                    Text(t['status'] ?? '', style: const TextStyle(fontSize: 11)),
-                  ],
+                      Text(t['status'] ?? '', style: const TextStyle(fontSize: 11)),
+                    ],
+                  ),
                 ),
-              ),
-            )),
+              )),
       ],
+    );
+  }
+
+  void _showProposalCertificateDialog(Map<String, dynamic> p) {
+    final certText = '''
+=============================================================
+        ভূমি সেতু (LandTrust) — বিশেষ সেবা চুক্তিপত্র সনদ
+=============================================================
+চুক্তিপত্র নম্বর   : LT-AGR-${p['id']}
+গ্রাহকের নাম      : ${p['userName']} (${p['userRole']})
+মোবাইল নম্বর      : ${p['userPhone']}
+প্রস্তাবের শিরোনাম  : ${p['proposalTitle']}
+কাজের পরিধি      : ${p['scopeDescription']}
+-------------------------------------------------------------
+গ্রাহকের প্রস্তাবিত পারিশ্রমিক : ৳${p['customerProposedFeeBdt']}
+অ্যাডমিনের পাল্টা প্রস্তাব    : ৳${p['adminCounterFeeBdt'] ?? '-'}
+চূড়ান্ত সম্মত পারিশ্রমিক     : ৳${p['finalAgreedFeeBdt'] ?? p['customerProposedFeeBdt']}
+বর্তমান অবস্থা              : ${p['status']}
+অ্যাডমিন নোট               : ${p['adminNote'] ?? 'প্রযোজ্য নয়'}
+=============================================================
+শর্তাবলী: উভয় পক্ষের সম্মতি ছাড়া কোনো অতিরিক্ত বা গোপন চার্জ প্রযোজ্য নয়।
+''';
+    _showCsvExportModal('বিশেষ সেবা চুক্তিপত্র সনদ (LT-AGR-${p['id']})', certText);
+  }
+
+  void _showTransactionsCsvDialog() {
+    final buffer = StringBuffer();
+    buffer.writeln('ID,FundBucket,TxnType,AmountBDT,UserName,PaymentMethod,TransactionID,Status,Description,CreatedAt');
+    for (final t in _transactions) {
+      buffer.writeln(
+        '${t['id']},"${t['fundBucket']}","${t['txnType']}",${t['amountBdt']},"${t['userName'] ?? ''}","${t['paymentMethod'] ?? ''}","${t['transactionId'] ?? ''}","${t['status'] ?? ''}","${t['description'] ?? ''}","${t['createdAt'] ?? ''}"',
+      );
+    }
+    _showCsvExportModal('৩-খাত আর্থিক লেজার রিপোর্ট (CSV)', buffer.toString());
+  }
+
+  void _showCsvExportModal(String title, String content) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(title),
+        content: SizedBox(
+          width: 620,
+          child: SingleChildScrollView(
+            child: SelectableText(
+              content,
+              style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('বন্ধ করুন')),
+          ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
+            onPressed: () {
+              Clipboard.setData(ClipboardData(text: content));
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('ক্লিপবোর্ডে কপি হয়েছে! এখন Excel বা টেক্সট ফাইলে পেস্ট করতে পারবেন।')),
+              );
+            },
+            icon: const Icon(Icons.copy, size: 16),
+            label: const Text('কপি করুন (Copy)'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -969,7 +1317,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
     );
   }
 
-  // ==================== TAB 5: DYNAMIC SETTINGS (FEES, PAYMENT ACCOUNTS, COMMISSIONS) ====================
+  // ==================== TAB 5: DYNAMIC SETTINGS (FEES, PAYMENT ACCOUNTS, LOCATIONS) ====================
   Widget _buildDynamicSettingsTab() {
     final s = (_dashboard['settings'] as Map<String, dynamic>?) ?? {};
     final buyerFeeCtrl = TextEditingController(text: '${s['buyerRegistrationFee'] ?? 500}');
@@ -1133,7 +1481,103 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                 ),
               ),
             )),
+
+        const SizedBox(height: 28),
+        // Section 3: Multi-District & Upazila Expansion Management
+        Wrap(
+          spacing: 12,
+          runSpacing: 10,
+          alignment: WrapAlignment.spaceBetween,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            Text(
+              '৩. জেলা ও উপজেলা সম্প্রসারণ ব্যবস্থাপনা (সক্রিয় এলাকা: ${_locations.length}টি)',
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
+              onPressed: _showAddLocationDialog,
+              icon: const Icon(Icons.add_location_alt),
+              label: const Text('নতুন জেলা / উপজেলা যোগ করুন'),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              children: _locations.map((loc) {
+                return Chip(
+                  avatar: const Icon(Icons.location_on, size: 16, color: Color(0xFF0B4F32)),
+                  label: Text('${loc['district']} — ${loc['upazila']}'),
+                  deleteIcon: const Icon(Icons.close, size: 16, color: Colors.red),
+                  onDeleted: () async {
+                    await ApiService.deleteAdminLocation(loc['id'] as int);
+                    _loadAllAdminData();
+                    widget.onConfigChanged();
+                  },
+                );
+              }).toList(),
+            ),
+          ),
+        ),
       ],
+    );
+  }
+
+  void _showAddLocationDialog() {
+    final districtCtrl = TextEditingController(text: 'ফেনী');
+    final upazilaCtrl = TextEditingController(text: 'ফেনী সদর');
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('নতুন জেলা ও উপজেলা যোগ করুন'),
+        content: SizedBox(
+          width: 420,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: districtCtrl,
+                decoration: const InputDecoration(
+                  labelText: 'জেলার নাম (যেমন: নোয়াখালী / ফেনী / লক্ষ্মীপুর / কুমিল্লা)',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: upazilaCtrl,
+                decoration: const InputDecoration(
+                  labelText: 'উপজেলা / থানার নাম',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('বাতিল')),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
+            onPressed: () async {
+              if (districtCtrl.text.trim().isEmpty || upazilaCtrl.text.trim().isEmpty) return;
+              await ApiService.addAdminLocation({
+                'district': districtCtrl.text.trim(),
+                'upazila': upazilaCtrl.text.trim(),
+              });
+              if (!ctx.mounted) return;
+              Navigator.pop(ctx);
+              _loadAllAdminData();
+              widget.onConfigChanged();
+            },
+            child: const Text('যোগ করুন'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -1209,7 +1653,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
 
   Widget _badge(String? text) {
     final t = text ?? 'PENDING';
-    final color = (t.contains('ACTIVE') || t.contains('APPROVED') || t.contains('VERIFIED') || t.contains('PAID') || t.contains('AGREED'))
+    final color = (t.contains('ACTIVE') || t.contains('APPROVED') || t.contains('VERIFIED') || t.contains('PAID') || t.contains('AGREED') || t.contains('CLOSED'))
         ? Colors.green.shade700
         : (t.contains('SUSPENDED') || t.contains('REJECTED'))
             ? Colors.red.shade700
