@@ -81,87 +81,125 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
       (Icons.settings, 'ফি, পেমেন্ট ও জেলা/উপজেলা সেটিংস'),
     ];
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 1240),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Admin Top Banner
-              Container(
-                padding: const EdgeInsets.all(18),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF0A2E1F),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Wrap(
-                  spacing: 16,
-                  runSpacing: 12,
-                  alignment: WrapAlignment.spaceBetween,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    const Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'কেন্দ্রীয় অ্যাডমিন প্যানেল — ভূমি সেতু (LandTrust)',
-                          style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
-                        ),
-                        SizedBox(height: 4),
-                        Text(
-                          'সদস্য অনুমোদন, ডুপ্লিকেট দাগ/খতিয়ান যাচাই, ইনকোয়ারি মধ্যস্থতা, রেফারেল কমিশন ও ৩-খাত আর্থিক ব্যবস্থাপনা',
-                          style: TextStyle(color: Colors.white70, fontSize: 13),
-                        ),
-                      ],
-                    ),
-                    ElevatedButton.icon(
-                      onPressed: _loadAllAdminData,
-                      icon: const Icon(Icons.refresh, size: 18),
-                      label: const Text('ডেটা রিফ্রেশ'),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
+    final isMobile = MediaQuery.of(context).size.width < 768;
 
-              // Sub-navigation Pills
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: List.generate(tabs.length, (i) {
-                    final selected = _subTabIndex == i;
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 10),
-                      child: ChoiceChip(
-                        avatar: Icon(
-                          tabs[i].$1,
-                          size: 18,
-                          color: selected ? Colors.white : const Color(0xFF0B4F32),
+    return RefreshIndicator(
+      onRefresh: _loadAllAdminData,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: EdgeInsets.symmetric(
+          horizontal: isMobile ? 12 : 20,
+          vertical: isMobile ? 12 : 20,
+        ),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 1240),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Admin Top Banner
+                Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.all(isMobile ? 14 : 18),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0A2E1F),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: isMobile
+                      ? Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'কেন্দ্রীয় অ্যাডমিন প্যানেল — ভূমি সেতু',
+                              style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(height: 4),
+                            const Text(
+                              'সদস্য অনুমোদন, ডুপ্লিকেট যাচাই, ইনকোয়ারি ও ৩-খাত আর্থিক ব্যবস্থাপনা',
+                              style: TextStyle(color: Colors.white70, fontSize: 12),
+                            ),
+                            const SizedBox(height: 12),
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton.icon(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.white,
+                                  foregroundColor: const Color(0xFF0A2E1F),
+                                ),
+                                onPressed: _loadAllAdminData,
+                                icon: const Icon(Icons.refresh, size: 18),
+                                label: const Text('ডেটা রিফ্রেশ করুন'),
+                              ),
+                            ),
+                          ],
+                        )
+                      : Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'কেন্দ্রীয় অ্যাডমিন প্যানেল — ভূমি সেতু (LandTrust)',
+                                    style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                                  ),
+                                  SizedBox(height: 4),
+                                  Text(
+                                    'সদস্য অনুমোদন, ডুপ্লিকেট দাগ/খতিয়ান যাচাই, ইনকোয়ারি মধ্যস্থতা, রেফারেল কমিশন ও ৩-খাত আর্থিক ব্যবস্থাপনা',
+                                    style: TextStyle(color: Colors.white70, fontSize: 13),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            ElevatedButton.icon(
+                              onPressed: _loadAllAdminData,
+                              icon: const Icon(Icons.refresh, size: 18),
+                              label: const Text('ডেটা রিফ্রেশ'),
+                            ),
+                          ],
                         ),
-                        label: Text(tabs[i].$2),
-                        selected: selected,
-                        selectedColor: const Color(0xFF0B4F32),
-                        labelStyle: TextStyle(
-                          color: selected ? Colors.white : Colors.black87,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        onSelected: (_) => setState(() => _subTabIndex = i),
-                      ),
-                    );
-                  }),
                 ),
-              ),
-              const SizedBox(height: 20),
+                const SizedBox(height: 16),
 
-              if (_subTabIndex == 0) _buildDashboardAndMatchingTab(),
-              if (_subTabIndex == 1) _buildUsersManagementTab(),
-              if (_subTabIndex == 2) _buildListingsAndRequirementsTab(),
-              if (_subTabIndex == 3) _buildReferralAndCommissionTab(),
-              if (_subTabIndex == 4) _buildProposalsAndLedgerTab(),
-              if (_subTabIndex == 5) _buildDynamicSettingsTab(),
-            ],
+                // Sub-navigation Pills
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: List.generate(tabs.length, (i) {
+                      final selected = _subTabIndex == i;
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 10),
+                        child: ChoiceChip(
+                          avatar: Icon(
+                            tabs[i].$1,
+                            size: 18,
+                            color: selected ? Colors.white : const Color(0xFF0B4F32),
+                          ),
+                          label: Text(tabs[i].$2),
+                          selected: selected,
+                          selectedColor: const Color(0xFF0B4F32),
+                          labelStyle: TextStyle(
+                            color: selected ? Colors.white : Colors.black87,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          onSelected: (_) => setState(() => _subTabIndex = i),
+                        ),
+                      );
+                    }),
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                if (_subTabIndex == 0) _buildDashboardAndMatchingTab(),
+                if (_subTabIndex == 1) _buildUsersManagementTab(),
+                if (_subTabIndex == 2) _buildListingsAndRequirementsTab(),
+                if (_subTabIndex == 3) _buildReferralAndCommissionTab(),
+                if (_subTabIndex == 4) _buildProposalsAndLedgerTab(),
+                if (_subTabIndex == 5) _buildDynamicSettingsTab(),
+              ],
+            ),
           ),
         ),
       ),
@@ -173,227 +211,285 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
     final fin = (_dashboard['finance'] as Map<String, dynamic>?) ?? {};
     final matches = (_dashboard['autoMatches'] as List<dynamic>?) ?? [];
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Member & Listing Counts
-        Wrap(
-          spacing: 14,
-          runSpacing: 14,
-          children: [
-            _statCard('মোট সদস্য', '${_dashboard['totalMembers'] ?? 0} জন', 'অপেক্ষমাণ: ${_dashboard['pendingUsers'] ?? 0}', Colors.indigo),
-            _statCard('জমির বিজ্ঞাপন', '${_dashboard['totalListings'] ?? 0} টি', 'প্রকাশিত: ${_dashboard['publishedListings'] ?? 0}', Colors.green.shade700),
-            _statCard('ক্রেতার চাহিদা', '${_dashboard['totalRequirements'] ?? 0} টি', 'আগ্রহ প্রকাশ: ${_dashboard['totalInquiries'] ?? 0}', Colors.teal.shade700),
-            _statCard('মার্কেটিং অফিসার', '${_dashboard['totalOfficers'] ?? 0} জন', 'বিশেষ প্রস্তাব: ${_dashboard['totalProposals'] ?? 0}', Colors.deepPurple),
-          ],
-        ),
-        const SizedBox(height: 24),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isMobile = constraints.maxWidth < 650;
+        final cardWidth = isMobile
+            ? ((constraints.maxWidth - 12) / 2).floorToDouble()
+            : (constraints.maxWidth < 950 ? ((constraints.maxWidth - 28) / 3).floorToDouble() : 280.0);
 
-        // 3-Fund Financial Ledger Summary (With Advisory-Only Reserve Note — NO LOCK!)
-        const Text(
-          'পৃথক ৩-খাত আর্থিক তহবিল ও পরিচালন ফলাফল (কোনো ফান্ড লক নেই)',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 10),
-        Wrap(
-          spacing: 14,
-          runSpacing: 14,
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _statCard(
-              '১. নিবন্ধন ফি তহবিল (Approved)',
-              '৳${fin['regFeeCollected'] ?? 0}',
-              'যাচাই অপেক্ষমাণ: ৳${fin['regFeePending'] ?? 0}',
-              const Color(0xFF0B4F32),
+            // Member & Listing Counts
+            Wrap(
+              spacing: isMobile ? 12 : 14,
+              runSpacing: isMobile ? 12 : 14,
+              children: [
+                _statCard('মোট সদস্য', '${_dashboard['totalMembers'] ?? 0} জন', 'অপেক্ষমাণ: ${_dashboard['pendingUsers'] ?? 0}', Colors.indigo, width: cardWidth),
+                _statCard('জমির বিজ্ঞাপন', '${_dashboard['totalListings'] ?? 0} টি', 'প্রকাশিত: ${_dashboard['publishedListings'] ?? 0}', Colors.green.shade700, width: cardWidth),
+                _statCard('ক্রেতার চাহিদা', '${_dashboard['totalRequirements'] ?? 0} টি', 'আগ্রহ প্রকাশ: ${_dashboard['totalInquiries'] ?? 0}', Colors.teal.shade700, width: cardWidth),
+                _statCard('মার্কেটিং অফিসার', '${_dashboard['totalOfficers'] ?? 0} জন', 'বিশেষ প্রস্তাব: ${_dashboard['totalProposals'] ?? 0}', Colors.deepPurple, width: cardWidth),
+              ],
             ),
-            _statCard(
-              '২. বিশেষ সেবার পারিশ্রমিক আয়',
-              '৳${fin['serviceRevenue'] ?? 0}',
-              'চুক্তিবদ্ধ লেনদেন খাত',
-              Colors.blue.shade800,
-            ),
-            _statCard(
-              '৩. অফিসার সম্মানী খাত (Payable)',
-              '৳${fin['pendingCommissionPayable'] ?? 0}',
-              'মোট অর্জিত: ৳${fin['totalCommissionEarned'] ?? 0} | পরিশোধিত: ৳${fin['totalCommissionPaid'] ?? 0}',
-              Colors.orange.shade800,
-            ),
-            _statCard(
-              'পরিচালন ব্যয় ও নিট তহবিল',
-              '৳${fin['netOperatingBalance'] ?? 0}',
-              'মোট ব্যয়: ৳${fin['operationalExpenses'] ?? 0}',
-              Colors.purple.shade800,
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
+            const SizedBox(height: 24),
 
-        // Advisory Reserve Banner (No Lock!)
-        Container(
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: Colors.blue.shade50,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.blue.shade200),
-          ),
-          child: Row(
-            children: [
-              Icon(Icons.lightbulb_outline, color: Colors.blue.shade800),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  fin['advisoryNote'] ??
-                      'পরামর্শ: তহবিলে কোনো লক (Lock) নেই। তবে সম্ভাব্য রিফান্ড ও জরুরি ব্যয়ের জন্য পরামর্শমূলক রিজার্ভ: ৳${fin['advisoryReserveRecommendation'] ?? 0}',
-                  style: TextStyle(color: Colors.blue.shade900, fontWeight: FontWeight.w600),
+            // 3-Fund Financial Ledger Summary (With Advisory-Only Reserve Note — NO LOCK!)
+            const Text(
+              'পৃথক ৩-খাত আর্থিক তহবিল ও পরিচালন ফলাফল (কোনো ফান্ড লক নেই)',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: isMobile ? 12 : 14,
+              runSpacing: isMobile ? 12 : 14,
+              children: [
+                _statCard(
+                  '১. নিবন্ধন ফি তহবিল',
+                  '৳${fin['regFeeCollected'] ?? 0}',
+                  'অপেক্ষমাণ: ৳${fin['regFeePending'] ?? 0}',
+                  const Color(0xFF0B4F32),
+                  width: cardWidth,
                 ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 24),
-
-        // Automated Buyer-Seller Matching Engine
-        const Text(
-          'স্বয়ংক্রিয় ক্রেতার চাহিদা ও উপযুক্ত জমির মিল (Auto-Matching Engine)',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 10),
-        if (matches.isEmpty)
-          const Card(
-            child: Padding(
-              padding: EdgeInsets.all(20),
-              child: Text('বর্তমানে কোনো স্বয়ংক্রিয় ম্যাচিং পাওয়া যায়নি।'),
+                _statCard(
+                  '২. বিশেষ সেবা আয়',
+                  '৳${fin['serviceRevenue'] ?? 0}',
+                  'চুক্তিবদ্ধ লেনদেন খাত',
+                  Colors.blue.shade800,
+                  width: cardWidth,
+                ),
+                _statCard(
+                  '৩. অফিসার সম্মানী',
+                  '৳${fin['pendingCommissionPayable'] ?? 0}',
+                  'অর্জিত: ৳${fin['totalCommissionEarned'] ?? 0}',
+                  Colors.orange.shade800,
+                  width: cardWidth,
+                ),
+                _statCard(
+                  'নিট পরিচালন তহবিল',
+                  '৳${fin['netOperatingBalance'] ?? 0}',
+                  'ব্যয়: ৳${fin['operationalExpenses'] ?? 0}',
+                  Colors.purple.shade800,
+                  width: cardWidth,
+                ),
+              ],
             ),
-          )
-        else
-          ...matches.map((m) => Card(
-                margin: const EdgeInsets.only(bottom: 10),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                child: ListTile(
-                  leading: CircleAvatar(
-                    radius: 24,
-                    backgroundColor: const Color(0xFF0B4F32),
+            const SizedBox(height: 12),
+
+            // Advisory Reserve Banner (No Lock!)
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Colors.blue.shade50,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.blue.shade200),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.lightbulb_outline, color: Colors.blue.shade800),
+                  const SizedBox(width: 12),
+                  Expanded(
                     child: Text(
-                      '${m['matchScore']}%',
-                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                      fin['advisoryNote'] ??
+                          'পরামর্শ: তহবিলে কোনো লক (Lock) নেই। তবে সম্ভাব্য রিফান্ড ও জরুরি ব্যয়ের জন্য পরামর্শমূলক রিজার্ভ: ৳${fin['advisoryReserveRecommendation'] ?? 0}',
+                      style: TextStyle(color: Colors.blue.shade900, fontWeight: FontWeight.w600, fontSize: isMobile ? 12 : 13),
                     ),
                   ),
-                  title: Text(
-                    'জমি: ${m['listingTitle']} (৳${m['expectedPriceBdt']})  ⟷  ক্রেতা: ${m['buyerName']} (বাজেট: ৳${m['buyerMaxBudgetBdt']})',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  subtitle: Text(
-                    'মিলের কারণ: ${m['reasons']}\nবিক্রেতা: ${m['sellerName']} (${m['sellerPhone']})  |  ক্রেতার মোবাইল: ${m['buyerPhone']}',
-                  ),
-                  isThreeLine: true,
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // Automated Buyer-Seller Matching Engine
+            const Text(
+              'স্বয়ংক্রিয় ক্রেতার চাহিদা ও উপযুক্ত জমির মিল (Auto-Matching Engine)',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 10),
+            if (matches.isEmpty)
+              const Card(
+                child: Padding(
+                  padding: EdgeInsets.all(20),
+                  child: Text('বর্তমানে কোনো স্বয়ংক্রিয় ম্যাচিং পাওয়া যায়নি।'),
                 ),
-              )),
-      ],
+              )
+            else
+              ...matches.map((m) => Card(
+                    margin: const EdgeInsets.only(bottom: 10),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          CircleAvatar(
+                            radius: 22,
+                            backgroundColor: const Color(0xFF0B4F32),
+                            child: Text(
+                              '${m['matchScore']}%',
+                              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'জমি: ${m['listingTitle']} (৳${m['expectedPriceBdt']})  ⟷  ক্রেতা: ${m['buyerName']} (বাজেট: ৳${m['buyerMaxBudgetBdt']})',
+                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'মিলের কারণ: ${m['reasons']}',
+                                  style: const TextStyle(fontSize: 12, color: Color(0xFF0B4F32), fontWeight: FontWeight.w600),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  'বিক্রেতা: ${m['sellerName']} (${m['sellerPhone']})  |  ক্রেতার মোবাইল: ${m['buyerPhone']}',
+                                  style: const TextStyle(fontSize: 11, color: Colors.black54),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )),
+          ],
+        );
+      },
     );
   }
 
   // ==================== TAB 1: USER & MANUAL TRXID VERIFICATION ====================
   Widget _buildUsersManagementTab() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'সকল সদস্য, নিবন্ধন ফি (TrxID) যাচাই এবং অ্যাকাউন্ট নিয়ন্ত্রণ (যেকোনো সময় সক্রিয়/স্থগিত/বাতিল)',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 12),
-        ..._users.map((u) {
-          final id = u['id'] as int;
-          final role = u['role'] as String? ?? 'BUYER';
-          final status = u['accountStatus'] as String? ?? 'PAYMENT_SUBMITTED';
-          return Card(
-            margin: const EdgeInsets.only(bottom: 10),
-            child: Padding(
-              padding: const EdgeInsets.all(14),
-              child: Wrap(
-                spacing: 16,
-                runSpacing: 12,
-                alignment: WrapAlignment.spaceBetween,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                children: [
-                  Column(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isMobile = constraints.maxWidth < 650;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'সকল সদস্য, নিবন্ধন ফি (TrxID) যাচাই এবং অ্যাকাউন্ট নিয়ন্ত্রণ',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            ..._users.map((u) {
+              final id = u['id'] as int;
+              final role = u['role'] as String? ?? 'BUYER';
+              final status = u['accountStatus'] as String? ?? 'PAYMENT_SUBMITTED';
+
+              return Card(
+                margin: const EdgeInsets.only(bottom: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                child: Padding(
+                  padding: EdgeInsets.all(isMobile ? 12 : 16),
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        '${u['fullName']} (${u['role']}) — মোবাইল: ${u['phoneNumber']}',
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '${u['fullName']} (${u['role']})',
+                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  'মোবাইল: ${u['phoneNumber']}',
+                                  style: const TextStyle(fontSize: 13, color: Colors.black87),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          _badge(status),
+                        ],
                       ),
-                      const SizedBox(height: 4),
+                      const Divider(height: 16),
                       Text(
-                        'উপজেলা: ${u['upazila'] ?? 'N/A'} • নিবন্ধন ফি: ৳${u['registrationFeeAmount']} • পেমেন্ট: ${u['paymentMethod'] ?? 'N/A'} (প্রেরক: ${u['senderPhone'] ?? 'N/A'}, TrxID: ${u['transactionId'] ?? 'N/A'})',
-                        style: const TextStyle(fontSize: 13, color: Colors.black87),
+                        'উপজেলা: ${u['upazila'] ?? 'N/A'} • ফি: ৳${u['registrationFeeAmount']} • মাধ্যম: ${u['paymentMethod'] ?? 'N/A'}\nপ্রেরক: ${u['senderPhone'] ?? 'N/A'} • TrxID: ${u['transactionId'] ?? 'N/A'}',
+                        style: const TextStyle(fontSize: 12, color: Colors.black87),
                       ),
-                      if (u['referredByCode'] != null)
+                      if (u['referredByCode'] != null) ...[
+                        const SizedBox(height: 4),
                         Text(
-                          'রেফারেল কোড ব্যবহৃত: ${u['referredByCode']} (অফিসার: ${u['referredByOfficerName']})',
-                          style: const TextStyle(fontSize: 13, color: Color(0xFF0B4F32), fontWeight: FontWeight.w600),
+                          'রেফারেল কোড: ${u['referredByCode']} (অফিসার: ${u['referredByOfficerName']})',
+                          style: const TextStyle(fontSize: 12, color: Color(0xFF0B4F32), fontWeight: FontWeight.w600),
                         ),
-                      if (role == 'MARKETING_OFFICER')
+                      ],
+                      if (role == 'MARKETING_OFFICER') ...[
+                        const SizedBox(height: 4),
                         Text(
-                          'অফিসারের নিজস্ব রেফারেল কোড: ${u['myReferralCode']} • মোট অর্জিত কমিশন: ৳${u['totalEarnedCommission']} • পরিশোধিত: ৳${u['totalPaidCommission']}',
-                          style: TextStyle(fontSize: 13, color: Colors.indigo.shade800, fontWeight: FontWeight.w600),
+                          'নিজস্ব কোড: ${u['myReferralCode']} • অর্জিত: ৳${u['totalEarnedCommission']} • পরিশোধিত: ৳${u['totalPaidCommission']}',
+                          style: TextStyle(fontSize: 12, color: Colors.indigo.shade800, fontWeight: FontWeight.w600),
                         ),
-                      if ((u['adminNote'] ?? '').toString().isNotEmpty)
+                      ],
+                      if ((u['adminNote'] ?? '').toString().isNotEmpty) ...[
+                        const SizedBox(height: 4),
                         Text(
                           'অ্যাডমিন নোট: ${u['adminNote']}',
                           style: const TextStyle(fontSize: 12, color: Colors.black54),
                         ),
-                    ],
-                  ),
-                  Wrap(
-                    spacing: 8,
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    children: [
-                      _badge(status),
+                      ],
                       if (role != 'ADMIN') ...[
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(backgroundColor: Colors.green.shade700, foregroundColor: Colors.white),
-                          onPressed: () async {
-                            await ApiService.updateUserStatus(id, 'ACTIVE', 'অ্যাডমিন কর্তৃক TrxID যাচাইকৃত ও অনুমোদিত');
-                            _loadAllAdminData();
-                          },
-                          child: const Text('অনুমোদন (ACTIVE)'),
-                        ),
-                        OutlinedButton(
-                          style: OutlinedButton.styleFrom(foregroundColor: Colors.orange.shade800),
-                          onPressed: () async {
-                            await ApiService.updateUserStatus(id, 'SUSPENDED', 'অ্যাডমিন কর্তৃক স্থগিত');
-                            _loadAllAdminData();
-                          },
-                          child: const Text('স্থগিত (Suspend)'),
-                        ),
-                        OutlinedButton(
-                          style: OutlinedButton.styleFrom(foregroundColor: Colors.red.shade700),
-                          onPressed: () async {
-                            await ApiService.updateUserStatus(id, 'REJECTED', 'প্রদত্ত TrxID সঠিক নয় — অনুগ্রহ করে সঠিক TrxID পুনরায় জমা দিন');
-                            _loadAllAdminData();
-                          },
-                          child: const Text('বাতিল (Reject)'),
-                        ),
-                        OutlinedButton.icon(
-                          onPressed: () => _showResetUserPasswordDialog(u as Map<String, dynamic>),
-                          icon: const Icon(Icons.lock_reset, size: 16),
-                          label: const Text('পাসওয়ার্ড রিসেট'),
-                        ),
-                        OutlinedButton.icon(
-                          style: OutlinedButton.styleFrom(foregroundColor: Colors.purple.shade800),
-                          onPressed: () => _showRefundUserFeeDialog(u as Map<String, dynamic>),
-                          icon: const Icon(Icons.currency_exchange, size: 16),
-                          label: const Text('ফি রিফান্ড (Refund)'),
+                        const SizedBox(height: 12),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(backgroundColor: Colors.green.shade700, foregroundColor: Colors.white),
+                              onPressed: () async {
+                                await ApiService.updateUserStatus(id, 'ACTIVE', 'অ্যাডমিন কর্তৃক TrxID যাচাইকৃত ও অনুমোদিত');
+                                _loadAllAdminData();
+                              },
+                              child: const Text('অনুমোদন (ACTIVE)'),
+                            ),
+                            OutlinedButton(
+                              style: OutlinedButton.styleFrom(foregroundColor: Colors.orange.shade800),
+                              onPressed: () async {
+                                await ApiService.updateUserStatus(id, 'SUSPENDED', 'অ্যাডমিন কর্তৃক স্থগিত');
+                                _loadAllAdminData();
+                              },
+                              child: const Text('স্থগিত'),
+                            ),
+                            OutlinedButton(
+                              style: OutlinedButton.styleFrom(foregroundColor: Colors.red.shade700),
+                              onPressed: () async {
+                                await ApiService.updateUserStatus(id, 'REJECTED', 'প্রদত্ত TrxID সঠিক নয় — অনুগ্রহ করে সঠিক TrxID পুনরায় জমা দিন');
+                                _loadAllAdminData();
+                              },
+                              child: const Text('বাতিল'),
+                            ),
+                            OutlinedButton.icon(
+                              onPressed: () => _showResetUserPasswordDialog(u as Map<String, dynamic>),
+                              icon: const Icon(Icons.lock_reset, size: 16),
+                              label: const Text('পাসওয়ার্ড রিসেট'),
+                            ),
+                            OutlinedButton.icon(
+                              style: OutlinedButton.styleFrom(foregroundColor: Colors.purple.shade800),
+                              onPressed: () => _showRefundUserFeeDialog(u as Map<String, dynamic>),
+                              icon: const Icon(Icons.currency_exchange, size: 16),
+                              label: const Text('ফি রিফান্ড'),
+                            ),
+                          ],
                         ),
                       ],
                     ],
                   ),
-                ],
-              ),
-            ),
-          );
-        }),
-      ],
+                ),
+              );
+            }),
+          ],
+        );
+      },
     );
   }
 
@@ -401,49 +497,55 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
     final newPassCtrl = TextEditingController(text: '123456');
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text('🔑 পাসওয়ার্ড রিসেট: ${u['fullName']}'),
-        content: SizedBox(
-          width: 420,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('মোবাইল: ${u['phoneNumber']} (${u['role']})'),
-              const SizedBox(height: 12),
-              TextField(
-                controller: newPassCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'নতুন পাসওয়ার্ড নির্ধারণ করুন *',
-                  border: OutlineInputBorder(),
-                ),
+      builder: (ctx) {
+        final isMobile = MediaQuery.of(ctx).size.width < 600;
+        return AlertDialog(
+          insetPadding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 24, vertical: 16),
+          title: Text('🔑 পাসওয়ার্ড রিসেট: ${u['fullName']}'),
+          content: SizedBox(
+            width: isMobile ? double.infinity : 420,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('মোবাইল: ${u['phoneNumber']} (${u['role']})'),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: newPassCtrl,
+                    decoration: const InputDecoration(
+                      labelText: 'নতুন পাসওয়ার্ড নির্ধারণ করুন *',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('বাতিল')),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
-            onPressed: () async {
-              try {
-                final res = await ApiService.adminResetUserPassword(u['id'] as int, newPassCtrl.text.trim());
-                if (!ctx.mounted) return;
-                Navigator.pop(ctx);
-                if (!mounted) return;
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(res['message']?.toString() ?? 'পাসওয়ার্ড রিসেট সম্পন্ন!')),
-                );
-              } catch (e) {
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('বাতিল')),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
+              onPressed: () async {
+                try {
+                  final res = await ApiService.adminResetUserPassword(u['id'] as int, newPassCtrl.text.trim());
+                  if (!ctx.mounted) return;
+                  Navigator.pop(ctx);
+                  if (!mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(res['message']?.toString() ?? 'পাসওয়ার্ড রিসেট সম্পন্ন!')),
+                  );
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+                  }
                 }
-              }
-            },
-            child: const Text('পাসওয়ার্ড রিসেট করুন'),
-          ),
-        ],
-      ),
+              },
+              child: const Text('পাসওয়ার্ড রিসেট করুন'),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -454,421 +556,478 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
 
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text('💸 নিবন্ধন ফি রিফান্ড: ${u['fullName']}'),
-        content: SizedBox(
-          width: 460,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: amountCtrl,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: 'রিফান্ডের পরিমাণ (৳) *', border: OutlineInputBorder()),
+      builder: (ctx) {
+        final isMobile = MediaQuery.of(ctx).size.width < 600;
+        return AlertDialog(
+          insetPadding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 24, vertical: 16),
+          title: Text('💸 নিবন্ধন ফি রিফান্ড: ${u['fullName']}'),
+          content: SizedBox(
+            width: isMobile ? double.infinity : 460,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: amountCtrl,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(labelText: 'রিফান্ডের পরিমাণ (৳) *', border: OutlineInputBorder()),
+                  ),
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: trxCtrl,
+                    decoration: const InputDecoration(labelText: 'রিফান্ড রেফারেন্স / TrxID', border: OutlineInputBorder()),
+                  ),
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: reasonCtrl,
+                    maxLines: 2,
+                    decoration: const InputDecoration(labelText: 'রিফান্ডের কারণ / নোট', border: OutlineInputBorder()),
+                  ),
+                ],
               ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: trxCtrl,
-                decoration: const InputDecoration(labelText: 'রিফান্ড রেফারেন্স / TrxID', border: OutlineInputBorder()),
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: reasonCtrl,
-                maxLines: 2,
-                decoration: const InputDecoration(labelText: 'রিফান্ডের কারণ / নোট', border: OutlineInputBorder()),
-              ),
-            ],
+            ),
           ),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('বাতিল')),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.purple.shade800, foregroundColor: Colors.white),
-            onPressed: () async {
-              try {
-                final res = await ApiService.adminRefundUserFee(u['id'] as int, {
-                  'amountBdt': amountCtrl.text.trim(),
-                  'transactionId': trxCtrl.text.trim(),
-                  'reason': reasonCtrl.text.trim(),
-                });
-                if (!ctx.mounted) return;
-                Navigator.pop(ctx);
-                await _loadAllAdminData();
-                if (!mounted) return;
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(res['message']?.toString() ?? 'রিফান্ড সম্পন্ন হয়েছে!')),
-                );
-              } catch (e) {
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('বাতিল')),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.purple.shade800, foregroundColor: Colors.white),
+              onPressed: () async {
+                try {
+                  final res = await ApiService.adminRefundUserFee(u['id'] as int, {
+                    'amountBdt': amountCtrl.text.trim(),
+                    'transactionId': trxCtrl.text.trim(),
+                    'reason': reasonCtrl.text.trim(),
+                  });
+                  if (!ctx.mounted) return;
+                  Navigator.pop(ctx);
+                  await _loadAllAdminData();
+                  if (!mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(res['message']?.toString() ?? 'রিফান্ড সম্পন্ন হয়েছে!')),
+                  );
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+                  }
                 }
-              }
-            },
-            child: const Text('রিফান্ড অনুমোদন করুন'),
-          ),
-        ],
-      ),
+              },
+              child: const Text('রিফান্ড অনুমোদন করুন'),
+            ),
+          ],
+        );
+      },
     );
   }
 
   // ==================== TAB 2: LISTINGS, REQUIREMENTS & BUYER INQUIRIES ====================
   Widget _buildListingsAndRequirementsTab() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          '১. সকল জমির বিজ্ঞাপন (ডুপ্লিকেট দাগ/খতিয়ান সতর্কতা, গোপনীয় দলিল দর্শন ও যেকোনো পর্যায়ে নিয়ন্ত্রণ)',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 10),
-        if (_listings.isEmpty)
-          const Card(child: Padding(padding: EdgeInsets.all(16), child: Text('কোনো জমির বিজ্ঞাপন জমা পড়েনি।')))
-        else
-          ..._listings.map((l) {
-            final id = l['id'] as int;
-            final isDup = l['duplicateSuspected'] == true;
-            final hasPrivateDoc = (l['privateDocumentUrl'] ?? '').toString().isNotEmpty;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isMobile = constraints.maxWidth < 650;
 
-            return Card(
-              margin: const EdgeInsets.only(bottom: 12),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (isDup)
-                      Container(
-                        width: double.infinity,
-                        margin: const EdgeInsets.only(bottom: 10),
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: Colors.red.shade50,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.red.shade300),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(Icons.warning_amber_rounded, color: Colors.red.shade800),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                l['duplicateNote'] ?? 'সতর্কতা: একই মৌজা, খতিয়ান ও দাগে একাধিক বিজ্ঞাপন শনাক্ত হয়েছে!',
-                                style: TextStyle(color: Colors.red.shade900, fontWeight: FontWeight.bold, fontSize: 13),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    Row(
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              '১. সকল জমির বিজ্ঞাপন (ডুপ্লিকেট দাগ/খতিয়ান সতর্কতা, গোপনীয় দলিল দর্শন ও নিয়ন্ত্রণ)',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 10),
+            if (_listings.isEmpty)
+              const Card(child: Padding(padding: EdgeInsets.all(16), child: Text('কোনো জমির বিজ্ঞাপন জমা পড়েনি।')))
+            else
+              ..._listings.map((l) {
+                final id = l['id'] as int;
+                final isDup = l['duplicateSuspected'] == true;
+                final hasPrivateDoc = (l['privateDocumentUrl'] ?? '').toString().isNotEmpty;
+
+                return Card(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  child: Padding(
+                    padding: EdgeInsets.all(isMobile ? 12 : 16),
+                    child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        ApiService.buildSmartImage(
-                          l['imageUrl']?.toString(),
-                          width: 95,
-                          height: 75,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        const SizedBox(width: 14),
-                        Expanded(
-                          child: Column(
+                        if (isDup)
+                          Container(
+                            width: double.infinity,
+                            margin: const EdgeInsets.only(bottom: 10),
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: Colors.red.shade50,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: Colors.red.shade300),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(Icons.warning_amber_rounded, color: Colors.red.shade800),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    l['duplicateNote'] ?? 'সতর্কতা: একই মৌজা, খতিয়ান ও দাগে একাধিক বিজ্ঞাপন শনাক্ত হয়েছে!',
+                                    style: TextStyle(color: Colors.red.shade900, fontWeight: FontWeight.bold, fontSize: 13),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        if (isMobile) ...[
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: ApiService.buildSmartImage(
+                              l['imageUrl']?.toString(),
+                              width: double.infinity,
+                              height: 180,
+                              fit: BoxFit.cover,
+                              enableZoom: true,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          Text(
+                            '${l['title']} (বিক্রেতা: ${l['sellerName']} - ${l['sellerPhone']})',
+                            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 6),
+                          Wrap(
+                            spacing: 6,
+                            runSpacing: 6,
+                            children: [
+                              _badge(l['verificationStatus']),
+                              _badge(l['listingStatus']),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'অবস্থান: ${l['areaName']}, ${l['upazila']} (${l['district'] ?? 'নোয়াখালী'}) • মৌজা: ${l['mouzaName']} • পরিমাণ: ${l['areaDecimal']} শতাংশ (${l['landType']})\nমূল্য: ৳${l['expectedPriceBdt']} • প্রস্তাবিত পারিশ্রমিক: ৳${l['proposedServiceFeeBdt']}',
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'গোপনীয় দলিল: খতিয়ান: ${l['khatianNo']} | দাগ: ${l['dagNo']} | নামজারি: ${l['mutationInfo']}',
+                            style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF0B4F32), fontSize: 12),
+                          ),
+                        ] else ...[
+                          Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Wrap(
-                                spacing: 12,
-                                runSpacing: 8,
-                                alignment: WrapAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    '${l['title']} (বিক্রেতা: ${l['sellerName']} - ${l['sellerPhone']})',
-                                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                                  ),
-                                  Wrap(
-                                    spacing: 8,
-                                    children: [
-                                      _badge(l['verificationStatus']),
-                                      _badge(l['listingStatus']),
-                                    ],
-                                  ),
-                                ],
+                              ApiService.buildSmartImage(
+                                l['imageUrl']?.toString(),
+                                width: 95,
+                                height: 75,
+                                borderRadius: BorderRadius.circular(8),
+                                enableZoom: true,
                               ),
-                              const SizedBox(height: 6),
-                              Text(
-                                'অবস্থান: ${l['areaName']}, ${l['upazila']} (${l['district'] ?? 'নোয়াখালী'}) • মৌজা: ${l['mouzaName']} • পরিমাণ: ${l['areaDecimal']} শতাংশ (${l['landType']}) • মূল্য: ৳${l['expectedPriceBdt']} • প্রস্তাবিত পারিশ্রমিক: ৳${l['proposedServiceFeeBdt']}',
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'গোপনীয় দলিল ও খতিয়ান তথ্য: খতিয়ান: ${l['khatianNo']} | দাগ: ${l['dagNo']} | নামজারি: ${l['mutationInfo']}',
-                                style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF0B4F32)),
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Wrap(
+                                      spacing: 12,
+                                      runSpacing: 8,
+                                      alignment: WrapAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          '${l['title']} (বিক্রেতা: ${l['sellerName']} - ${l['sellerPhone']})',
+                                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                        ),
+                                        Wrap(
+                                          spacing: 8,
+                                          children: [
+                                            _badge(l['verificationStatus']),
+                                            _badge(l['listingStatus']),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Text(
+                                      'অবস্থান: ${l['areaName']}, ${l['upazila']} (${l['district'] ?? 'নোয়াখালী'}) • মৌজা: ${l['mouzaName']} • পরিমাণ: ${l['areaDecimal']} শতাংশ (${l['landType']}) • মূল্য: ৳${l['expectedPriceBdt']} • প্রস্তাবিত পারিশ্রমিক: ৳${l['proposedServiceFeeBdt']}',
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'গোপনীয় দলিল ও খতিয়ান তথ্য: খতিয়ান: ${l['khatianNo']} | দাগ: ${l['dagNo']} | নামজারি: ${l['mutationInfo']}',
+                                      style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF0B4F32)),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ],
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        if (hasPrivateDoc)
-                          ElevatedButton.icon(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.teal.shade800,
-                              foregroundColor: Colors.white,
+                        ],
+                        const SizedBox(height: 12),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            if (hasPrivateDoc)
+                              ElevatedButton.icon(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.teal.shade800,
+                                  foregroundColor: Colors.white,
+                                ),
+                                onPressed: () => _showPrivateDocDialog(l),
+                                icon: const Icon(Icons.description, size: 16),
+                                label: Text('গোপনীয় দলিল (${l['privateDocumentName'] ?? 'ডকুমেন্ট'})'),
+                              ),
+                            ActionChip(
+                              label: const Text('🔵 কাগজপত্র যাচাইকৃত'),
+                              onPressed: () async {
+                                await ApiService.updateListingStatus(id, verificationStatus: 'DOC_CHECKED');
+                                _loadAllAdminData();
+                                widget.onConfigChanged();
+                              },
                             ),
-                            onPressed: () => _showPrivateDocDialog(l),
-                            icon: const Icon(Icons.description, size: 16),
-                            label: Text('গোপনীয় দলিল দেখুন (${l['privateDocumentName'] ?? 'ডকুমেন্ট'})'),
-                          ),
-                        // Verification Badges
-                        ActionChip(
-                          label: const Text('🔵 কাগজপত্র যাচাইকৃত'),
-                          onPressed: () async {
-                            await ApiService.updateListingStatus(id, verificationStatus: 'DOC_CHECKED');
-                            _loadAllAdminData();
-                            widget.onConfigChanged();
-                          },
-                        ),
-                        ActionChip(
-                          label: const Text('🟢 সরেজমিনে ও নথি যাচাইকৃত'),
-                          onPressed: () async {
-                            await ApiService.updateListingStatus(id, verificationStatus: 'FIELD_VERIFIED');
-                            _loadAllAdminData();
-                            widget.onConfigChanged();
-                          },
-                        ),
-                        // Lifecycle Statuses + Anytime Suspend/Reject
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(backgroundColor: Colors.green.shade700, foregroundColor: Colors.white),
-                          onPressed: () async {
-                            await ApiService.updateListingStatus(id, listingStatus: 'APPROVED_PUBLISHED');
-                            _loadAllAdminData();
-                            widget.onConfigChanged();
-                          },
-                          child: const Text('প্রকাশ করুন (Publish)'),
-                        ),
-                        OutlinedButton(
-                          onPressed: () async {
-                            await ApiService.updateListingStatus(id, listingStatus: 'SOLD');
-                            _loadAllAdminData();
-                            widget.onConfigChanged();
-                          },
-                          child: const Text('বিক্রি সম্পন্ন (SOLD)'),
-                        ),
-                        OutlinedButton(
-                          style: OutlinedButton.styleFrom(foregroundColor: Colors.orange.shade900),
-                          onPressed: () async {
-                            await ApiService.updateListingStatus(id, listingStatus: 'SUSPENDED', adminRemark: 'অ্যাডমিন কর্তৃক স্থগিত (Suspended)');
-                            _loadAllAdminData();
-                            widget.onConfigChanged();
-                          },
-                          child: const Text('স্থগিত (Suspend)'),
-                        ),
-                        OutlinedButton(
-                          style: OutlinedButton.styleFrom(foregroundColor: Colors.red.shade700),
-                          onPressed: () async {
-                            await ApiService.updateListingStatus(id, listingStatus: 'REJECTED', adminRemark: 'অ্যাডমিন কর্তৃক বাতিল (Rejected)');
-                            _loadAllAdminData();
-                            widget.onConfigChanged();
-                          },
-                          child: const Text('বাতিল (Reject)'),
+                            ActionChip(
+                              label: const Text('🟢 সরেজমিনে ও নথি যাচাইকৃত'),
+                              onPressed: () async {
+                                await ApiService.updateListingStatus(id, verificationStatus: 'FIELD_VERIFIED');
+                                _loadAllAdminData();
+                                widget.onConfigChanged();
+                              },
+                            ),
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(backgroundColor: Colors.green.shade700, foregroundColor: Colors.white),
+                              onPressed: () async {
+                                await ApiService.updateListingStatus(id, listingStatus: 'APPROVED_PUBLISHED');
+                                _loadAllAdminData();
+                                widget.onConfigChanged();
+                              },
+                              child: const Text('প্রকাশ (Publish)'),
+                            ),
+                            OutlinedButton(
+                              onPressed: () async {
+                                await ApiService.updateListingStatus(id, listingStatus: 'SOLD');
+                                _loadAllAdminData();
+                                widget.onConfigChanged();
+                              },
+                              child: const Text('বিক্রি সম্পন্ন'),
+                            ),
+                            OutlinedButton(
+                              style: OutlinedButton.styleFrom(foregroundColor: Colors.orange.shade900),
+                              onPressed: () async {
+                                await ApiService.updateListingStatus(id, listingStatus: 'SUSPENDED', adminRemark: 'অ্যাডমিন কর্তৃক স্থগিত (Suspended)');
+                                _loadAllAdminData();
+                                widget.onConfigChanged();
+                              },
+                              child: const Text('স্থগিত'),
+                            ),
+                            OutlinedButton(
+                              style: OutlinedButton.styleFrom(foregroundColor: Colors.red.shade700),
+                              onPressed: () async {
+                                await ApiService.updateListingStatus(id, listingStatus: 'REJECTED', adminRemark: 'অ্যাডমিন কর্তৃক বাতিল (Rejected)');
+                                _loadAllAdminData();
+                                widget.onConfigChanged();
+                              },
+                              child: const Text('বাতিল'),
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                  ],
-                ),
-              ),
-            );
-          }),
+                  ),
+                );
+              }),
 
-        const SizedBox(height: 24),
-        const Text(
-          '২. ক্রেতার চাহিদা তালিকা (যেকোনো পর্যায়ে অনুমোদন, Suspend বা Reject)',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 10),
-        if (_requirements.isEmpty)
-          const Card(child: Padding(padding: EdgeInsets.all(16), child: Text('কোনো ক্রেতার চাহিদা জমা পড়েনি।')))
-        else
-          ..._requirements.map((r) {
-            final id = r['id'] as int;
-            return Card(
-              margin: const EdgeInsets.only(bottom: 10),
-              child: Padding(
-                padding: const EdgeInsets.all(14),
-                child: Wrap(
-                  spacing: 14,
-                  runSpacing: 10,
-                  alignment: WrapAlignment.spaceBetween,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    Column(
+            const SizedBox(height: 24),
+            const Text(
+              '২. ক্রেতার চাহিদা তালিকা',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 10),
+            if (_requirements.isEmpty)
+              const Card(child: Padding(padding: EdgeInsets.all(16), child: Text('কোনো ক্রেতার চাহিদা জমা পড়েনি।')))
+            else
+              ..._requirements.map((r) {
+                final id = r['id'] as int;
+                return Card(
+                  margin: const EdgeInsets.only(bottom: 10),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  child: Padding(
+                    padding: EdgeInsets.all(isMobile ? 12 : 14),
+                    child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'ক্রেতা: ${r['buyerName']} (${r['buyerPhone']}) — ${r['preferredUpazila']} (${r['landType']})',
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                'ক্রেতা: ${r['buyerName']} (${r['buyerPhone']})\n${r['preferredUpazila']} (${r['landType']})',
+                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                              ),
+                            ),
+                            _badge(r['status']),
+                          ],
                         ),
+                        const SizedBox(height: 6),
                         Text(
-                          'পরিমাণ: ${r['minAreaDecimal']}–${r['maxAreaDecimal']} শতাংশ • বাজেট: ৳${r['minBudgetBdt']}–৳${r['maxBudgetBdt']} • প্রস্তাবিত পারিশ্রমিক: ৳${r['proposedServiceFeeBdt']}',
+                          'পরিমাণ: ${r['minAreaDecimal']}–${r['maxAreaDecimal']} শতাংশ • বাজেট: ৳${r['minBudgetBdt']}–৳${r['maxBudgetBdt']}\nপ্রস্তাবিত পারিশ্রমিক: ৳${r['proposedServiceFeeBdt']}',
+                          style: const TextStyle(fontSize: 12),
+                        ),
+                        const SizedBox(height: 10),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(backgroundColor: Colors.green.shade700, foregroundColor: Colors.white),
+                              onPressed: () async {
+                                await ApiService.updateRequirementStatus(id, 'ACTIVE', 'অনুমোদিত');
+                                _loadAllAdminData();
+                                widget.onConfigChanged();
+                              },
+                              child: const Text('সক্রিয় (ACTIVE)'),
+                            ),
+                            OutlinedButton(
+                              style: OutlinedButton.styleFrom(foregroundColor: Colors.orange.shade900),
+                              onPressed: () async {
+                                await ApiService.updateRequirementStatus(id, 'SUSPENDED', 'স্থগিত');
+                                _loadAllAdminData();
+                                widget.onConfigChanged();
+                              },
+                              child: const Text('Suspend'),
+                            ),
+                            OutlinedButton(
+                              style: OutlinedButton.styleFrom(foregroundColor: Colors.red.shade700),
+                              onPressed: () async {
+                                await ApiService.updateRequirementStatus(id, 'REJECTED', 'বাতিল');
+                                _loadAllAdminData();
+                                widget.onConfigChanged();
+                              },
+                              child: const Text('Reject'),
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                    Wrap(
-                      spacing: 8,
-                      children: [
-                        _badge(r['status']),
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(backgroundColor: Colors.green.shade700, foregroundColor: Colors.white),
-                          onPressed: () async {
-                            await ApiService.updateRequirementStatus(id, 'ACTIVE', 'অনুমোদিত');
-                            _loadAllAdminData();
-                            widget.onConfigChanged();
-                          },
-                          child: const Text('সক্রিয় (ACTIVE)'),
-                        ),
-                        OutlinedButton(
-                          style: OutlinedButton.styleFrom(foregroundColor: Colors.orange.shade900),
-                          onPressed: () async {
-                            await ApiService.updateRequirementStatus(id, 'SUSPENDED', 'স্থগিত');
-                            _loadAllAdminData();
-                            widget.onConfigChanged();
-                          },
-                          child: const Text('Suspend'),
-                        ),
-                        OutlinedButton(
-                          style: OutlinedButton.styleFrom(foregroundColor: Colors.red.shade700),
-                          onPressed: () async {
-                            await ApiService.updateRequirementStatus(id, 'REJECTED', 'বাতিল');
-                            _loadAllAdminData();
-                            widget.onConfigChanged();
-                          },
-                          child: const Text('Reject'),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }),
+                  ),
+                );
+              }),
 
-        const SizedBox(height: 28),
-        Text(
-          '৩. ক্রেতাদের আগ্রহ প্রকাশ ও মধ্যস্থতা (Buyer Inquiries — ${_inquiries.length})',
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 10),
-        if (_inquiries.isEmpty)
-          const Card(
-            child: Padding(
-              padding: EdgeInsets.all(16),
-              child: Text('এখনো কোনো ক্রেতা জমির বিপরীতে আগ্রহ (Inquiry) প্রকাশ করেননি।'),
+            const SizedBox(height: 28),
+            Text(
+              '৩. ক্রেতাদের আগ্রহ প্রকাশ ও মধ্যস্থতা (Buyer Inquiries — ${_inquiries.length})',
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-          )
-        else
-          ..._inquiries.map((inq) {
-            final id = inq['id'] as int;
-            return Card(
-              margin: const EdgeInsets.only(bottom: 12),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Wrap(
-                      spacing: 12,
-                      runSpacing: 8,
-                      alignment: WrapAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'জমি: ${inq['listingTitle']} (${inq['upazila'] ?? ''}) — মূল দাম: ৳${inq['expectedPriceBdt'] ?? '-'}',
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                        ),
-                        _badge(inq['status']),
-                      ],
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      'ক্রেতা: ${inq['buyerName']} (মোবাইল: ${inq['buyerPhone']})  ⟷  বিক্রেতা: ${inq['sellerName'] ?? 'N/A'} (মোবাইল: ${inq['sellerPhone'] ?? 'N/A'})',
-                      style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF0B4F32)),
-                    ),
-                    const SizedBox(height: 4),
-                    Text('ক্রেতার প্রস্তাবিত বাজেট: ৳${inq['offeredBudgetBdt'] ?? inq['offeredPriceBdt'] ?? '-'} • বার্তা: ${inq['message'] ?? ''}'),
-                    if ((inq['adminNote'] ?? '').toString().isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 4),
-                        child: Text(
-                          'অ্যাডমিন মধ্যস্থতা নোট: ${inq['adminNote']}',
-                          style: TextStyle(color: Colors.blue.shade900, fontWeight: FontWeight.w600, fontSize: 13),
-                        ),
-                      ),
-                    const SizedBox(height: 10),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        OutlinedButton.icon(
-                          icon: const Icon(Icons.phone_in_talk, size: 16),
-                          label: const Text('যোগাযোগ হয়েছে (CONTACTED)'),
-                          onPressed: () async {
-                            await ApiService.updateAdminInquiryStatus(
-                              id,
-                              'CONTACTED',
-                              'ক্রেতা ও বিক্রেতা উভয়ের সাথে প্রাথমিক আলোচনা সম্পন্ন হয়েছে।',
-                            );
-                            _loadAllAdminData();
-                          },
-                        ),
-                        OutlinedButton.icon(
-                          icon: const Icon(Icons.pin_drop_outlined, size: 16),
-                          label: const Text('সরেজমিনে পরিদর্শন (SITE_VISIT)'),
-                          onPressed: () async {
-                            await ApiService.updateAdminInquiryStatus(
-                              id,
-                              'SITE_VISIT_SCHEDULED',
-                              'সরেজমিনে জমি পরিদর্শনের তারিখ নির্ধারিত হয়েছে।',
-                            );
-                            _loadAllAdminData();
-                          },
-                        ),
-                        ElevatedButton.icon(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green.shade700,
-                            foregroundColor: Colors.white,
-                          ),
-                          icon: const Icon(Icons.handshake, size: 16),
-                          label: const Text('লেনদেন সম্পন্ন (DEAL_CLOSED)'),
-                          onPressed: () async {
-                            await ApiService.updateAdminInquiryStatus(
-                              id,
-                              'DEAL_CLOSED',
-                              'উভয় পক্ষের সম্মতিতে সফলভাবে জমি ক্রয়-বিক্রয় সম্পন্ন হয়েছে।',
-                            );
-                            _loadAllAdminData();
-                            widget.onConfigChanged();
-                          },
-                        ),
-                        OutlinedButton(
-                          style: OutlinedButton.styleFrom(foregroundColor: Colors.red.shade700),
-                          onPressed: () async {
-                            await ApiService.updateAdminInquiryStatus(
-                              id,
-                              'REJECTED',
-                              'বাজেট বা শর্তের অমিলের কারণে ইনকোয়ারিটি বাতিল করা হয়েছে।',
-                            );
-                            _loadAllAdminData();
-                          },
-                          child: const Text('বাতিল (Reject)'),
-                        ),
-                      ],
-                    ),
-                  ],
+            const SizedBox(height: 10),
+            if (_inquiries.isEmpty)
+              const Card(
+                child: Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Text('এখনো কোনো ক্রেতা জমির বিপরীতে আগ্রহ (Inquiry) প্রকাশ করেননি।'),
                 ),
-              ),
-            );
-          }),
-      ],
+              )
+            else
+              ..._inquiries.map((inq) {
+                final id = inq['id'] as int;
+                return Card(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  child: Padding(
+                    padding: EdgeInsets.all(isMobile ? 12 : 16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                'জমি: ${inq['listingTitle']} (${inq['upazila'] ?? ''})\nমূল দাম: ৳${inq['expectedPriceBdt'] ?? '-'}',
+                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                              ),
+                            ),
+                            _badge(inq['status']),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          'ক্রেতা: ${inq['buyerName']} (${inq['buyerPhone']})\nবিক্রেতা: ${inq['sellerName'] ?? 'N/A'} (${inq['sellerPhone'] ?? 'N/A'})',
+                          style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF0B4F32), fontSize: 12),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'ক্রেতার বাজেট: ৳${inq['offeredBudgetBdt'] ?? inq['offeredPriceBdt'] ?? '-'} • বার্তা: ${inq['message'] ?? ''}',
+                          style: const TextStyle(fontSize: 12),
+                        ),
+                        if ((inq['adminNote'] ?? '').toString().isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 4),
+                            child: Text(
+                              'অ্যাডমিন নোট: ${inq['adminNote']}',
+                              style: TextStyle(color: Colors.blue.shade900, fontWeight: FontWeight.w600, fontSize: 12),
+                            ),
+                          ),
+                        const SizedBox(height: 10),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            OutlinedButton.icon(
+                              icon: const Icon(Icons.phone_in_talk, size: 16),
+                              label: const Text('যোগাযোগ (CONTACTED)'),
+                              onPressed: () async {
+                                await ApiService.updateAdminInquiryStatus(
+                                  id,
+                                  'CONTACTED',
+                                  'ক্রেতা ও বিক্রেতা উভয়ের সাথে প্রাথমিক আলোচনা সম্পন্ন হয়েছে।',
+                                );
+                                _loadAllAdminData();
+                              },
+                            ),
+                            OutlinedButton.icon(
+                              icon: const Icon(Icons.pin_drop_outlined, size: 16),
+                              label: const Text('পরিদর্শন (SITE_VISIT)'),
+                              onPressed: () async {
+                                await ApiService.updateAdminInquiryStatus(
+                                  id,
+                                  'SITE_VISIT_SCHEDULED',
+                                  'সরেজমিনে জমি পরিদর্শনের তারিখ নির্ধারিত হয়েছে।',
+                                );
+                                _loadAllAdminData();
+                              },
+                            ),
+                            ElevatedButton.icon(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.green.shade700,
+                                foregroundColor: Colors.white,
+                              ),
+                              icon: const Icon(Icons.handshake, size: 16),
+                              label: const Text('লেনদেন সম্পন্ন (DEAL_CLOSED)'),
+                              onPressed: () async {
+                                await ApiService.updateAdminInquiryStatus(
+                                  id,
+                                  'DEAL_CLOSED',
+                                  'উভয় পক্ষের সম্মতিতে সফলভাবে জমি ক্রয়-বিক্রয় সম্পন্ন হয়েছে।',
+                                );
+                                _loadAllAdminData();
+                                widget.onConfigChanged();
+                              },
+                            ),
+                            OutlinedButton(
+                              style: OutlinedButton.styleFrom(foregroundColor: Colors.red.shade700),
+                              onPressed: () async {
+                                await ApiService.updateAdminInquiryStatus(
+                                  id,
+                                  'REJECTED',
+                                  'বাজেট বা শর্তের অমিলের কারণে ইনকোয়ারিটি বাতিল করা হয়েছে।',
+                                );
+                                _loadAllAdminData();
+                              },
+                              child: const Text('বাতিল'),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }),
+          ],
+        );
+      },
     );
   }
 
@@ -878,39 +1037,52 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
 
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text('📄 $docName — ${listing['title']}'),
-        content: SizedBox(
-          width: 600,
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'বিক্রেতা: ${listing['sellerName']} (${listing['sellerPhone']}) | খতিয়ান: ${listing['khatianNo']} | দাগ: ${listing['dagNo']}',
-                  style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0B4F32)),
-                ),
-                const SizedBox(height: 12),
-                if (docUrl.startsWith('data:image/') || docUrl.startsWith('http'))
-                  ApiService.buildSmartImage(docUrl, width: 560, height: 420, fit: BoxFit.contain)
-                else
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade100,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text('সংযুক্ত ফাইল: $docName (${(docUrl.length / 1024).toStringAsFixed(1)} KB)'),
+      builder: (ctx) {
+        final isMobile = MediaQuery.of(ctx).size.width < 600;
+        return AlertDialog(
+          insetPadding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 24, vertical: 16),
+          title: Text('📄 $docName — ${listing['title']}'),
+          content: SizedBox(
+            width: isMobile ? double.infinity : 600,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'বিক্রেতা: ${listing['sellerName']} (${listing['sellerPhone']}) | খতিয়ান: ${listing['khatianNo']} | দাগ: ${listing['dagNo']}',
+                    style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0B4F32)),
                   ),
-              ],
+                  const SizedBox(height: 12),
+                  if (docUrl.startsWith('data:image/') || docUrl.startsWith('http'))
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: ApiService.buildSmartImage(
+                        docUrl,
+                        width: double.infinity,
+                        height: isMobile ? 260 : 420,
+                        fit: BoxFit.contain,
+                        enableZoom: true,
+                      ),
+                    )
+                  else
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade100,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text('সংযুক্ত ফাইল: $docName (${(docUrl.length / 1024).toStringAsFixed(1)} KB)'),
+                    ),
+                ],
+              ),
             ),
           ),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('বন্ধ করুন')),
-        ],
-      ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('বন্ধ করুন')),
+          ],
+        );
+      },
     );
   }
 
@@ -918,94 +1090,130 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
   Widget _buildReferralAndCommissionTab() {
     final referredMembers = _users.where((u) => u['referredByOfficerId'] != null).toList();
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Wrap(
-          spacing: 14,
-          runSpacing: 12,
-          alignment: WrapAlignment.spaceBetween,
-          crossAxisAlignment: WrapCrossAlignment.center,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isMobile = constraints.maxWidth < 650;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'মার্কেটিং অফিসারদের রেফারেল ও কমিশন ব্যবস্থাপনা (Fixed ও Percentage % উভয়ই)',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
             Wrap(
-              spacing: 10,
+              spacing: 14,
+              runSpacing: 12,
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
               children: [
-                OutlinedButton.icon(
-                  onPressed: _showCommissionsCsvDialog,
-                  icon: const Icon(Icons.table_view, size: 18),
-                  label: const Text('📊 CSV রিপোর্ট কপি'),
+                const Text(
+                  'মার্কেটিং অফিসারদের রেফারেল ও কমিশন ব্যবস্থাপনা',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
-                ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF0B4F32),
-                    foregroundColor: Colors.white,
-                  ),
-                  onPressed: () => _showAwardCommissionDialog(referredMembers),
-                  icon: const Icon(Icons.add_card),
-                  label: const Text('নতুন কমিশন প্রদান করুন (নির্দিষ্ট টাকা বা %)'),
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 8,
+                  children: [
+                    OutlinedButton.icon(
+                      onPressed: _showCommissionsCsvDialog,
+                      icon: const Icon(Icons.table_view, size: 18),
+                      label: const Text('📊 CSV রিপোর্ট'),
+                    ),
+                    ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF0B4F32),
+                        foregroundColor: Colors.white,
+                      ),
+                      onPressed: () => _showAwardCommissionDialog(referredMembers),
+                      icon: const Icon(Icons.add_card),
+                      label: const Text('নতুন কমিশন প্রদান'),
+                    ),
+                  ],
                 ),
               ],
             ),
-          ],
-        ),
-        const SizedBox(height: 14),
-        if (_commissions.isEmpty)
-          const Card(
-            child: Padding(
-              padding: EdgeInsets.all(16),
-              child: Text('এখনো কোনো কমিশন রেকর্ড তৈরি হয়নি।'),
-            ),
-          )
-        else
-          ..._commissions.map((c) {
-            final id = c['id'] as int;
-            final isPaid = c['status'] == 'PAID';
-            return Card(
-              margin: const EdgeInsets.only(bottom: 10),
-              child: ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: isPaid ? Colors.green.shade50 : Colors.orange.shade50,
-                  child: Icon(
-                    isPaid ? Icons.check_circle : Icons.pending_actions,
-                    color: isPaid ? Colors.green.shade700 : Colors.orange.shade800,
-                  ),
+            const SizedBox(height: 14),
+            if (_commissions.isEmpty)
+              const Card(
+                child: Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Text('এখনো কোনো কমিশন রেকর্ড তৈরি হয়নি।'),
                 ),
-                title: Text(
-                  'অফিসার: ${c['officerName']} (${c['referralCode']}) ➔ রেফারকৃত সদস্য: ${c['referredUserName']} (${c['referredUserRole']})',
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                subtitle: Text(
-                  'ধরন: ${c['commissionType']} • মূল অঙ্ক: ৳${c['baseDealAmountBdt']} • হার: ${c['percentageRate']}% • নোট: ${c['note'] ?? ''}',
-                ),
-                trailing: Wrap(
-                  spacing: 10,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    Text(
-                      '৳${c['commissionAmountBdt']}',
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF0B4F32)),
+              )
+            else
+              ..._commissions.map((c) {
+                final id = c['id'] as int;
+                final isPaid = c['status'] == 'PAID';
+
+                return Card(
+                  margin: const EdgeInsets.only(bottom: 10),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  child: Padding(
+                    padding: EdgeInsets.all(isMobile ? 12 : 14),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            CircleAvatar(
+                              radius: 18,
+                              backgroundColor: isPaid ? Colors.green.shade50 : Colors.orange.shade50,
+                              child: Icon(
+                                isPaid ? Icons.check_circle : Icons.pending_actions,
+                                size: 20,
+                                color: isPaid ? Colors.green.shade700 : Colors.orange.shade800,
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'অফিসার: ${c['officerName']} (${c['referralCode']})',
+                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                                  ),
+                                  Text(
+                                    'রেফারকৃত: ${c['referredUserName']} (${c['referredUserRole']})',
+                                    style: const TextStyle(fontSize: 12, color: Colors.black87),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Text(
+                              '৳${c['commissionAmountBdt']}',
+                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF0B4F32)),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'ধরন: ${c['commissionType']} • মূল অঙ্ক: ৳${c['baseDealAmountBdt']} • হার: ${c['percentageRate']}%\nনোট: ${c['note'] ?? ''}',
+                          style: const TextStyle(fontSize: 12, color: Colors.black54),
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            if (isPaid)
+                              _badge('PAID (${c['paymentReference'] ?? ''})')
+                            else
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(backgroundColor: Colors.green.shade700, foregroundColor: Colors.white),
+                                onPressed: () async {
+                                  await ApiService.payCommission(id, 'BKASH-PAID-${DateTime.now().millisecondsSinceEpoch % 10000}');
+                                  _loadAllAdminData();
+                                },
+                                child: const Text('পরিশোধ করুন (Pay)'),
+                              ),
+                          ],
+                        ),
+                      ],
                     ),
-                    if (isPaid)
-                      _badge('PAID (${c['paymentReference'] ?? ''})')
-                    else
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(backgroundColor: Colors.green.shade700, foregroundColor: Colors.white),
-                        onPressed: () async {
-                          await ApiService.payCommission(id, 'BKASH-PAID-${DateTime.now().millisecondsSinceEpoch % 10000}');
-                          _loadAllAdminData();
-                        },
-                        child: const Text('পরিশোধ করুন (Pay)'),
-                      ),
-                  ],
-                ),
-              ),
-            );
-          }),
-      ],
+                  ),
+                );
+              }),
+          ],
+        );
+      },
     );
   }
 
@@ -1038,244 +1246,274 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
     showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setDialogState) => AlertDialog(
-          title: const Text('মার্কেটিং অফিসারকে কমিশন প্রদান করুন (নির্দিষ্ট টাকা বা %)'),
-          content: SizedBox(
-            width: 520,
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  DropdownButtonFormField<int>(
-                    initialValue: selectedUserId,
-                    decoration: const InputDecoration(labelText: 'রেফারকৃত ক্রেতা/বিক্রেতা নির্বাচন করুন'),
-                    items: referredMembers.map((u) {
-                      return DropdownMenuItem<int>(
-                        value: u['id'] as int,
-                        child: Text('${u['fullName']} (${u['role']}) - কোড: ${u['referredByCode']}'),
-                      );
-                    }).toList(),
-                    onChanged: (v) => setDialogState(() => selectedUserId = v!),
-                  ),
-                  const SizedBox(height: 12),
-                  DropdownButtonFormField<String>(
-                    initialValue: commissionType,
-                    decoration: const InputDecoration(labelText: 'কমিশনের ধরন নির্বাচন করুন'),
-                    items: const [
-                      DropdownMenuItem(value: 'REFERRAL_VERIFIED_FIXED', child: Text('১. যাচাইকৃত সন্ধান/নিবন্ধন সম্মানী (নির্দিষ্ট টাকা)')),
-                      DropdownMenuItem(value: 'DEAL_CLOSURE_FIXED', child: Text('২. সফল লেনদেন কমিশন (নির্দিষ্ট টাকা - Fixed)')),
-                      DropdownMenuItem(value: 'DEAL_CLOSURE_PERCENT', child: Text('৩. সফল লেনদেন কমিশন (শতকরা হার - Percentage %)')),
-                    ],
-                    onChanged: (v) => setDialogState(() => commissionType = v!),
-                  ),
-                  const SizedBox(height: 12),
-                  if (commissionType == 'DEAL_CLOSURE_PERCENT') ...[
-                    TextField(
-                      controller: baseDealCtrl,
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(labelText: 'মোট লেনদেন বা পারিশ্রমিকের পরিমাণ (৳)'),
+        builder: (ctx, setDialogState) {
+          final isMobile = MediaQuery.of(ctx).size.width < 600;
+          return AlertDialog(
+            insetPadding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 24, vertical: 16),
+            title: const Text('মার্কেটিং অফিসারকে কমিশন প্রদান করুন'),
+            content: SizedBox(
+              width: isMobile ? double.infinity : 520,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    DropdownButtonFormField<int>(
+                      initialValue: selectedUserId,
+                      decoration: const InputDecoration(labelText: 'রেফারকৃত সদস্য নির্বাচন করুন'),
+                      items: referredMembers.map((u) {
+                        return DropdownMenuItem<int>(
+                          value: u['id'] as int,
+                          child: Text('${u['fullName']} (${u['role']}) - কোড: ${u['referredByCode']}'),
+                        );
+                      }).toList(),
+                      onChanged: (v) => setDialogState(() => selectedUserId = v!),
                     ),
+                    const SizedBox(height: 12),
+                    DropdownButtonFormField<String>(
+                      initialValue: commissionType,
+                      decoration: const InputDecoration(labelText: 'কমিশনের ধরন নির্বাচন করুন'),
+                      items: const [
+                        DropdownMenuItem(value: 'REFERRAL_VERIFIED_FIXED', child: Text('১. যাচাইকৃত সন্ধান/নিবন্ধন সম্মানী (নির্দিষ্ট টাকা)')),
+                        DropdownMenuItem(value: 'DEAL_CLOSURE_FIXED', child: Text('২. সফল লেনদেন কমিশন (নির্দিষ্ট টাকা - Fixed)')),
+                        DropdownMenuItem(value: 'DEAL_CLOSURE_PERCENT', child: Text('৩. সফল লেনদেন কমিশন (শতকরা হার - %) ')),
+                      ],
+                      onChanged: (v) => setDialogState(() => commissionType = v!),
+                    ),
+                    const SizedBox(height: 12),
+                    if (commissionType == 'DEAL_CLOSURE_PERCENT') ...[
+                      TextField(
+                        controller: baseDealCtrl,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(labelText: 'মোট লেনদেন বা পারিশ্রমিকের পরিমাণ (৳)'),
+                      ),
+                      const SizedBox(height: 10),
+                      TextField(
+                        controller: percentCtrl,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(labelText: 'কমিশনের শতকরা হার (%)'),
+                      ),
+                    ] else ...[
+                      TextField(
+                        controller: fixedAmountCtrl,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(labelText: 'কমিশনের নির্দিষ্ট পরিমাণ (৳)'),
+                      ),
+                    ],
                     const SizedBox(height: 10),
                     TextField(
-                      controller: percentCtrl,
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(labelText: 'কমিশনের শতকরা হার (%) — অ্যাডমিন নির্ধারিত'),
-                    ),
-                  ] else ...[
-                    TextField(
-                      controller: fixedAmountCtrl,
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(labelText: 'কমিশনের নির্দিষ্ট পরিমাণ (৳) — অ্যাডমিন নির্ধারিত'),
+                      controller: noteCtrl,
+                      decoration: const InputDecoration(labelText: 'বিবরণ / নোট'),
                     ),
                   ],
-                  const SizedBox(height: 10),
-                  TextField(
-                    controller: noteCtrl,
-                    decoration: const InputDecoration(labelText: 'বিবরণ / নোট'),
-                  ),
-                ],
+                ),
               ),
             ),
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('বাতিল')),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
-              onPressed: () async {
-                await ApiService.awardCommission({
-                  'referredUserId': selectedUserId,
-                  'commissionType': commissionType,
-                  'commissionAmountBdt': fixedAmountCtrl.text,
-                  'baseDealAmountBdt': baseDealCtrl.text,
-                  'percentageRate': percentCtrl.text,
-                  'note': noteCtrl.text,
-                });
-                if (!ctx.mounted) return;
-                Navigator.pop(ctx);
-                _loadAllAdminData();
-              },
-              child: const Text('কমিশন অনুমোদন করুন'),
-            ),
-          ],
-        ),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('বাতিল')),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
+                onPressed: () async {
+                  await ApiService.awardCommission({
+                    'referredUserId': selectedUserId,
+                    'commissionType': commissionType,
+                    'commissionAmountBdt': fixedAmountCtrl.text,
+                    'baseDealAmountBdt': baseDealCtrl.text,
+                    'percentageRate': percentCtrl.text,
+                    'note': noteCtrl.text,
+                  });
+                  if (!ctx.mounted) return;
+                  Navigator.pop(ctx);
+                  _loadAllAdminData();
+                },
+                child: const Text('কমিশন অনুমোদন করুন'),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
 
   // ==================== TAB 4: SPECIAL PROPOSALS & 3-FUND LEDGER ====================
   Widget _buildProposalsAndLedgerTab() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          '১. বিশেষ সেবা ও নির্দিষ্ট পারিশ্রমিকের প্রস্তাবনা (গ্রহণ / পাল্টা প্রস্তাব / চুক্তিপত্র সনদ)',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 10),
-        if (_proposals.isEmpty)
-          const Card(child: Padding(padding: EdgeInsets.all(16), child: Text('কোনো বিশেষ প্রস্তাব জমা পড়েনি।')))
-        else
-          ..._proposals.map((p) {
-            final id = p['id'] as int;
-            return Card(
-              margin: const EdgeInsets.only(bottom: 10),
-              child: Padding(
-                padding: const EdgeInsets.all(14),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isMobile = constraints.maxWidth < 650;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              '১. বিশেষ সেবা ও নির্দিষ্ট পারিশ্রমিকের প্রস্তাবনা (গ্রহণ / পাল্টা প্রস্তাব / চুক্তিপত্র সনদ)',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 10),
+            if (_proposals.isEmpty)
+              const Card(child: Padding(padding: EdgeInsets.all(16), child: Text('কোনো বিশেষ প্রস্তাব জমা পড়েনি।')))
+            else
+              ..._proposals.map((p) {
+                final id = p['id'] as int;
+                return Card(
+                  margin: const EdgeInsets.only(bottom: 10),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  child: Padding(
+                    padding: EdgeInsets.all(isMobile ? 12 : 14),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                '${p['proposalTitle']} — ${p['userName']} (${p['userRole']}, ${p['userPhone']})',
+                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            _badge(p['status']),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Text(p['scopeDescription'] ?? '', style: const TextStyle(fontSize: 12)),
+                        const SizedBox(height: 4),
+                        Text(
+                          'গ্রাহকের প্রস্তাব: ৳${p['customerProposedFeeBdt']}  |  পাল্টা: ৳${p['adminCounterFeeBdt'] ?? '-'}  |  চূড়ান্ত: ৳${p['finalAgreedFeeBdt'] ?? '-'}',
+                          style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0B4F32), fontSize: 12),
+                        ),
+                        const SizedBox(height: 10),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(backgroundColor: Colors.green.shade700, foregroundColor: Colors.white),
+                              onPressed: () async {
+                                await ApiService.updateAdminProposal(id, {
+                                  'status': 'MUTUALLY_AGREED',
+                                  'finalAgreedFeeBdt': p['customerProposedFeeBdt'],
+                                  'adminNote': 'অ্যাডমিন প্রস্তাবটি গ্রহণ করেছেন।',
+                                });
+                                _loadAllAdminData();
+                              },
+                              child: const Text('প্রস্তাব গ্রহণ'),
+                            ),
+                            OutlinedButton(
+                              onPressed: () => _showCounterOfferDialog(p),
+                              child: const Text('পাল্টা প্রস্তাব'),
+                            ),
+                            OutlinedButton(
+                              onPressed: () async {
+                                await ApiService.updateAdminProposal(id, {'status': 'COMPLETED'});
+                                _loadAllAdminData();
+                              },
+                              child: const Text('কাজ সম্পন্ন ও আয় যুক্ত'),
+                            ),
+                            OutlinedButton.icon(
+                              icon: const Icon(Icons.description_outlined, size: 16),
+                              label: const Text('📜 চুক্তিপত্র সনদ'),
+                              onPressed: () => _showProposalCertificateDialog(p),
+                            ),
+                            OutlinedButton(
+                              style: OutlinedButton.styleFrom(foregroundColor: Colors.red.shade700),
+                              onPressed: () async {
+                                await ApiService.updateAdminProposal(id, {'status': 'REJECTED'});
+                                _loadAllAdminData();
+                              },
+                              child: const Text('বাতিল'),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }),
+
+            const SizedBox(height: 24),
+            Wrap(
+              spacing: 12,
+              runSpacing: 10,
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                const Text(
+                  '২. আর্থিক লেনদেন ও লেজার রেকর্ড',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 8,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            '${p['proposalTitle']} — ${p['userName']} (${p['userRole']}, ${p['userPhone']})',
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-                          ),
-                        ),
-                        _badge(p['status']),
-                      ],
+                    OutlinedButton.icon(
+                      onPressed: _showTransactionsCsvDialog,
+                      icon: const Icon(Icons.table_view, size: 18),
+                      label: const Text('📊 লেজার CSV কপি'),
                     ),
-                    const SizedBox(height: 4),
-                    Text(p['scopeDescription'] ?? ''),
-                    const SizedBox(height: 4),
-                    Text(
-                      'গ্রাহকের প্রস্তাব: ৳${p['customerProposedFeeBdt']}  |  পাল্টা প্রস্তাব: ৳${p['adminCounterFeeBdt'] ?? '-'}  |  চূড়ান্ত সম্মত: ৳${p['finalAgreedFeeBdt'] ?? '-'}',
-                      style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0B4F32)),
-                    ),
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(backgroundColor: Colors.green.shade700, foregroundColor: Colors.white),
-                          onPressed: () async {
-                            await ApiService.updateAdminProposal(id, {
-                              'status': 'MUTUALLY_AGREED',
-                              'finalAgreedFeeBdt': p['customerProposedFeeBdt'],
-                              'adminNote': 'অ্যাডমিন প্রস্তাবটি গ্রহণ করেছেন।',
-                            });
-                            _loadAllAdminData();
-                          },
-                          child: const Text('প্রস্তাব গ্রহণ করুন'),
-                        ),
-                        OutlinedButton(
-                          onPressed: () => _showCounterOfferDialog(p),
-                          child: const Text('পাল্টা প্রস্তাব দিন (Counter Offer)'),
-                        ),
-                        OutlinedButton(
-                          onPressed: () async {
-                            await ApiService.updateAdminProposal(id, {'status': 'COMPLETED'});
-                            _loadAllAdminData();
-                          },
-                          child: const Text('কাজ সম্পন্ন ও আয় যুক্ত (COMPLETED)'),
-                        ),
-                        OutlinedButton.icon(
-                          icon: const Icon(Icons.description_outlined, size: 16),
-                          label: const Text('📜 লিখিত চুক্তিপত্র সনদ'),
-                          onPressed: () => _showProposalCertificateDialog(p),
-                        ),
-                        OutlinedButton(
-                          style: OutlinedButton.styleFrom(foregroundColor: Colors.red.shade700),
-                          onPressed: () async {
-                            await ApiService.updateAdminProposal(id, {'status': 'REJECTED'});
-                            _loadAllAdminData();
-                          },
-                          child: const Text('বাতিল (Reject)'),
-                        ),
-                      ],
+                    ElevatedButton.icon(
+                      onPressed: _showAddExpenseDialog,
+                      icon: const Icon(Icons.add),
+                      label: const Text('নতুন এন্ট্রি যোগ করুন'),
                     ),
                   ],
                 ),
-              ),
-            );
-          }),
-
-        const SizedBox(height: 24),
-        Wrap(
-          spacing: 12,
-          runSpacing: 10,
-          alignment: WrapAlignment.spaceBetween,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: [
-            const Text(
-              '২. সকল আর্থিক লেনদেন ও লেজার রেকর্ড (Financial Transactions)',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            Wrap(
-              spacing: 10,
-              children: [
-                OutlinedButton.icon(
-                  onPressed: _showTransactionsCsvDialog,
-                  icon: const Icon(Icons.table_view, size: 18),
-                  label: const Text('📊 আর্থিক লেজার CSV কপি'),
-                ),
-                ElevatedButton.icon(
-                  onPressed: _showAddExpenseDialog,
-                  icon: const Icon(Icons.add),
-                  label: const Text('নতুন পরিচালন ব্যয় / আয় যুক্ত করুন'),
-                ),
               ],
             ),
-          ],
-        ),
-        const SizedBox(height: 10),
-        if (_transactions.isEmpty)
-          const Card(child: Padding(padding: EdgeInsets.all(16), child: Text('কোনো আর্থিক লেনদেন রেকর্ড নেই।')))
-        else
-          ..._transactions.map((t) => Card(
-                margin: const EdgeInsets.only(bottom: 8),
-                child: ListTile(
-                  leading: Icon(
-                    t['txnType'] == 'CREDIT' ? Icons.arrow_downward : Icons.arrow_upward,
-                    color: t['txnType'] == 'CREDIT' ? Colors.green.shade700 : Colors.red.shade700,
-                  ),
-                  title: Text(
-                    '${t['description']} — খাত: ${t['fundBucket']}',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  subtitle: Text(
-                    'গ্রাহক/সদস্য: ${t['userName'] ?? 'N/A'} • মাধ্যম: ${t['paymentMethod']} • TrxID: ${t['transactionId'] ?? 'N/A'}',
-                  ),
-                  trailing: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        '${t['txnType'] == 'CREDIT' ? '+' : '-'}৳${t['amountBdt']}',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 15,
-                          color: t['txnType'] == 'CREDIT' ? Colors.green.shade800 : Colors.red.shade800,
-                        ),
+            const SizedBox(height: 10),
+            if (_transactions.isEmpty)
+              const Card(child: Padding(padding: EdgeInsets.all(16), child: Text('কোনো আর্থিক লেনদেন রেকর্ড নেই।')))
+            else
+              ..._transactions.map((t) => Card(
+                    margin: const EdgeInsets.only(bottom: 8),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Icon(
+                            t['txnType'] == 'CREDIT' ? Icons.arrow_downward : Icons.arrow_upward,
+                            color: t['txnType'] == 'CREDIT' ? Colors.green.shade700 : Colors.red.shade700,
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '${t['description']} — খাত: ${t['fundBucket']}',
+                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  'গ্রাহক: ${t['userName'] ?? 'N/A'} • মাধ্যম: ${t['paymentMethod']} • TrxID: ${t['transactionId'] ?? 'N/A'}',
+                                  style: const TextStyle(fontSize: 11, color: Colors.black54),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(
+                                '${t['txnType'] == 'CREDIT' ? '+' : '-'}৳${t['amountBdt']}',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                  color: t['txnType'] == 'CREDIT' ? Colors.green.shade800 : Colors.red.shade800,
+                                ),
+                              ),
+                              Text(t['status'] ?? '', style: const TextStyle(fontSize: 10, color: Colors.grey)),
+                            ],
+                          ),
+                        ],
                       ),
-                      Text(t['status'] ?? '', style: const TextStyle(fontSize: 11)),
-                    ],
-                  ),
-                ),
-              )),
-      ],
+                    ),
+                  )),
+          ],
+        );
+      },
     );
   }
 
@@ -1315,32 +1553,36 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
   void _showCsvExportModal(String title, String content) {
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(title),
-        content: SizedBox(
-          width: 620,
-          child: SingleChildScrollView(
-            child: SelectableText(
-              content,
-              style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
+      builder: (ctx) {
+        final isMobile = MediaQuery.of(ctx).size.width < 600;
+        return AlertDialog(
+          insetPadding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 24, vertical: 16),
+          title: Text(title),
+          content: SizedBox(
+            width: isMobile ? double.infinity : 620,
+            child: SingleChildScrollView(
+              child: SelectableText(
+                content,
+                style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
+              ),
             ),
           ),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('বন্ধ করুন')),
-          ElevatedButton.icon(
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
-            onPressed: () {
-              Clipboard.setData(ClipboardData(text: content));
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('ক্লিপবোর্ডে কপি হয়েছে! এখন Excel বা টেক্সট ফাইলে পেস্ট করতে পারবেন।')),
-              );
-            },
-            icon: const Icon(Icons.copy, size: 16),
-            label: const Text('কপি করুন (Copy)'),
-          ),
-        ],
-      ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('বন্ধ করুন')),
+            ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
+              onPressed: () {
+                Clipboard.setData(ClipboardData(text: content));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('ক্লিপবোর্ডে কপি হয়েছে! এখন Excel বা টেক্সট ফাইলে পেস্ট করতে পারবেন।')),
+                );
+              },
+              icon: const Icon(Icons.copy, size: 16),
+              label: const Text('কপি করুন (Copy)'),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -1350,40 +1592,50 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
 
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('পাল্টা পারিশ্রমিক প্রস্তাব দিন'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: counterCtrl,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: 'পাল্টা প্রস্তাবিত পারিশ্রমিক (৳)'),
+      builder: (ctx) {
+        final isMobile = MediaQuery.of(ctx).size.width < 600;
+        return AlertDialog(
+          insetPadding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 24, vertical: 16),
+          title: const Text('পাল্টা পারিশ্রমিক প্রস্তাব দিন'),
+          content: SizedBox(
+            width: isMobile ? double.infinity : 440,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: counterCtrl,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(labelText: 'পাল্টা প্রস্তাবিত পারিশ্রমিক (৳)', border: OutlineInputBorder()),
+                  ),
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: noteCtrl,
+                    decoration: const InputDecoration(labelText: 'অ্যাডমিন নোট', border: OutlineInputBorder()),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 10),
-            TextField(
-              controller: noteCtrl,
-              decoration: const InputDecoration(labelText: 'অ্যাডমিন নোট'),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('বাতিল')),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
+              onPressed: () async {
+                await ApiService.updateAdminProposal(proposal['id'] as int, {
+                  'status': 'ADMIN_COUNTER_OFFER',
+                  'adminCounterFeeBdt': counterCtrl.text,
+                  'adminNote': noteCtrl.text,
+                });
+                if (!ctx.mounted) return;
+                Navigator.pop(ctx);
+                _loadAllAdminData();
+              },
+              child: const Text('পাঠান'),
             ),
           ],
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('বাতিল')),
-          ElevatedButton(
-            onPressed: () async {
-              await ApiService.updateAdminProposal(proposal['id'] as int, {
-                'status': 'ADMIN_COUNTER_OFFER',
-                'adminCounterFeeBdt': counterCtrl.text,
-                'adminNote': noteCtrl.text,
-              });
-              if (!ctx.mounted) return;
-              Navigator.pop(ctx);
-              _loadAllAdminData();
-            },
-            child: const Text('পাঠান'),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -1396,48 +1648,58 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
     showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setDialogState) => AlertDialog(
-          title: const Text('নতুন আর্থিক এন্ট্রি যোগ করুন'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              DropdownButtonFormField<String>(
-                initialValue: bucket,
-                decoration: const InputDecoration(labelText: 'হিসাবখাত'),
-                items: const [
-                  DropdownMenuItem(value: 'OPERATIONAL_EXPENSE', child: Text('পরিচালন ব্যয় (OPERATIONAL_EXPENSE)')),
-                  DropdownMenuItem(value: 'SERVICE_REVENUE', child: Text('বিশেষ সেবার পারিশ্রমিক (SERVICE_REVENUE)')),
-                  DropdownMenuItem(value: 'REG_FEE_FUND', child: Text('নিবন্ধন তহবিল (REG_FEE_FUND)')),
-                ],
-                onChanged: (v) => setDialogState(() {
-                  bucket = v!;
-                  txnType = bucket == 'OPERATIONAL_EXPENSE' ? 'DEBIT' : 'CREDIT';
-                }),
+        builder: (ctx, setDialogState) {
+          final isMobile = MediaQuery.of(ctx).size.width < 600;
+          return AlertDialog(
+            insetPadding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 24, vertical: 16),
+            title: const Text('নতুন আর্থিক এন্ট্রি যোগ করুন'),
+            content: SizedBox(
+              width: isMobile ? double.infinity : 460,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    DropdownButtonFormField<String>(
+                      initialValue: bucket,
+                      decoration: const InputDecoration(labelText: 'হিসাবখাত', border: OutlineInputBorder()),
+                      items: const [
+                        DropdownMenuItem(value: 'OPERATIONAL_EXPENSE', child: Text('পরিচালন ব্যয় (OPERATIONAL_EXPENSE)')),
+                        DropdownMenuItem(value: 'SERVICE_REVENUE', child: Text('বিশেষ সেবার পারিশ্রমিক (SERVICE_REVENUE)')),
+                        DropdownMenuItem(value: 'REG_FEE_FUND', child: Text('নিবন্ধন তহবিল (REG_FEE_FUND)')),
+                      ],
+                      onChanged: (v) => setDialogState(() {
+                        bucket = v!;
+                        txnType = bucket == 'OPERATIONAL_EXPENSE' ? 'DEBIT' : 'CREDIT';
+                      }),
+                    ),
+                    const SizedBox(height: 10),
+                    TextField(controller: amountCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'পরিমাণ (৳)', border: OutlineInputBorder())),
+                    const SizedBox(height: 10),
+                    TextField(controller: descCtrl, decoration: const InputDecoration(labelText: 'বিবরণ', border: OutlineInputBorder())),
+                  ],
+                ),
               ),
-              const SizedBox(height: 10),
-              TextField(controller: amountCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'পরিমাণ (৳)')),
-              const SizedBox(height: 10),
-              TextField(controller: descCtrl, decoration: const InputDecoration(labelText: 'বিবরণ')),
-            ],
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('বাতিল')),
-            ElevatedButton(
-              onPressed: () async {
-                await ApiService.createAdminTransaction({
-                  'fundBucket': bucket,
-                  'txnType': txnType,
-                  'amountBdt': amountCtrl.text,
-                  'description': descCtrl.text,
-                });
-                if (!ctx.mounted) return;
-                Navigator.pop(ctx);
-                _loadAllAdminData();
-              },
-              child: const Text('সংরক্ষণ করুন'),
             ),
-          ],
-        ),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('বাতিল')),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
+                onPressed: () async {
+                  await ApiService.createAdminTransaction({
+                    'fundBucket': bucket,
+                    'txnType': txnType,
+                    'amountBdt': amountCtrl.text,
+                    'description': descCtrl.text,
+                  });
+                  if (!ctx.mounted) return;
+                  Navigator.pop(ctx);
+                  _loadAllAdminData();
+                },
+                child: const Text('সংরক্ষণ করুন'),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -1456,229 +1718,244 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
     final supportEmailCtrl = TextEditingController(text: '${s['supportEmail'] ?? 'support@landtrust.com.bd'}');
     final officeAddressCtrl = TextEditingController(text: '${s['officeAddress'] ?? 'মাইজদী কোর্ট, নোয়াখালী সদর, নোয়াখালী'}');
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Card(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  '১. নিবন্ধন ফি, কমিশন এবং হেল্পলাইন/অফিস ঠিকানা নির্ধারণ (অ্যাডমিন যেকোনো সময় পরিবর্তন করতে পারবেন)',
-                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Color(0xFF0B4F32)),
-                ),
-                const SizedBox(height: 16),
-                Wrap(
-                  spacing: 16,
-                  runSpacing: 16,
+    return LayoutBuilder(
+      builder: (lbCtx, constraints) {
+        final isMobile = constraints.maxWidth < 650;
+        final fieldWidth = isMobile
+            ? double.infinity
+            : (constraints.maxWidth < 950 ? ((constraints.maxWidth - 36) / 2).floorToDouble() : 250.0);
+        final largeFieldWidth = isMobile || constraints.maxWidth < 950 ? double.infinity : 450.0;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Card(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              child: Padding(
+                padding: EdgeInsets.all(isMobile ? 14 : 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    SizedBox(
-                      width: 250,
-                      child: TextField(
-                        controller: buyerFeeCtrl,
-                        keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(labelText: 'ক্রেতা নিবন্ধন ফি (৳)', border: OutlineInputBorder()),
-                      ),
+                    const Text(
+                      '১. নিবন্ধন ফি, কমিশন এবং হেল্পলাইন/অফিস ঠিকানা নির্ধারণ',
+                      style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Color(0xFF0B4F32)),
                     ),
-                    SizedBox(
-                      width: 250,
-                      child: TextField(
-                        controller: sellerFeeCtrl,
-                        keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(labelText: 'বিক্রেতা নিবন্ধন ফি (৳)', border: OutlineInputBorder()),
-                      ),
-                    ),
-                    SizedBox(
-                      width: 250,
-                      child: TextField(
-                        controller: officerFeeCtrl,
-                        keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(labelText: 'মার্কেটিং অফিসার নিবন্ধন ফি (৳)', border: OutlineInputBorder()),
-                      ),
-                    ),
-                    SizedBox(
-                      width: 250,
-                      child: TextField(
-                        controller: refBonusCtrl,
-                        keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(labelText: 'যাচাইকৃত রেফারেল সম্মানী (Fixed ৳)', border: OutlineInputBorder()),
-                      ),
-                    ),
-                    SizedBox(
-                      width: 250,
-                      child: TextField(
-                        controller: dealFixedCtrl,
-                        keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(labelText: 'ডিফল্ট ডিল ক্লোজার কমিশন (Fixed ৳)', border: OutlineInputBorder()),
-                      ),
-                    ),
-                    SizedBox(
-                      width: 250,
-                      child: TextField(
-                        controller: dealPctCtrl,
-                        keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(labelText: 'ডিফল্ট ডিল ক্লোজার কমিশন (%)', border: OutlineInputBorder()),
-                      ),
-                    ),
-                    SizedBox(
-                      width: 250,
-                      child: TextField(
-                        controller: reservePctCtrl,
-                        keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(
-                          labelText: 'পরামর্শমূলক রিজার্ভ হার (%)',
-                          helperText: 'কোনো লক নেই, শুধু পরামর্শ দেখানোর জন্য',
-                          border: OutlineInputBorder(),
+                    const SizedBox(height: 16),
+                    Wrap(
+                      spacing: 16,
+                      runSpacing: 16,
+                      children: [
+                        SizedBox(
+                          width: fieldWidth,
+                          child: TextField(
+                            controller: buyerFeeCtrl,
+                            keyboardType: TextInputType.number,
+                            decoration: const InputDecoration(labelText: 'ক্রেতা নিবন্ধন ফি (৳)', border: OutlineInputBorder()),
+                          ),
                         ),
-                      ),
+                        SizedBox(
+                          width: fieldWidth,
+                          child: TextField(
+                            controller: sellerFeeCtrl,
+                            keyboardType: TextInputType.number,
+                            decoration: const InputDecoration(labelText: 'বিক্রেতা নিবন্ধন ফি (৳)', border: OutlineInputBorder()),
+                          ),
+                        ),
+                        SizedBox(
+                          width: fieldWidth,
+                          child: TextField(
+                            controller: officerFeeCtrl,
+                            keyboardType: TextInputType.number,
+                            decoration: const InputDecoration(labelText: 'মার্কেটিং অফিসার ফি (৳)', border: OutlineInputBorder()),
+                          ),
+                        ),
+                        SizedBox(
+                          width: fieldWidth,
+                          child: TextField(
+                            controller: refBonusCtrl,
+                            keyboardType: TextInputType.number,
+                            decoration: const InputDecoration(labelText: 'যাচাইকৃত রেফারেল সম্মানী (Fixed ৳)', border: OutlineInputBorder()),
+                          ),
+                        ),
+                        SizedBox(
+                          width: fieldWidth,
+                          child: TextField(
+                            controller: dealFixedCtrl,
+                            keyboardType: TextInputType.number,
+                            decoration: const InputDecoration(labelText: 'ডিফল্ট ডিল ক্লোজার কমিশন (Fixed ৳)', border: OutlineInputBorder()),
+                          ),
+                        ),
+                        SizedBox(
+                          width: fieldWidth,
+                          child: TextField(
+                            controller: dealPctCtrl,
+                            keyboardType: TextInputType.number,
+                            decoration: const InputDecoration(labelText: 'ডিফল্ট ডিল ক্লোজার কমিশন (%)', border: OutlineInputBorder()),
+                          ),
+                        ),
+                        SizedBox(
+                          width: fieldWidth,
+                          child: TextField(
+                            controller: reservePctCtrl,
+                            keyboardType: TextInputType.number,
+                            decoration: const InputDecoration(
+                              labelText: 'পরামর্শমূলক রিজার্ভ হার (%)',
+                              helperText: 'কোনো ফান্ড লক নেই, শুধু পরামর্শ',
+                              border: OutlineInputBorder(),
+                            ),
+                          ),
+                        ),
+                        SizedBox(
+                          width: fieldWidth,
+                          child: TextField(
+                            controller: supportPhoneCtrl,
+                            decoration: const InputDecoration(labelText: 'হেল্পলাইন নম্বর (Support Phone)', border: OutlineInputBorder()),
+                          ),
+                        ),
+                        SizedBox(
+                          width: fieldWidth,
+                          child: TextField(
+                            controller: supportEmailCtrl,
+                            decoration: const InputDecoration(labelText: 'সাপোর্ট ইমেইল (Support Email)', border: OutlineInputBorder()),
+                          ),
+                        ),
+                        SizedBox(
+                          width: largeFieldWidth,
+                          child: TextField(
+                            controller: officeAddressCtrl,
+                            decoration: const InputDecoration(labelText: 'প্রধান কার্যালয়ের ঠিকানা (Office Address)', border: OutlineInputBorder()),
+                          ),
+                        ),
+                      ],
                     ),
+                    const SizedBox(height: 16),
                     SizedBox(
-                      width: 250,
-                      child: TextField(
-                        controller: supportPhoneCtrl,
-                        decoration: const InputDecoration(labelText: 'হেল্পলাইন নম্বর (Support Phone)', border: OutlineInputBorder()),
-                      ),
-                    ),
-                    SizedBox(
-                      width: 280,
-                      child: TextField(
-                        controller: supportEmailCtrl,
-                        decoration: const InputDecoration(labelText: 'সাপোর্ট ইমেইল (Support Email)', border: OutlineInputBorder()),
-                      ),
-                    ),
-                    SizedBox(
-                      width: 450,
-                      child: TextField(
-                        controller: officeAddressCtrl,
-                        decoration: const InputDecoration(labelText: 'প্রধান কার্যালয়ের ঠিকানা (Office Address)', border: OutlineInputBorder()),
+                      width: isMobile ? double.infinity : null,
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF0B4F32),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 14),
+                        ),
+                        onPressed: () async {
+                          await ApiService.updateAdminSettings({
+                            'buyerRegistrationFee': buyerFeeCtrl.text,
+                            'sellerRegistrationFee': sellerFeeCtrl.text,
+                            'officerRegistrationFee': officerFeeCtrl.text,
+                            'referralVerifiedBonusFixed': refBonusCtrl.text,
+                            'dealClosureFixedCommission': dealFixedCtrl.text,
+                            'dealClosurePercentCommission': dealPctCtrl.text,
+                            'advisoryReservePercent': reservePctCtrl.text,
+                            'supportPhone': supportPhoneCtrl.text.trim(),
+                            'supportEmail': supportEmailCtrl.text.trim(),
+                            'officeAddress': officeAddressCtrl.text.trim(),
+                          });
+                          if (!mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('সিস্টেম ফি, কমিশন ও অফিস তথ্য সফলভাবে আপডেট হয়েছে!')),
+                          );
+                          _loadAllAdminData();
+                          widget.onConfigChanged();
+                        },
+                        icon: const Icon(Icons.save),
+                        label: const Text('সেটিংস সংরক্ষণ করুন'),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // Payment Receiving Accounts (Where users send money)
+            Wrap(
+              spacing: 12,
+              runSpacing: 10,
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                const Text(
+                  '২. গ্রাহকদের পেমেন্ট পাঠানোর অ্যাকাউন্ট',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
                 ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF0B4F32),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 14),
-                  ),
-                  onPressed: () async {
-                    await ApiService.updateAdminSettings({
-                      'buyerRegistrationFee': buyerFeeCtrl.text,
-                      'sellerRegistrationFee': sellerFeeCtrl.text,
-                      'officerRegistrationFee': officerFeeCtrl.text,
-                      'referralVerifiedBonusFixed': refBonusCtrl.text,
-                      'dealClosureFixedCommission': dealFixedCtrl.text,
-                      'dealClosurePercentCommission': dealPctCtrl.text,
-                      'advisoryReservePercent': reservePctCtrl.text,
-                      'supportPhone': supportPhoneCtrl.text.trim(),
-                      'supportEmail': supportEmailCtrl.text.trim(),
-                      'officeAddress': officeAddressCtrl.text.trim(),
-                    });
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('সিস্টেম ফি, কমিশন ও অফিস তথ্য সফলভাবে আপডেট হয়েছে!')),
-                      );
-                    }
-                    _loadAllAdminData();
-                    widget.onConfigChanged();
-                  },
-                  icon: const Icon(Icons.save),
-                  label: const Text('সেটিংস সংরক্ষণ করুন'),
+                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
+                  onPressed: _showAddPaymentMethodDialog,
+                  icon: const Icon(Icons.add),
+                  label: const Text('নতুন পেমেন্ট নম্বর যোগ করুন'),
                 ),
               ],
             ),
-          ),
-        ),
-        const SizedBox(height: 24),
+            const SizedBox(height: 10),
+            ..._paymentMethods.map((pm) => Card(
+                  margin: const EdgeInsets.only(bottom: 10),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  child: ListTile(
+                    leading: const Icon(Icons.account_balance_wallet, color: Color(0xFF0B4F32)),
+                    title: Text(
+                      '${pm['providerName']} — নম্বর: ${pm['accountNumber']} (${pm['accountType']})',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    subtitle: Text(pm['instructions'] ?? ''),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.delete_outline, color: Colors.red),
+                      onPressed: () async {
+                        await ApiService.deletePaymentMethod(pm['id'] as int);
+                        _loadAllAdminData();
+                        widget.onConfigChanged();
+                      },
+                    ),
+                  ),
+                )),
 
-        // Payment Receiving Accounts (Where users send money)
-        Wrap(
-          spacing: 12,
-          alignment: WrapAlignment.spaceBetween,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: [
-            const Text(
-              '২. গ্রাহকরা কোথায় পেমেন্ট করবেন (বিকাশ / নগদ / ব্যাংক নম্বর সেটিংস)',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
-              onPressed: _showAddPaymentMethodDialog,
-              icon: const Icon(Icons.add),
-              label: const Text('নতুন পেমেন্ট নম্বর যোগ করুন'),
-            ),
-          ],
-        ),
-        const SizedBox(height: 10),
-        ..._paymentMethods.map((pm) => Card(
-              margin: const EdgeInsets.only(bottom: 10),
-              child: ListTile(
-                leading: const Icon(Icons.account_balance_wallet, color: Color(0xFF0B4F32)),
-                title: Text(
-                  '${pm['providerName']} — নম্বর: ${pm['accountNumber']} (${pm['accountType']})',
-                  style: const TextStyle(fontWeight: FontWeight.bold),
+            const SizedBox(height: 28),
+            // Section 3: Multi-District & Upazila Expansion Management
+            Wrap(
+              spacing: 12,
+              runSpacing: 10,
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                Text(
+                  '৩. জেলা ও উপজেলা সম্প্রসারণ (সক্রিয় এলাকা: ${_locations.length}টি)',
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
-                subtitle: Text(pm['instructions'] ?? ''),
-                trailing: IconButton(
-                  icon: const Icon(Icons.delete_outline, color: Colors.red),
-                  onPressed: () async {
-                    await ApiService.deletePaymentMethod(pm['id'] as int);
-                    _loadAllAdminData();
-                    widget.onConfigChanged();
-                  },
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
+                  onPressed: _showAddLocationDialog,
+                  icon: const Icon(Icons.add_location_alt),
+                  label: const Text('নতুন জেলা / উপজেলা যোগ করুন'),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Card(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
+                  children: _locations.map((loc) {
+                    final dist = loc['districtNameBn'] ?? loc['district'] ?? '';
+                    final upz = loc['upazilaNameBn'] ?? loc['upazila'] ?? '';
+                    return Chip(
+                      avatar: const Icon(Icons.location_on, size: 16, color: Color(0xFF0B4F32)),
+                      label: Text('$dist — $upz'),
+                      deleteIcon: const Icon(Icons.close, size: 16, color: Colors.red),
+                      onDeleted: () async {
+                        await ApiService.deleteAdminLocation(loc['id'] as int);
+                        _loadAllAdminData();
+                        widget.onConfigChanged();
+                      },
+                    );
+                  }).toList(),
                 ),
               ),
-            )),
-
-        const SizedBox(height: 28),
-        // Section 3: Multi-District & Upazila Expansion Management
-        Wrap(
-          spacing: 12,
-          runSpacing: 10,
-          alignment: WrapAlignment.spaceBetween,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: [
-            Text(
-              '৩. জেলা ও উপজেলা সম্প্রসারণ ব্যবস্থাপনা (সক্রিয় এলাকা: ${_locations.length}টি)',
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
-              onPressed: _showAddLocationDialog,
-              icon: const Icon(Icons.add_location_alt),
-              label: const Text('নতুন জেলা / উপজেলা যোগ করুন'),
             ),
           ],
-        ),
-        const SizedBox(height: 12),
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Wrap(
-              spacing: 10,
-              runSpacing: 10,
-              children: _locations.map((loc) {
-                final dist = loc['districtNameBn'] ?? loc['district'] ?? '';
-                final upz = loc['upazilaNameBn'] ?? loc['upazila'] ?? '';
-                return Chip(
-                  avatar: const Icon(Icons.location_on, size: 16, color: Color(0xFF0B4F32)),
-                  label: Text('$dist — $upz'),
-                  deleteIcon: const Icon(Icons.close, size: 16, color: Colors.red),
-                  onDeleted: () async {
-                    await ApiService.deleteAdminLocation(loc['id'] as int);
-                    _loadAllAdminData();
-                    widget.onConfigChanged();
-                  },
-                );
-              }).toList(),
-            ),
-          ),
-        ),
-      ],
+        );
+      },
     );
   }
 
@@ -1688,50 +1965,56 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
 
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('নতুন জেলা ও উপজেলা যোগ করুন'),
-        content: SizedBox(
-          width: 420,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: districtCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'জেলার নাম (যেমন: নোয়াখালী / ফেনী / লক্ষ্মীপুর / কুমিল্লা)',
-                  border: OutlineInputBorder(),
-                ),
+      builder: (ctx) {
+        final isMobile = MediaQuery.of(ctx).size.width < 600;
+        return AlertDialog(
+          insetPadding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 24, vertical: 16),
+          title: const Text('নতুন জেলা ও উপজেলা যোগ করুন'),
+          content: SizedBox(
+            width: isMobile ? double.infinity : 420,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: districtCtrl,
+                    decoration: const InputDecoration(
+                      labelText: 'জেলার নাম (যেমন: নোয়াখালী / ফেনী / লক্ষ্মীপুর)',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: upazilaCtrl,
+                    decoration: const InputDecoration(
+                      labelText: 'উপজেলা / থানার নাম',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: upazilaCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'উপজেলা / থানার নাম',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-            ],
+            ),
           ),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('বাতিল')),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
-            onPressed: () async {
-              if (districtCtrl.text.trim().isEmpty || upazilaCtrl.text.trim().isEmpty) return;
-              await ApiService.addAdminLocation({
-                'districtNameBn': districtCtrl.text.trim(),
-                'upazilaNameBn': upazilaCtrl.text.trim(),
-              });
-              if (!ctx.mounted) return;
-              Navigator.pop(ctx);
-              _loadAllAdminData();
-              widget.onConfigChanged();
-            },
-            child: const Text('যোগ করুন'),
-          ),
-        ],
-      ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('বাতিল')),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
+              onPressed: () async {
+                if (districtCtrl.text.trim().isEmpty || upazilaCtrl.text.trim().isEmpty) return;
+                await ApiService.addAdminLocation({
+                  'districtNameBn': districtCtrl.text.trim(),
+                  'upazilaNameBn': upazilaCtrl.text.trim(),
+                });
+                if (!ctx.mounted) return;
+                Navigator.pop(ctx);
+                _loadAllAdminData();
+                widget.onConfigChanged();
+              },
+              child: const Text('যোগ করুন'),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -1743,64 +2026,98 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
 
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('নতুন পেমেন্ট মাধ্যম ও নম্বর যোগ করুন'),
-        content: SizedBox(
-          width: 460,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(controller: providerCtrl, decoration: const InputDecoration(labelText: 'মাধ্যমের নাম (যেমন: বিকাশ / নগদ / রকেট / ব্যাংক)')),
-              const SizedBox(height: 10),
-              TextField(controller: numberCtrl, decoration: const InputDecoration(labelText: 'অ্যাকাউন্ট / মোবাইল নম্বর')),
-              const SizedBox(height: 10),
-              TextField(controller: typeCtrl, decoration: const InputDecoration(labelText: 'ধরন (Personal / Merchant / Bank)')),
-              const SizedBox(height: 10),
-              TextField(controller: instCtrl, maxLines: 2, decoration: const InputDecoration(labelText: 'গ্রাহকের জন্য নির্দেশনা')),
-            ],
+      builder: (ctx) {
+        final isMobile = MediaQuery.of(ctx).size.width < 600;
+        return AlertDialog(
+          insetPadding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 24, vertical: 16),
+          title: const Text('নতুন পেমেন্ট মাধ্যম ও নম্বর যোগ করুন'),
+          content: SizedBox(
+            width: isMobile ? double.infinity : 460,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(controller: providerCtrl, decoration: const InputDecoration(labelText: 'মাধ্যমের নাম (বিকাশ / নগদ / রকেট / ব্যাংক)', border: OutlineInputBorder())),
+                  const SizedBox(height: 10),
+                  TextField(controller: numberCtrl, decoration: const InputDecoration(labelText: 'অ্যাকাউন্ট / মোবাইল নম্বর', border: OutlineInputBorder())),
+                  const SizedBox(height: 10),
+                  TextField(controller: typeCtrl, decoration: const InputDecoration(labelText: 'ধরন (Personal / Merchant / Bank)', border: OutlineInputBorder())),
+                  const SizedBox(height: 10),
+                  TextField(controller: instCtrl, maxLines: 2, decoration: const InputDecoration(labelText: 'গ্রাহকের জন্য নির্দেশনা', border: OutlineInputBorder())),
+                ],
+              ),
+            ),
           ),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('বাতিল')),
-          ElevatedButton(
-            onPressed: () async {
-              await ApiService.addPaymentMethod({
-                'providerName': providerCtrl.text,
-                'accountNumber': numberCtrl.text,
-                'accountType': typeCtrl.text,
-                'instructions': instCtrl.text,
-                'active': true,
-              });
-              if (!ctx.mounted) return;
-              Navigator.pop(ctx);
-              _loadAllAdminData();
-              widget.onConfigChanged();
-            },
-            child: const Text('যোগ করুন'),
-          ),
-        ],
-      ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('বাতিল')),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
+              onPressed: () async {
+                await ApiService.addPaymentMethod({
+                  'providerName': providerCtrl.text,
+                  'accountNumber': numberCtrl.text,
+                  'accountType': typeCtrl.text,
+                  'instructions': instCtrl.text,
+                  'active': true,
+                });
+                if (!ctx.mounted) return;
+                Navigator.pop(ctx);
+                _loadAllAdminData();
+                widget.onConfigChanged();
+              },
+              child: const Text('যোগ করুন'),
+            ),
+          ],
+        );
+      },
     );
   }
 
-  Widget _statCard(String title, String value, String subtitle, Color color) {
-    return Container(
-      width: 285,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(title, style: const TextStyle(fontSize: 13, color: Colors.black54, fontWeight: FontWeight.w600)),
-          const SizedBox(height: 6),
-          Text(value, style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: color)),
-          const SizedBox(height: 4),
-          Text(subtitle, style: const TextStyle(fontSize: 12, color: Colors.black87)),
-        ],
+  Widget _statCard(String title, String value, String subtitle, Color color, {double? width}) {
+    return SizedBox(
+      width: width ?? 285,
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.03),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              title,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontSize: 12, color: Colors.black54, fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 6),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                value,
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: color),
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              subtitle,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontSize: 11, color: Colors.black87),
+            ),
+          ],
+        ),
       ),
     );
   }

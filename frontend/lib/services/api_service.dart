@@ -8,6 +8,7 @@ class ApiService {
   static const String _envApiUrl = String.fromEnvironment('API_BASE_URL');
   static const String _prefTokenKey = 'landtrust_jwt_token';
   static const String _prefUserKey = 'landtrust_current_user';
+  static const Duration _timeout = Duration(seconds: 12);
 
   static String get baseUrl {
     if (_envApiUrl.isNotEmpty) {
@@ -37,6 +38,7 @@ class ApiService {
     double? width,
     BoxFit fit = BoxFit.cover,
     BorderRadius? borderRadius,
+    bool enableZoom = false,
   }) {
     final fallback = Container(
       height: height,
@@ -75,7 +77,14 @@ class ApiService {
       }
     }
     if (borderRadius != null) {
-      return ClipRRect(borderRadius: borderRadius, child: img);
+      img = ClipRRect(borderRadius: borderRadius, child: img);
+    }
+    if (enableZoom) {
+      return InteractiveViewer(
+        minScale: 0.8,
+        maxScale: 4.5,
+        child: img,
+      );
     }
     return img;
   }
@@ -125,15 +134,40 @@ class ApiService {
     return headers;
   }
 
+  // Safe timeout-aware HTTP helpers
+  static Future<http.Response> _safeGet(Uri uri) {
+    return http.get(uri, headers: _headers).timeout(_timeout, onTimeout: () {
+      throw Exception('সার্ভার সাড়া দিতে বিলম্ব হচ্ছে। ইন্টারনেট সংযোগ চেক করে পুনরায় চেষ্টা করুন।');
+    });
+  }
+
+  static Future<http.Response> _safePost(Uri uri, {Object? body}) {
+    return http.post(uri, headers: _headers, body: body).timeout(_timeout, onTimeout: () {
+      throw Exception('সার্ভার সাড়া দিতে বিলম্ব হচ্ছে। ইন্টারনেট সংযোগ চেক করে পুনরায় চেষ্টা করুন।');
+    });
+  }
+
+  static Future<http.Response> _safePut(Uri uri, {Object? body}) {
+    return http.put(uri, headers: _headers, body: body).timeout(_timeout, onTimeout: () {
+      throw Exception('সার্ভার সাড়া দিতে বিলম্ব হচ্ছে। ইন্টারনেট সংযোগ চেক করে পুনরায় চেষ্টা করুন।');
+    });
+  }
+
+  static Future<http.Response> _safeDelete(Uri uri) {
+    return http.delete(uri, headers: _headers).timeout(_timeout, onTimeout: () {
+      throw Exception('সার্ভার সাড়া দিতে বিলম্ব হচ্ছে। ইন্টারনেট সংযোগ চেক করে পুনরায় চেষ্টা করুন।');
+    });
+  }
+
   // ==================== PUBLIC ENDPOINTS ====================
 
   static Future<Map<String, dynamic>> getPublicConfig() async {
-    final res = await http.get(Uri.parse('$baseUrl/public/config'), headers: _headers);
+    final res = await _safeGet(Uri.parse('$baseUrl/public/config'));
     return jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
   }
 
   static Future<Map<String, dynamic>> getPublicStats() async {
-    final res = await http.get(Uri.parse('$baseUrl/public/stats'), headers: _headers);
+    final res = await _safeGet(Uri.parse('$baseUrl/public/stats'));
     return jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
   }
 
@@ -162,7 +196,7 @@ class ApiService {
     final uri = Uri.parse('$baseUrl/public/listings').replace(
       queryParameters: query.isEmpty ? null : query,
     );
-    final res = await http.get(uri, headers: _headers);
+    final res = await _safeGet(uri);
     return jsonDecode(utf8.decode(res.bodyBytes)) as List<dynamic>;
   }
 
@@ -174,16 +208,15 @@ class ApiService {
     final uri = Uri.parse('$baseUrl/public/requirements').replace(
       queryParameters: query.isEmpty ? null : query,
     );
-    final res = await http.get(uri, headers: _headers);
+    final res = await _safeGet(uri);
     return jsonDecode(utf8.decode(res.bodyBytes)) as List<dynamic>;
   }
 
   // ==================== AUTH ENDPOINTS ====================
 
   static Future<Map<String, dynamic>> login(String phoneNumber, String password) async {
-    final res = await http.post(
+    final res = await _safePost(
       Uri.parse('$baseUrl/auth/login'),
-      headers: _headers,
       body: jsonEncode({'phoneNumber': phoneNumber, 'password': password}),
     );
     final data = jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
@@ -198,9 +231,8 @@ class ApiService {
   }
 
   static Future<Map<String, dynamic>> register(Map<String, dynamic> payload) async {
-    final res = await http.post(
+    final res = await _safePost(
       Uri.parse('$baseUrl/auth/register'),
-      headers: _headers,
       body: jsonEncode(payload),
     );
     final data = jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
@@ -215,7 +247,7 @@ class ApiService {
   }
 
   static Future<Map<String, dynamic>> refreshMe() async {
-    final res = await http.get(Uri.parse('$baseUrl/user/me'), headers: _headers);
+    final res = await _safeGet(Uri.parse('$baseUrl/user/me'));
     if (res.statusCode == 200) {
       currentUser = jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
       await _saveSession();
@@ -237,9 +269,8 @@ class ApiService {
   // ==================== PROFILE, PASSWORD, NOTIFICATIONS & PAYMENT RESUBMIT ====================
 
   static Future<Map<String, dynamic>> updateMyProfile(Map<String, String> payload) async {
-    final res = await http.put(
+    final res = await _safePut(
       Uri.parse('$baseUrl/portal/profile'),
-      headers: _headers,
       body: jsonEncode(payload),
     );
     final data = jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
@@ -252,9 +283,8 @@ class ApiService {
   }
 
   static Future<Map<String, dynamic>> changeMyPassword(Map<String, String> payload) async {
-    final res = await http.put(
+    final res = await _safePut(
       Uri.parse('$baseUrl/portal/change-password'),
-      headers: _headers,
       body: jsonEncode(payload),
     );
     final data = jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
@@ -265,18 +295,17 @@ class ApiService {
   }
 
   static Future<Map<String, dynamic>> getMyNotifications() async {
-    final res = await http.get(Uri.parse('$baseUrl/portal/notifications'), headers: _headers);
+    final res = await _safeGet(Uri.parse('$baseUrl/portal/notifications'));
     return jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
   }
 
   static Future<void> markNotificationsRead() async {
-    await http.put(Uri.parse('$baseUrl/portal/notifications/read-all'), headers: _headers);
+    await _safePut(Uri.parse('$baseUrl/portal/notifications/mark-read'));
   }
 
   static Future<Map<String, dynamic>> resubmitPayment(Map<String, String> payload) async {
-    final res = await http.put(
+    final res = await _safePut(
       Uri.parse('$baseUrl/portal/resubmit-payment'),
-      headers: _headers,
       body: jsonEncode(payload),
     );
     final data = jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
@@ -285,136 +314,135 @@ class ApiService {
       await _saveSession();
       return data;
     }
-    throw Exception(data['message'] ?? 'পেমেন্ট তথ্য জমা দিতে সমস্যা হয়েছে');
+    throw Exception(data['message'] ?? 'পেমেন্ট পুনরায় জমা দিতে সমস্যা হয়েছে');
   }
 
-  // ==================== MEMBER PORTAL ENDPOINTS ====================
+  // ==================== MARKETING OFFICER ENDPOINTS ====================
+
+  static Future<Map<String, dynamic>> getOfficerDashboard() async {
+    final res = await _safeGet(Uri.parse('$baseUrl/portal/officer-dashboard'));
+    return jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
+  }
+
+  static Future<Map<String, dynamic>> requestOfficerPayout(Map<String, String> payload) async {
+    final res = await _safePost(
+      Uri.parse('$baseUrl/portal/officer-payout-request'),
+      body: jsonEncode(payload),
+    );
+    final data = jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
+    if (res.statusCode == 200) {
+      return data;
+    }
+    throw Exception(data['message'] ?? 'উত্তোলনের অনুরোধ ব্যর্থ হয়েছে');
+  }
+
+  // ==================== SELLER & BUYER LISTINGS, REQUIREMENTS & INQUIRIES ====================
 
   static Future<List<dynamic>> getMyListings() async {
-    final res = await http.get(Uri.parse('$baseUrl/portal/my-listings'), headers: _headers);
+    final res = await _safeGet(Uri.parse('$baseUrl/portal/my-listings'));
     return jsonDecode(utf8.decode(res.bodyBytes)) as List<dynamic>;
   }
 
   static Future<Map<String, dynamic>> createListing(Map<String, dynamic> payload) async {
-    final res = await http.post(
+    final res = await _safePost(
       Uri.parse('$baseUrl/portal/listings'),
-      headers: _headers,
       body: jsonEncode(payload),
     );
     return jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
   }
 
   static Future<Map<String, dynamic>> updateMyListing(int id, Map<String, dynamic> payload) async {
-    final res = await http.put(
+    final res = await _safePut(
       Uri.parse('$baseUrl/portal/listings/$id'),
-      headers: _headers,
       body: jsonEncode(payload),
     );
-    return jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
+    final data = jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
+    if (res.statusCode == 200) {
+      return data;
+    }
+    throw Exception(data['message'] ?? 'বিজ্ঞাপন আপডেট ব্যর্থ হয়েছে');
   }
 
   static Future<Map<String, dynamic>> closeListing(int id) async {
-    final res = await http.put(
-      Uri.parse('$baseUrl/portal/listings/$id/close'),
-      headers: _headers,
-    );
+    final res = await _safePut(Uri.parse('$baseUrl/portal/listings/$id/close'));
     return jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
   }
 
   static Future<List<dynamic>> getMyRequirements() async {
-    final res = await http.get(Uri.parse('$baseUrl/portal/my-requirements'), headers: _headers);
+    final res = await _safeGet(Uri.parse('$baseUrl/portal/my-requirements'));
     return jsonDecode(utf8.decode(res.bodyBytes)) as List<dynamic>;
   }
 
   static Future<Map<String, dynamic>> createRequirement(Map<String, dynamic> payload) async {
-    final res = await http.post(
+    final res = await _safePost(
       Uri.parse('$baseUrl/portal/requirements'),
-      headers: _headers,
       body: jsonEncode(payload),
     );
     return jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
   }
 
   static Future<Map<String, dynamic>> updateMyRequirement(int id, Map<String, dynamic> payload) async {
-    final res = await http.put(
+    final res = await _safePut(
       Uri.parse('$baseUrl/portal/requirements/$id'),
-      headers: _headers,
       body: jsonEncode(payload),
     );
-    return jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
+    final data = jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
+    if (res.statusCode == 200) {
+      return data;
+    }
+    throw Exception(data['message'] ?? 'চাহিদা আপডেট ব্যর্থ হয়েছে');
   }
 
   static Future<Map<String, dynamic>> fulfillMyRequirement(int id) async {
-    final res = await http.put(
-      Uri.parse('$baseUrl/portal/requirements/$id/fulfill'),
-      headers: _headers,
-    );
-    return jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
+    final res = await _safePut(Uri.parse('$baseUrl/portal/requirements/$id/fulfill'));
+    final data = jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
+    if (res.statusCode == 200) {
+      return data;
+    }
+    throw Exception(data['message'] ?? 'চাহিদা পূরণ আপডেট ব্যর্থ হয়েছে');
   }
 
   static Future<Map<String, dynamic>> submitSellerOfferForRequirement(int id, Map<String, dynamic> payload) async {
-    final res = await http.post(
+    final res = await _safePost(
       Uri.parse('$baseUrl/portal/requirements/$id/seller-offer'),
-      headers: _headers,
       body: jsonEncode(payload),
     );
     final data = jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
     if (res.statusCode == 200) {
       return data;
     }
-    throw Exception(data['message'] ?? 'প্রস্তাব পাঠাতে সমস্যা হয়েছে');
-  }
-
-  static Future<Map<String, dynamic>> createInquiry(Map<String, dynamic> payload) async {
-    final res = await http.post(
-      Uri.parse('$baseUrl/portal/inquiries'),
-      headers: _headers,
-      body: jsonEncode(payload),
-    );
-    return jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
+    throw Exception(data['message'] ?? 'প্রস্তাব পাঠানো ব্যর্থ হয়েছে');
   }
 
   static Future<List<dynamic>> getMyInquiries() async {
-    final res = await http.get(Uri.parse('$baseUrl/portal/my-inquiries'), headers: _headers);
+    final res = await _safeGet(Uri.parse('$baseUrl/portal/my-inquiries'));
     return jsonDecode(utf8.decode(res.bodyBytes)) as List<dynamic>;
   }
 
-  static Future<Map<String, dynamic>> getOfficerDashboard() async {
-    final res = await http.get(Uri.parse('$baseUrl/portal/officer-dashboard'), headers: _headers);
+  static Future<Map<String, dynamic>> createInquiry(Map<String, dynamic> payload) async {
+    final res = await _safePost(
+      Uri.parse('$baseUrl/portal/inquiries'),
+      body: jsonEncode(payload),
+    );
     return jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
   }
 
-  static Future<Map<String, dynamic>> requestOfficerPayout(Map<String, String> payload) async {
-    final res = await http.post(
-      Uri.parse('$baseUrl/portal/officer-payout-request'),
-      headers: _headers,
-      body: jsonEncode(payload),
-    );
-    final data = jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
-    if (res.statusCode == 200) {
-      return data;
-    }
-    throw Exception(data['message'] ?? 'উত্তোলন অনুরোধ পাঠাতে সমস্যা হয়েছে');
-  }
-
   static Future<List<dynamic>> getMyProposals() async {
-    final res = await http.get(Uri.parse('$baseUrl/portal/my-proposals'), headers: _headers);
+    final res = await _safeGet(Uri.parse('$baseUrl/portal/my-proposals'));
     return jsonDecode(utf8.decode(res.bodyBytes)) as List<dynamic>;
   }
 
   static Future<Map<String, dynamic>> createProposal(Map<String, dynamic> payload) async {
-    final res = await http.post(
+    final res = await _safePost(
       Uri.parse('$baseUrl/portal/proposals'),
-      headers: _headers,
       body: jsonEncode(payload),
     );
     return jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
   }
 
   static Future<Map<String, dynamic>> acceptCounterOffer(int id) async {
-    final res = await http.put(
+    final res = await _safePut(
       Uri.parse('$baseUrl/portal/proposals/$id/accept-counter'),
-      headers: _headers,
     );
     return jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
   }
@@ -422,92 +450,86 @@ class ApiService {
   // ==================== ADMIN ENDPOINTS ====================
 
   static Future<Map<String, dynamic>> getAdminDashboard() async {
-    final res = await http.get(Uri.parse('$baseUrl/admin/dashboard'), headers: _headers);
+    final res = await _safeGet(Uri.parse('$baseUrl/admin/dashboard'));
     return jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
   }
 
   static Future<Map<String, dynamic>> updateAdminSettings(Map<String, dynamic> payload) async {
-    final res = await http.put(
+    final res = await _safePut(
       Uri.parse('$baseUrl/admin/settings'),
-      headers: _headers,
       body: jsonEncode(payload),
     );
     return jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
   }
 
   static Future<List<dynamic>> getAdminPaymentMethods() async {
-    final res = await http.get(Uri.parse('$baseUrl/admin/payment-methods'), headers: _headers);
+    final res = await _safeGet(Uri.parse('$baseUrl/admin/payment-methods'));
     return jsonDecode(utf8.decode(res.bodyBytes)) as List<dynamic>;
   }
 
   static Future<Map<String, dynamic>> addPaymentMethod(Map<String, dynamic> payload) async {
-    final res = await http.post(
+    final res = await _safePost(
       Uri.parse('$baseUrl/admin/payment-methods'),
-      headers: _headers,
       body: jsonEncode(payload),
     );
     return jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
   }
 
   static Future<void> deletePaymentMethod(int id) async {
-    await http.delete(Uri.parse('$baseUrl/admin/payment-methods/$id'), headers: _headers);
+    await _safeDelete(Uri.parse('$baseUrl/admin/payment-methods/$id'));
   }
 
   static Future<List<dynamic>> getAdminLocations() async {
-    final res = await http.get(Uri.parse('$baseUrl/admin/locations'), headers: _headers);
+    final res = await _safeGet(Uri.parse('$baseUrl/admin/locations'));
     return jsonDecode(utf8.decode(res.bodyBytes)) as List<dynamic>;
   }
 
   static Future<Map<String, dynamic>> addAdminLocation(Map<String, dynamic> payload) async {
-    final res = await http.post(
+    final res = await _safePost(
       Uri.parse('$baseUrl/admin/locations'),
-      headers: _headers,
       body: jsonEncode(payload),
     );
     return jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
   }
 
   static Future<void> deleteAdminLocation(int id) async {
-    await http.delete(Uri.parse('$baseUrl/admin/locations/$id'), headers: _headers);
+    await _safeDelete(Uri.parse('$baseUrl/admin/locations/$id'));
   }
 
   static Future<List<dynamic>> getAdminUsers({String? role}) async {
     final uri = role == null || role.isEmpty
         ? Uri.parse('$baseUrl/admin/users')
         : Uri.parse('$baseUrl/admin/users?role=$role');
-    final res = await http.get(uri, headers: _headers);
+    final res = await _safeGet(uri);
     return jsonDecode(utf8.decode(res.bodyBytes)) as List<dynamic>;
   }
 
   static Future<Map<String, dynamic>> updateUserStatus(int id, String status, String note) async {
-    final res = await http.put(
+    final res = await _safePut(
       Uri.parse('$baseUrl/admin/users/$id/status'),
-      headers: _headers,
       body: jsonEncode({'accountStatus': status, 'adminNote': note}),
     );
     return jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
   }
 
   static Future<Map<String, dynamic>> adminResetUserPassword(int id, String newPassword) async {
-    final res = await http.put(
+    final res = await _safePut(
       Uri.parse('$baseUrl/admin/users/$id/reset-password'),
-      headers: _headers,
       body: jsonEncode({'newPassword': newPassword}),
     );
     return jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
   }
 
   static Future<Map<String, dynamic>> adminRefundUserFee(int id, Map<String, String> payload) async {
-    final res = await http.post(
+    final res = await _safePost(
       Uri.parse('$baseUrl/admin/users/$id/refund'),
-      headers: _headers,
       body: jsonEncode(payload),
     );
     return jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
   }
 
   static Future<List<dynamic>> getAdminListings() async {
-    final res = await http.get(Uri.parse('$baseUrl/admin/listings'), headers: _headers);
+    final res = await _safeGet(Uri.parse('$baseUrl/admin/listings'));
     return jsonDecode(utf8.decode(res.bodyBytes)) as List<dynamic>;
   }
 
@@ -522,51 +544,47 @@ class ApiService {
     if (verificationStatus != null) body['verificationStatus'] = verificationStatus;
     if (adminRemark != null) body['adminRemark'] = adminRemark;
 
-    final res = await http.put(
+    final res = await _safePut(
       Uri.parse('$baseUrl/admin/listings/$id/status'),
-      headers: _headers,
       body: jsonEncode(body),
     );
     return jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
   }
 
   static Future<List<dynamic>> getAdminRequirements() async {
-    final res = await http.get(Uri.parse('$baseUrl/admin/requirements'), headers: _headers);
+    final res = await _safeGet(Uri.parse('$baseUrl/admin/requirements'));
     return jsonDecode(utf8.decode(res.bodyBytes)) as List<dynamic>;
   }
 
   static Future<Map<String, dynamic>> updateRequirementStatus(int id, String status, String remark) async {
-    final res = await http.put(
+    final res = await _safePut(
       Uri.parse('$baseUrl/admin/requirements/$id/status'),
-      headers: _headers,
       body: jsonEncode({'status': status, 'adminRemark': remark}),
     );
     return jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
   }
 
   static Future<List<dynamic>> getAdminInquiries() async {
-    final res = await http.get(Uri.parse('$baseUrl/admin/inquiries'), headers: _headers);
+    final res = await _safeGet(Uri.parse('$baseUrl/admin/inquiries'));
     return jsonDecode(utf8.decode(res.bodyBytes)) as List<dynamic>;
   }
 
   static Future<Map<String, dynamic>> updateAdminInquiryStatus(int id, String status, String note) async {
-    final res = await http.put(
+    final res = await _safePut(
       Uri.parse('$baseUrl/admin/inquiries/$id/status'),
-      headers: _headers,
       body: jsonEncode({'status': status, 'adminNote': note}),
     );
     return jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
   }
 
   static Future<List<dynamic>> getAdminCommissions() async {
-    final res = await http.get(Uri.parse('$baseUrl/admin/commissions'), headers: _headers);
+    final res = await _safeGet(Uri.parse('$baseUrl/admin/commissions'));
     return jsonDecode(utf8.decode(res.bodyBytes)) as List<dynamic>;
   }
 
   static Future<Map<String, dynamic>> awardCommission(Map<String, dynamic> payload) async {
-    final res = await http.post(
+    final res = await _safePost(
       Uri.parse('$baseUrl/admin/commissions/award'),
-      headers: _headers,
       body: jsonEncode(payload),
     );
     final data = jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
@@ -577,37 +595,34 @@ class ApiService {
   }
 
   static Future<Map<String, dynamic>> payCommission(int id, String paymentReference) async {
-    final res = await http.put(
+    final res = await _safePut(
       Uri.parse('$baseUrl/admin/commissions/$id/pay'),
-      headers: _headers,
       body: jsonEncode({'paymentReference': paymentReference}),
     );
     return jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
   }
 
   static Future<List<dynamic>> getAdminProposals() async {
-    final res = await http.get(Uri.parse('$baseUrl/admin/proposals'), headers: _headers);
+    final res = await _safeGet(Uri.parse('$baseUrl/admin/proposals'));
     return jsonDecode(utf8.decode(res.bodyBytes)) as List<dynamic>;
   }
 
   static Future<Map<String, dynamic>> updateAdminProposal(int id, Map<String, dynamic> payload) async {
-    final res = await http.put(
+    final res = await _safePut(
       Uri.parse('$baseUrl/admin/proposals/$id'),
-      headers: _headers,
       body: jsonEncode(payload),
     );
     return jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
   }
 
   static Future<List<dynamic>> getAdminTransactions() async {
-    final res = await http.get(Uri.parse('$baseUrl/admin/transactions'), headers: _headers);
+    final res = await _safeGet(Uri.parse('$baseUrl/admin/transactions'));
     return jsonDecode(utf8.decode(res.bodyBytes)) as List<dynamic>;
   }
 
   static Future<Map<String, dynamic>> createAdminTransaction(Map<String, dynamic> payload) async {
-    final res = await http.post(
+    final res = await _safePost(
       Uri.parse('$baseUrl/admin/transactions'),
-      headers: _headers,
       body: jsonEncode(payload),
     );
     return jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;

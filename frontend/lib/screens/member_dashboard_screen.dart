@@ -94,221 +94,232 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
     final status = user['accountStatus'] as String? ?? 'PAYMENT_SUBMITTED';
     final unreadCount = (_notificationsData['unreadCount'] as num?)?.toInt() ?? 0;
     final currentMode = _activePortalMode.isEmpty ? role : _activePortalMode;
+    final isMobile = MediaQuery.of(context).size.width < 768;
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 1180),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Account Header Card
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF0B4F32), Color(0xFF146C43)],
-                  ),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Wrap(
-                  spacing: 16,
-                  runSpacing: 16,
-                  alignment: WrapAlignment.spaceBetween,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.verified_user, color: Colors.amberAccent, size: 26),
-                            const SizedBox(width: 8),
-                            Text(
-                              user['fullName'] ?? '',
-                              style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          'নিবন্ধিত ভূমিকা: ${_roleBangla(role)}  •  মোবাইল: ${user['phoneNumber']}  •  উপজেলা: ${user['upazila'] ?? 'নোয়াখালী সদর'}',
-                          style: const TextStyle(color: Colors.white70, fontSize: 14),
-                        ),
-                        if (user['referredByCode'] != null) ...[
-                          const SizedBox(height: 4),
-                          Text(
-                            'রেফারেল কোড ব্যবহৃত: ${user['referredByCode']} (${user['referredByOfficerName'] ?? ''})',
-                            style: const TextStyle(color: Colors.amberAccent, fontSize: 13),
-                          ),
-                        ],
-                      ],
-                    ),
-                    Wrap(
-                      spacing: 10,
-                      runSpacing: 8,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      children: [
-                        _statusChip(status),
-                        ElevatedButton.icon(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white24,
-                            foregroundColor: Colors.white,
-                          ),
-                          onPressed: _showProfileAndPasswordDialog,
-                          icon: const Icon(Icons.manage_accounts_outlined, size: 18),
-                          label: const Text('প্রোফাইল ও পাসওয়ার্ড'),
-                        ),
-                        // Notification Bell Button with Badge
-                        ElevatedButton.icon(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: unreadCount > 0 ? Colors.amber.shade600 : Colors.white24,
-                            foregroundColor: unreadCount > 0 ? Colors.black : Colors.white,
-                          ),
-                          onPressed: _showNotificationsDialog,
-                          icon: Badge(
-                            isLabelVisible: unreadCount > 0,
-                            label: Text('$unreadCount'),
-                            child: const Icon(Icons.notifications_active_outlined, size: 18),
-                          ),
-                          label: Text('নোটিফিকেশন ($unreadCount)'),
-                        ),
-                        ElevatedButton.icon(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            foregroundColor: const Color(0xFF0B4F32),
-                          ),
-                          onPressed: _loadData,
-                          icon: const Icon(Icons.refresh, size: 18),
-                          label: const Text('রিফ্রেশ'),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-
-              // Payment Verification / Resubmit Banner for PAYMENT_SUBMITTED or REJECTED
-              if (status != 'ACTIVE') ...[
-                const SizedBox(height: 12),
+    return RefreshIndicator(
+      onRefresh: _loadData,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: EdgeInsets.all(isMobile ? 12 : 20),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 1180),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Account Header Card
                 Container(
-                  padding: const EdgeInsets.all(16),
+                  padding: EdgeInsets.all(isMobile ? 14 : 20),
                   decoration: BoxDecoration(
-                    color: status == 'REJECTED' ? Colors.red.shade50 : Colors.amber.shade50,
-                    border: Border.all(color: status == 'REJECTED' ? Colors.red.shade400 : Colors.amber.shade600),
-                    borderRadius: BorderRadius.circular(12),
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF0B4F32), Color(0xFF146C43)],
+                    ),
+                    borderRadius: BorderRadius.circular(14),
                   ),
-                  child: Wrap(
-                    spacing: 12,
-                    runSpacing: 12,
-                    alignment: WrapAlignment.spaceBetween,
-                    crossAxisAlignment: WrapCrossAlignment.center,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
-                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Icon(
-                            status == 'REJECTED' ? Icons.error_outline : Icons.info_outline,
-                            color: status == 'REJECTED' ? Colors.red.shade700 : Colors.orange.shade800,
-                          ),
-                          const SizedBox(width: 10),
                           Flexible(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
                               children: [
-                                Text(
-                                  status == 'REJECTED'
-                                      ? 'আপনার প্রদত্ত পেমেন্ট তথ্য (TrxID: ${user['transactionId']}) যাচাইয়ে মেলেনি বা বাতিল হয়েছে।'
-                                      : 'আপনার নিবন্ধন ফি (৳${user['registrationFeeAmount']}) এবং TrxID (${user['transactionId']}) বর্তমানে অ্যাডমিন যাচাই করছেন।',
-                                  style: const TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                                if (user['adminNote'] != null && user['adminNote'].toString().isNotEmpty)
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 4),
-                                    child: Text(
-                                      'অ্যাডমিন নোট: ${user['adminNote']}',
-                                      style: TextStyle(color: Colors.red.shade900, fontWeight: FontWeight.w600),
+                                const Icon(Icons.verified_user, color: Colors.amberAccent, size: 24),
+                                const SizedBox(width: 8),
+                                Flexible(
+                                  child: Text(
+                                    user['fullName'] ?? '',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: isMobile ? 18 : 22,
+                                      fontWeight: FontWeight.bold,
                                     ),
+                                    overflow: TextOverflow.ellipsis,
                                   ),
+                                ),
                               ],
                             ),
                           ),
+                          _statusChip(status),
                         ],
                       ),
-                      ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF0B4F32),
-                          foregroundColor: Colors.white,
+                      const SizedBox(height: 6),
+                      Text(
+                        'ভূমিকা: ${_roleBangla(role)} • মোবাইল: ${user['phoneNumber']} • ${user['upazila'] ?? 'নোয়াখালী সদর'}',
+                        style: const TextStyle(color: Colors.white70, fontSize: 13),
+                      ),
+                      if (user['referredByCode'] != null) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          'রেফারেল কোড: ${user['referredByCode']} (${user['referredByOfficerName'] ?? ''})',
+                          style: const TextStyle(color: Colors.amberAccent, fontSize: 12),
                         ),
-                        onPressed: _showResubmitPaymentDialog,
-                        icon: const Icon(Icons.edit_note, size: 18),
-                        label: const Text('সঠিক TrxID পুনরায় জমা দিন'),
+                      ],
+                      const SizedBox(height: 12),
+
+                      // Action Buttons
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white24,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            ),
+                            onPressed: () => _showProfileAndPasswordDialog(isMobile),
+                            icon: const Icon(Icons.manage_accounts_outlined, size: 16),
+                            label: const Text('প্রোফাইল ও পাসওয়ার্ড', style: TextStyle(fontSize: 12)),
+                          ),
+                          ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: unreadCount > 0 ? Colors.amber.shade600 : Colors.white24,
+                              foregroundColor: unreadCount > 0 ? Colors.black : Colors.white,
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            ),
+                            onPressed: _showNotificationsDialog,
+                            icon: Badge(
+                              isLabelVisible: unreadCount > 0,
+                              label: Text('$unreadCount'),
+                              child: const Icon(Icons.notifications_active_outlined, size: 16),
+                            ),
+                            label: Text('নোটিফিকেশন ($unreadCount)', style: const TextStyle(fontSize: 12)),
+                          ),
+                          ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              foregroundColor: const Color(0xFF0B4F32),
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            ),
+                            onPressed: _loadData,
+                            icon: const Icon(Icons.refresh, size: 16),
+                            label: const Text('রিফ্রেশ', style: TextStyle(fontSize: 12)),
+                          ),
+                        ],
                       ),
                     ],
                   ),
                 ),
-              ],
-              const SizedBox(height: 16),
 
-              // Dual Buyer-Seller & Officer Mode Switcher Bar
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey.shade300),
-                ),
-                child: Wrap(
-                  spacing: 10,
-                  runSpacing: 8,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    const Text(
-                      'ড্যাশবোর্ড মোড পরিবর্তন করুন (একই অ্যাকাউন্টে ক্রয় ও বিক্রয় সুবিধা):',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF0B4F32)),
+                // Payment Verification / Resubmit Banner
+                if (status != 'ACTIVE') ...[
+                  const SizedBox(height: 10),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: status == 'REJECTED' ? Colors.red.shade50 : Colors.amber.shade50,
+                      border: Border.all(color: status == 'REJECTED' ? Colors.red.shade400 : Colors.amber.shade600),
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                    if (role == 'MARKETING_OFFICER')
-                      ChoiceChip(
-                        selected: currentMode == 'MARKETING_OFFICER',
-                        selectedColor: const Color(0xFF0B4F32),
-                        labelStyle: TextStyle(
-                          color: currentMode == 'MARKETING_OFFICER' ? Colors.white : Colors.black87,
-                          fontWeight: FontWeight.bold,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              status == 'REJECTED' ? Icons.error_outline : Icons.info_outline,
+                              color: status == 'REJECTED' ? Colors.red.shade700 : Colors.orange.shade800,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                status == 'REJECTED'
+                                    ? 'পেমেন্ট তথ্য (TrxID: ${user['transactionId']}) মেলেনি বা বাতিল হয়েছে।'
+                                    : 'নিবন্ধন ফি (৳${user['registrationFeeAmount']}) ও TrxID (${user['transactionId']}) যাচাই চলছে।',
+                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                              ),
+                            ),
+                          ],
                         ),
-                        label: const Text('📊 মার্কেটিং অফিসার পোর্টাল'),
-                        onSelected: (_) => setState(() => _activePortalMode = 'MARKETING_OFFICER'),
-                      ),
-                    ChoiceChip(
-                      selected: currentMode == 'BUYER',
-                      selectedColor: const Color(0xFF0B4F32),
-                      labelStyle: TextStyle(
-                        color: currentMode == 'BUYER' ? Colors.white : Colors.black87,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      label: Text('🛒 ক্রেতা মোড (${_myRequirements.length} চাহিদা)'),
-                      onSelected: (_) => setState(() => _activePortalMode = 'BUYER'),
+                        if (user['adminNote'] != null && user['adminNote'].toString().isNotEmpty) ...[
+                          const SizedBox(height: 4),
+                          Text('নোট: ${user['adminNote']}', style: TextStyle(color: Colors.red.shade900, fontSize: 12)),
+                        ],
+                        const SizedBox(height: 8),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF0B4F32),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            ),
+                            onPressed: () => _showResubmitPaymentDialog(isMobile),
+                            icon: const Icon(Icons.edit_note, size: 16),
+                            label: const Text('সঠিক TrxID পুনরায় জমা দিন', style: TextStyle(fontSize: 12)),
+                          ),
+                        ),
+                      ],
                     ),
-                    ChoiceChip(
-                      selected: currentMode == 'SELLER',
-                      selectedColor: const Color(0xFF0B4F32),
-                      labelStyle: TextStyle(
-                        color: currentMode == 'SELLER' ? Colors.white : Colors.black87,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      label: Text('🏞️ বিক্রেতা মোড (${_myListings.length} বিজ্ঞাপন)'),
-                      onSelected: (_) => setState(() => _activePortalMode = 'SELLER'),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
+                  ),
+                ],
+                const SizedBox(height: 14),
 
-              if (currentMode == 'MARKETING_OFFICER') _buildMarketingOfficerView(),
-              if (currentMode == 'SELLER') _buildSellerView(),
-              if (currentMode == 'BUYER') _buildBuyerView(),
-            ],
+                // Dual Buyer-Seller & Officer Mode Switcher Bar
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.grey.shade300),
+                  ),
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        const Text('মোড: ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFF0B4F32))),
+                        if (role == 'MARKETING_OFFICER') ...[
+                          ChoiceChip(
+                            selected: currentMode == 'MARKETING_OFFICER',
+                            selectedColor: const Color(0xFF0B4F32),
+                            labelStyle: TextStyle(
+                              color: currentMode == 'MARKETING_OFFICER' ? Colors.white : Colors.black87,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
+                            label: const Text('📊 মার্কেটিং অফিসার'),
+                            onSelected: (_) => setState(() => _activePortalMode = 'MARKETING_OFFICER'),
+                          ),
+                          const SizedBox(width: 6),
+                        ],
+                        ChoiceChip(
+                          selected: currentMode == 'BUYER',
+                          selectedColor: const Color(0xFF0B4F32),
+                          labelStyle: TextStyle(
+                            color: currentMode == 'BUYER' ? Colors.white : Colors.black87,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                          label: Text('🛒 ক্রেতা (${_myRequirements.length})'),
+                          onSelected: (_) => setState(() => _activePortalMode = 'BUYER'),
+                        ),
+                        const SizedBox(width: 6),
+                        ChoiceChip(
+                          selected: currentMode == 'SELLER',
+                          selectedColor: const Color(0xFF0B4F32),
+                          labelStyle: TextStyle(
+                            color: currentMode == 'SELLER' ? Colors.white : Colors.black87,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                          label: Text('🏞️ বিক্রেতা (${_myListings.length})'),
+                          onSelected: (_) => setState(() => _activePortalMode = 'SELLER'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                if (currentMode == 'MARKETING_OFFICER') _buildMarketingOfficerView(isMobile),
+                if (currentMode == 'SELLER') _buildSellerView(isMobile),
+                if (currentMode == 'BUYER') _buildBuyerView(isMobile),
+              ],
+            ),
           ),
         ),
       ),
@@ -316,7 +327,7 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
   }
 
   // ==================== MARKETING OFFICER VIEW ====================
-  Widget _buildMarketingOfficerView() {
+  Widget _buildMarketingOfficerView(bool isMobile) {
     final data = _officerDashboard ?? {};
     final code = data['referralCode'] ?? ApiService.currentUser?['myReferralCode'] ?? 'LT-NOA-XXXX';
     final shareLink = '${ApiService.publicWebOrigin}/?ref=$code';
@@ -331,281 +342,227 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Referral Code & Shareable Link Banner
+        // Referral Code Banner
         Card(
-          elevation: 2,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           child: Padding(
-            padding: const EdgeInsets.all(20),
+            padding: EdgeInsets.all(isMobile ? 14 : 18),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Wrap(
-                  spacing: 20,
-                  runSpacing: 16,
-                  alignment: WrapAlignment.spaceBetween,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    const Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'আপনার ইউনিক রেফারেল কোড ও শেয়ারযোগ্য রেফারেল লিংক',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF0B4F32)),
-                        ),
-                        SizedBox(height: 4),
-                        Text(
-                          'গ্রাহক এই লিংকে ক্লিক করে নিবন্ধন করলে রেফারেল কোড স্বয়ংক্রিয়ভাবে বসে যাবে এবং আপনার পোর্টালে যুক্ত হবে।',
-                          style: TextStyle(color: Colors.black87, fontSize: 13),
-                        ),
-                      ],
-                    ),
-                    Wrap(
-                      spacing: 10,
-                      runSpacing: 10,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFE8F5E9),
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: const Color(0xFF0B4F32), width: 1.5),
-                          ),
-                          child: SelectableText(
-                            code.toString(),
-                            style: const TextStyle(
-                              fontSize: 19,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 1.2,
-                              color: Color(0xFF0B4F32),
-                            ),
-                          ),
-                        ),
-                        ElevatedButton.icon(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF0B4F32),
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                          ),
-                          onPressed: () {
-                            Clipboard.setData(ClipboardData(text: code.toString()));
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('রেফারেল কোড ($code) কপি করা হয়েছে!')),
-                            );
-                          },
-                          icon: const Icon(Icons.copy, size: 17),
-                          label: const Text('কোড কপি'),
-                        ),
-                        ElevatedButton.icon(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.amber.shade700,
-                            foregroundColor: Colors.black,
-                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                          ),
-                          onPressed: () {
-                            Clipboard.setData(ClipboardData(text: shareLink));
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('রেফারেল লিংক কপি করা হয়েছে: $shareLink')),
-                            );
-                          },
-                          icon: const Icon(Icons.link, size: 18),
-                          label: const Text('রেফারেল লিংক কপি করুন'),
-                        ),
-                        ElevatedButton.icon(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.deepOrange.shade700,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                          ),
-                          onPressed: () => _showOfficerPayoutRequestDialog(pendingPayable),
-                          icon: const Icon(Icons.payments_outlined, size: 18),
-                          label: Text('সম্মানী উত্তোলনের অনুরোধ (৳$pendingPayable)'),
-                        ),
-                      ],
-                    ),
-                  ],
+                const Text(
+                  'আপনার রেফারেল কোড ও লিংক',
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF0B4F32)),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'এই লিংক বা কোড দিয়ে নিবন্ধন করলে কমিশন যুক্ত হবে (পরিশোধিত: ৳$totalPaid)।',
+                  style: const TextStyle(fontSize: 12, color: Colors.black87),
                 ),
                 const SizedBox(height: 10),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: SelectableText(
-                    'শেয়ার লিংক: $shareLink',
-                    style: const TextStyle(fontSize: 12, color: Colors.black87, fontWeight: FontWeight.w600),
-                  ),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE8F5E9),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: const Color(0xFF0B4F32), width: 1.2),
+                      ),
+                      child: SelectableText(
+                        code.toString(),
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF0B4F32)),
+                      ),
+                    ),
+                    ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF0B4F32),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                      ),
+                      onPressed: () {
+                        Clipboard.setData(ClipboardData(text: code.toString()));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('রেফারেল কোড ($code) কপি করা হয়েছে!')),
+                        );
+                      },
+                      icon: const Icon(Icons.copy, size: 15),
+                      label: const Text('কোড কপি', style: TextStyle(fontSize: 11)),
+                    ),
+                    ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.amber.shade700,
+                        foregroundColor: Colors.black,
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                      ),
+                      onPressed: () {
+                        Clipboard.setData(ClipboardData(text: shareLink));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('শেয়ার লিংক কপি হয়েছে: $shareLink')),
+                        );
+                      },
+                      icon: const Icon(Icons.link, size: 16),
+                      label: const Text('লিংক কপি', style: TextStyle(fontSize: 11)),
+                    ),
+                    ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.deepOrange.shade700,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                      ),
+                      onPressed: () => _showOfficerPayoutRequestDialog(pendingPayable, isMobile),
+                      icon: const Icon(Icons.payments_outlined, size: 16),
+                      label: Text('উত্তোলন (৳$pendingPayable)', style: const TextStyle(fontSize: 11)),
+                    ),
+                  ],
                 ),
               ],
             ),
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 12),
 
-        // 4 KPI Cards
-        Wrap(
-          spacing: 16,
-          runSpacing: 16,
-          children: [
-            _kpiCard('মোট রেফারকৃত সদস্য', '$totalReferred জন', Icons.people_alt, Colors.blue.shade700),
-            _kpiCard('যাচাইকৃত সক্রিয় সদস্য', '$verifiedReferred জন', Icons.verified, Colors.green.shade700),
-            _kpiCard('মোট অর্জিত সম্মানী', '৳$totalEarned', Icons.account_balance_wallet, Colors.teal.shade800),
-            _kpiCard('বকেয়া প্রাপ্য সম্মানী (Payable)', '৳$pendingPayable (পরিশোধিত: ৳$totalPaid)', Icons.payments, Colors.deepOrange.shade700),
-          ],
+        // 4 Responsive KPI Cards
+        LayoutBuilder(
+          builder: (ctx, constraints) {
+            final cardWidth = isMobile
+                ? (constraints.maxWidth - 10) / 2
+                : (constraints.maxWidth - 36) / 4;
+            return Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              children: [
+                _kpiCard('মোট রেফারকৃত', '$totalReferred জন', Icons.people_alt, Colors.blue.shade700, cardWidth),
+                _kpiCard('যাচাইকৃত সক্রিয়', '$verifiedReferred জন', Icons.verified, Colors.green.shade700, cardWidth),
+                _kpiCard('অর্জিত সম্মানী', '৳$totalEarned', Icons.account_balance_wallet, Colors.teal.shade800, cardWidth),
+                _kpiCard('বকেয়া প্রাপ্য', '৳$pendingPayable', Icons.payments, Colors.deepOrange.shade700, cardWidth),
+              ],
+            );
+          },
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 18),
 
         // Referred Users List
         const Text(
-          '১. আপনার রেফারেল কোড ব্যবহার করে নিবন্ধনকারী ক্রেতা ও বিক্রেতাদের তালিকা',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          '১. আপনার রেফারেল কোড ব্যবহারকারী সদস্যগণ',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 8),
         if (referredUsers.isEmpty)
           const Card(
             child: Padding(
-              padding: EdgeInsets.all(24),
+              padding: EdgeInsets.all(18),
               child: Text('এখনো আপনার রেফারেল কোড ব্যবহার করে কেউ নিবন্ধন করেননি।'),
             ),
           )
         else
-          Card(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            child: ListView.separated(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: referredUsers.length,
-              separatorBuilder: (_, _) => const Divider(height: 1),
-              itemBuilder: (context, i) {
-                final u = referredUsers[i] as Map<String, dynamic>;
-                final uStatus = u['accountStatus'] ?? 'PAYMENT_SUBMITTED';
-                final earned = u['commissionEarnedFromUser'] ?? 0;
-                return ListTile(
-                  leading: CircleAvatar(
-                    backgroundColor: const Color(0xFFE8F5E9),
-                    child: Icon(
-                      u['role'] == 'SELLER' ? Icons.landscape : Icons.person_search,
-                      color: const Color(0xFF0B4F32),
+          ...referredUsers.map((u) {
+            final uStatus = u['accountStatus'] ?? 'PAYMENT_SUBMITTED';
+            final earned = u['commissionEarnedFromUser'] ?? 0;
+            return Card(
+              margin: const EdgeInsets.only(bottom: 8),
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          '${u['fullName']} (${_roleBangla(u['role'])})',
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                        ),
+                        _statusChip(uStatus),
+                      ],
                     ),
-                  ),
-                  title: Text(
-                    '${u['fullName']} (${_roleBangla(u['role'])})',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  subtitle: Text('উপজেলা: ${u['upazila'] ?? 'নোয়াখালী'} • মোবাইল: ${u['phoneNumber']}'),
-                  trailing: Wrap(
-                    spacing: 12,
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    children: [
-                      _statusChip(uStatus),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: Colors.teal.shade50,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.teal.shade300),
-                        ),
-                        child: Text(
-                          'অর্জিত কমিশন: ৳$earned',
-                          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.teal.shade900),
-                        ),
+                    const SizedBox(height: 4),
+                    Text('উপজেলা: ${u['upazila'] ?? 'নোয়াখালী'} • মোবাইল: ${u['phoneNumber']}', style: const TextStyle(fontSize: 12, color: Colors.black87)),
+                    const SizedBox(height: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: Colors.teal.shade50,
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: Colors.teal.shade300),
                       ),
-                    ],
-                  ),
-                );
-              },
-            ),
-          ),
+                      child: Text('অর্জিত কমিশন: ৳$earned', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: Colors.teal.shade900)),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }),
 
-        const SizedBox(height: 24),
-        // Commission Ledger History
+        const SizedBox(height: 18),
+        // Commission Ledger
         const Text(
-          '২. আপনার সম্মানী ও কমিশনের বিস্তারিত হিসাব (নিবন্ধন বোনাস ও ডিল কমিশন)',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          '২. সম্মানী ও কমিশনের হিসাব বিবরণী',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 8),
         if (commissions.isEmpty)
           const Card(
             child: Padding(
-              padding: EdgeInsets.all(24),
+              padding: EdgeInsets.all(18),
               child: Text('এখনো কোনো কমিশন রেকর্ড জমা হয়নি।'),
             ),
           )
         else
-          Card(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            child: ListView.separated(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: commissions.length,
-              separatorBuilder: (_, _) => const Divider(height: 1),
-              itemBuilder: (context, i) {
-                final c = commissions[i] as Map<String, dynamic>;
-                final isPaid = c['status'] == 'PAID';
-                final cType = c['commissionType'] == 'REFERRAL_VERIFIED_FIXED'
-                    ? 'যাচাইকৃত নিবন্ধন সম্মানী (Fixed)'
-                    : c['commissionType'] == 'DEAL_CLOSURE_PERCENT'
-                        ? 'সফল লেনদেন কমিশন (${c['percentageRate']}%)'
-                        : 'সফল লেনদেন কমিশন (Fixed)';
-                return ListTile(
-                  leading: Icon(
-                    isPaid ? Icons.check_circle : Icons.schedule,
-                    color: isPaid ? Colors.green : Colors.orange,
-                    size: 30,
-                  ),
-                  title: Text(
-                    'গ্রাহক: ${c['referredUserName']} (${_roleBangla(c['referredUserRole'])}) — $cType',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  subtitle: Text('${c['note'] ?? ''}${c['paymentReference'] != null ? ' • পেমেন্ট রেফারেন্স: ${c['paymentReference']}' : ''}'),
-                  trailing: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        '৳${c['commissionAmountBdt']}',
-                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF0B4F32)),
+          ...commissions.map((c) {
+            final isPaid = c['status'] == 'PAID';
+            return Card(
+              margin: const EdgeInsets.only(bottom: 8),
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Row(
+                  children: [
+                    Icon(
+                      isPaid ? Icons.check_circle : Icons.schedule,
+                      color: isPaid ? Colors.green : Colors.orange,
+                      size: 24,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('${c['referredUserName']} — ${c['commissionType']}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                          Text(c['note'] ?? '', style: const TextStyle(fontSize: 11, color: Colors.black54)),
+                        ],
                       ),
-                      Text(
-                        isPaid ? 'পরিশোধিত (PAID)' : 'প্রাপ্য (PAYABLE)',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: isPaid ? Colors.green.shade700 : Colors.deepOrange,
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
-          ),
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text('৳${c['commissionAmountBdt']}', style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0B4F32))),
+                        Text(isPaid ? 'পরিশোধিত' : 'প্রাপ্য', style: TextStyle(fontSize: 10, color: isPaid ? Colors.green : Colors.deepOrange)),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }),
 
-        const SizedBox(height: 24),
-        // Training Guidelines & Code of Conduct for Marketing Officers
-        const Text(
-          '৩. মার্কেটিং অফিসারদের কাজের নির্দেশিকা ও আচরণবিধি (Training & Guidelines)',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 18),
+        // Training Guidelines
         Card(
           color: const Color(0xFFF3F8F5),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          child: const Padding(
-            padding: EdgeInsets.all(18),
+          child: Padding(
+            padding: const EdgeInsets.all(14),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+              children: const [
+                Text('📘 মার্কেটিং অফিসার কাজের নির্দেশিকা:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF0B4F32))),
+                SizedBox(height: 6),
                 Text(
-                  '✅ ১. সত্য ও নির্ভুল তথ্য সংগ্রহ: বিক্রেতার জমির খতিয়ান, দাগ নম্বর ও মালিকানা কাগজপত্র প্রাথমিকভাবে দেখে নিবন্ধনে সহায়তা করুন।\n'
-                  '✅ ২. রেফারেল লিংক ও কোড ব্যবহার: গ্রাহক নিবন্ধনের সময় আপনার ইউনিক রেফারেল কোড বা শেয়ার লিংক ব্যবহার করলে অ্যাডমিন পেমেন্ট অনুমোদনের সাথে সাথেই আপনার নির্ধারিত নিবন্ধন বোনাস লেজারে জমা হবে।\n'
-                  '✅ ৩. লেনদেন সম্পন্ন হলে বিশেষ কমিশন: আপনার রেফারকৃত ক্রেতা বা বিক্রেতার জমি ক্রয়-বিক্রয় সফলভাবে সম্পন্ন হলে নির্ধারিত হারে (%) অথবা এককালীন ডিল ক্লোজার কমিশন পাবেন।\n'
-                  '✅ ৪. গোপনীয়তা ও সততা রক্ষা: প্রতিষ্ঠানের অনুমোদন ছাড়া ক্রেতা বা বিক্রেতার ব্যক্তিগত নম্বর বা গোপন দলিল বাইরে প্রকাশ করা সম্পূর্ণ নিষিদ্ধ।\n'
-                  '✅ ৫. সম্মানী উত্তোলন: বকেয়া সম্মানী (Payable) জমা হলে উপরের "সম্মানী উত্তোলনের অনুরোধ" বাটনে ক্লিক করে আপনার বিকাশ/নগদ নম্বর পাঠালে অ্যাডমিন দ্রুত পরিশোধ করবেন।',
-                  style: TextStyle(fontSize: 13.5, height: 1.6, color: Colors.black87),
+                  '• গ্রাহককে আপনার রেফারেল লিংক বা কোড ব্যবহারে উৎসাহিত করুন।\n'
+                  '• গ্রাহকের TrxID অ্যাডমিন কর্তৃক যাচাই হলেই স্বয়ংক্রিয়ভাবে আপনার বোনাস যুক্ত হবে।\n'
+                  '• লেনদেন সফল হলে ডিল ক্লোজার কমিশন পাবেন এবং বকেয়া জমা হলে উইথড্র রিকোয়েস্ট পাঠান।',
+                  style: TextStyle(fontSize: 12, height: 1.5),
                 ),
               ],
             ),
@@ -616,47 +573,49 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
   }
 
   // ==================== SELLER VIEW ====================
-  Widget _buildSellerView() {
+  Widget _buildSellerView(bool isMobile) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Wrap(
-          spacing: 12,
-          runSpacing: 12,
+          spacing: 10,
+          runSpacing: 8,
           alignment: WrapAlignment.spaceBetween,
+          crossAxisAlignment: WrapCrossAlignment.center,
           children: [
-            const Text(
-              'আমার জমির বিজ্ঞাপনসমূহ (Seller Property Listings)',
-              style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold),
+            Text(
+              'আমার জমির বিজ্ঞাপন (${_myListings.length})',
+              style: TextStyle(fontSize: isMobile ? 17 : 19, fontWeight: FontWeight.bold),
             ),
             Wrap(
-              spacing: 10,
-              runSpacing: 10,
+              spacing: 8,
+              runSpacing: 8,
               children: [
                 ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF0B4F32),
                     foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                   ),
-                  onPressed: () => _showListingFormDialog(),
-                  icon: const Icon(Icons.add_home_work),
-                  label: const Text('নতুন জমির বিজ্ঞাপন জমা দিন'),
+                  onPressed: () => _showListingFormDialog(isMobile: isMobile),
+                  icon: const Icon(Icons.add_home_work, size: 16),
+                  label: const Text('নতুন বিজ্ঞাপন জমা দিন', style: TextStyle(fontSize: 12)),
                 ),
                 OutlinedButton.icon(
-                  onPressed: _showAddProposalDialog,
-                  icon: const Icon(Icons.handshake),
-                  label: const Text('বিশেষ সেবার পারিশ্রমিক প্রস্তাব'),
+                  onPressed: () => _showAddProposalDialog(isMobile),
+                  icon: const Icon(Icons.handshake, size: 16),
+                  label: const Text('বিশেষ সেবা প্রস্তাব', style: TextStyle(fontSize: 12)),
                 ),
               ],
             ),
           ],
         ),
-        const SizedBox(height: 14),
+        const SizedBox(height: 12),
         if (_myListings.isEmpty)
           const Card(
             child: Padding(
               padding: EdgeInsets.all(24),
-              child: Text('আপনি এখনো কোনো জমির বিজ্ঞাপন জমা দেননি। উপরের বাটনে ক্লিক করে জমির তথ্য ও ছবি জমা দিন।'),
+              child: Text('আপনি এখনো কোনো জমির বিজ্ঞাপন জমা দেননি। উপরের বাটনে ক্লিক করে তথ্য জমা দিন।'),
             ),
           )
         else
@@ -666,83 +625,72 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
             final isSold = mapItem['listingStatus'] == 'SOLD';
             return Card(
               margin: const EdgeInsets.only(bottom: 12),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               child: Padding(
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(isMobile ? 12 : 16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Wrap(
-                      spacing: 10,
-                      runSpacing: 8,
-                      alignment: WrapAlignment.spaceBetween,
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: ApiService.buildSmartImage(
-                                mapItem['imageUrl'] as String?,
-                                height: 54,
-                                width: 72,
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Flexible(
-                              child: Text(
-                                mapItem['title'] ?? '',
-                                style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                          ],
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: ApiService.buildSmartImage(
+                            mapItem['imageUrl'] as String?,
+                            height: isMobile ? 60 : 70,
+                            width: isMobile ? 80 : 95,
+                          ),
                         ),
-                        Wrap(
-                          spacing: 8,
-                          children: [
-                            _verificationBadge(mapItem['verificationStatus']),
-                            _statusChip(mapItem['listingStatus']),
-                          ],
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                mapItem['title'] ?? '',
+                                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 4),
+                              Wrap(
+                                spacing: 6,
+                                runSpacing: 4,
+                                children: [
+                                  _verificationBadge(mapItem['verificationStatus']),
+                                  _statusChip(mapItem['listingStatus']),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 8),
                     Text(
                       'অবস্থান: ${mapItem['areaName']}, ${mapItem['upazila']}, ${mapItem['district']} • মৌজা: ${mapItem['mouzaName'] ?? 'N/A'}',
-                      style: const TextStyle(color: Colors.black87),
+                      style: const TextStyle(fontSize: 12.5, color: Colors.black87),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'পরিমাণ: ${mapItem['areaDecimal']} শতাংশ (${mapItem['landType']}) • প্রত্যাশিত মূল্য: ৳${mapItem['expectedPriceBdt']} • প্রস্তাবিত পারিশ্রমিক: ৳${mapItem['proposedServiceFeeBdt']}',
-                      style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF0B4F32)),
+                      'পরিমাণ: ${mapItem['areaDecimal']} শতাংশ • মূল্য: ৳${mapItem['expectedPriceBdt']}',
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF0B4F32)),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'গোপনীয় দলিল তথ্য (শুধু অ্যাডমিন দেখবেন): খতিয়ান: ${mapItem['khatianNo']} | দাগ: ${mapItem['dagNo']} | নামজারি: ${mapItem['mutationInfo']}',
-                      style: const TextStyle(fontSize: 12, color: Colors.black54),
-                    ),
-                    if (mapItem['adminRemark'] != null && mapItem['adminRemark'].toString().isNotEmpty) ...[
-                      const SizedBox(height: 6),
-                      Text(
-                        'অ্যাডমিন মন্তব্য: ${mapItem['adminRemark']}',
-                        style: const TextStyle(color: Colors.deepOrange, fontWeight: FontWeight.w600),
-                      ),
-                    ],
                     const SizedBox(height: 10),
                     Wrap(
-                      spacing: 10,
-                      runSpacing: 8,
+                      spacing: 8,
+                      runSpacing: 6,
                       children: [
                         OutlinedButton.icon(
-                          onPressed: () => _showListingFormDialog(existing: mapItem),
-                          icon: const Icon(Icons.edit_outlined, size: 17),
-                          label: const Text('বিজ্ঞাপন সম্পাদনা (Edit)'),
+                          onPressed: () => _showListingFormDialog(existing: mapItem, isMobile: isMobile),
+                          icon: const Icon(Icons.edit_outlined, size: 15),
+                          label: const Text('সম্পাদনা (Edit)', style: TextStyle(fontSize: 11)),
                         ),
                         if (hasPrivateDoc)
                           OutlinedButton.icon(
-                            onPressed: () => _showPrivateDocumentPreviewDialog(mapItem),
-                            icon: const Icon(Icons.description_outlined, size: 17),
-                            label: Text('সংযুক্ত দলিল দেখুন (${mapItem['privateDocumentName'] ?? 'Deed'})'),
+                            onPressed: () => _showPrivateDocumentPreviewDialog(mapItem, isMobile),
+                            icon: const Icon(Icons.description_outlined, size: 15),
+                            label: const Text('সংযুক্ত দলিল দেখুন', style: TextStyle(fontSize: 11)),
                           ),
                         if (!isSold)
                           OutlinedButton.icon(
@@ -751,14 +699,9 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
                               await ApiService.closeListing(mapItem['id'] as int);
                               await _loadData();
                               widget.onRefreshParent();
-                              if (mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('বিজ্ঞাপনটি বিক্রি সম্পন্ন (SOLD) হিসেবে বন্ধ করা হয়েছে।')),
-                                );
-                              }
                             },
-                            icon: const Icon(Icons.lock_outline, size: 17),
-                            label: const Text('বিক্রি সম্পন্ন (SOLD) হিসেবে বন্ধ করুন'),
+                            icon: const Icon(Icons.lock_outline, size: 15),
+                            label: const Text('বিক্রি সম্পন্ন (SOLD)', style: TextStyle(fontSize: 11)),
                           ),
                       ],
                     ),
@@ -767,49 +710,51 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
               ),
             );
           }),
-        const SizedBox(height: 24),
-        _buildMyProposalsSection(),
+        const SizedBox(height: 18),
+        _buildMyProposalsSection(isMobile),
       ],
     );
   }
 
   // ==================== BUYER VIEW ====================
-  Widget _buildBuyerView() {
+  Widget _buildBuyerView(bool isMobile) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Wrap(
-          spacing: 12,
-          runSpacing: 12,
+          spacing: 10,
+          runSpacing: 8,
           alignment: WrapAlignment.spaceBetween,
+          crossAxisAlignment: WrapCrossAlignment.center,
           children: [
-            const Text(
-              'আমার জমি কেনার চাহিদাসমূহ (Buyer Requirements)',
-              style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold),
+            Text(
+              'আমার জমি কেনার চাহিদা (${_myRequirements.length})',
+              style: TextStyle(fontSize: isMobile ? 17 : 19, fontWeight: FontWeight.bold),
             ),
             Wrap(
-              spacing: 10,
-              runSpacing: 10,
+              spacing: 8,
+              runSpacing: 8,
               children: [
                 ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF0B4F32),
                     foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                   ),
-                  onPressed: () => _showRequirementFormDialog(),
-                  icon: const Icon(Icons.post_add),
-                  label: const Text('নতুন চাহিদা নিবন্ধন করুন'),
+                  onPressed: () => _showRequirementFormDialog(isMobile: isMobile),
+                  icon: const Icon(Icons.post_add, size: 16),
+                  label: const Text('নতুন চাহিদা দিন', style: TextStyle(fontSize: 12)),
                 ),
                 OutlinedButton.icon(
-                  onPressed: _showAddProposalDialog,
-                  icon: const Icon(Icons.handshake),
-                  label: const Text('বিশেষ সেবার পারিশ্রমিক প্রস্তাব'),
+                  onPressed: () => _showAddProposalDialog(isMobile),
+                  icon: const Icon(Icons.handshake, size: 16),
+                  label: const Text('বিশেষ সেবা প্রস্তাব', style: TextStyle(fontSize: 12)),
                 ),
               ],
             ),
           ],
         ),
-        const SizedBox(height: 14),
+        const SizedBox(height: 12),
         if (_myRequirements.isEmpty)
           const Card(
             child: Padding(
@@ -824,7 +769,7 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
             return Card(
               margin: const EdgeInsets.only(bottom: 12),
               child: Padding(
-                padding: const EdgeInsets.all(14),
+                padding: EdgeInsets.all(isMobile ? 12 : 16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -833,27 +778,27 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
                       children: [
                         Expanded(
                           child: Text(
-                            'পছন্দের এলাকা: ${reqItem['preferredUpazila']}, ${reqItem['preferredDistrict']} (${reqItem['preferredArea'] ?? ''}) — ${reqItem['landType']} জমি',
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                            '${reqItem['preferredUpazila']}, ${reqItem['preferredDistrict']} (${reqItem['landType']})',
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14.5),
                           ),
                         ),
                         _statusChip(reqItem['status']),
                       ],
                     ),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 4),
                     Text(
-                      'পরিমাণ: ${reqItem['minAreaDecimal']}–${reqItem['maxAreaDecimal']} শতাংশ • বাজেট: ৳${reqItem['minBudgetBdt']}–৳${reqItem['maxBudgetBdt']} • উদ্দেশ্য: ${reqItem['purpose']} • প্রস্তাবিত পারিশ্রমিক: ৳${reqItem['proposedServiceFeeBdt']}'
-                      '${reqItem['adminRemark'] != null && reqItem['adminRemark'].toString().isNotEmpty ? '\nঅ্যাডমিন নোট: ${reqItem['adminRemark']}' : ''}',
+                      'পরিমাণ: ${reqItem['minAreaDecimal']}–${reqItem['maxAreaDecimal']} শতাংশ • বাজেট: ৳${reqItem['minBudgetBdt']}–৳${reqItem['maxBudgetBdt']}',
+                      style: const TextStyle(fontSize: 12.5, color: Colors.black87),
                     ),
                     const SizedBox(height: 10),
                     Wrap(
-                      spacing: 10,
-                      runSpacing: 8,
+                      spacing: 8,
+                      runSpacing: 6,
                       children: [
                         OutlinedButton.icon(
-                          onPressed: () => _showRequirementFormDialog(existing: reqItem),
-                          icon: const Icon(Icons.edit_outlined, size: 17),
-                          label: const Text('চাহিদা সম্পাদনা (Edit)'),
+                          onPressed: () => _showRequirementFormDialog(existing: reqItem, isMobile: isMobile),
+                          icon: const Icon(Icons.edit_outlined, size: 15),
+                          label: const Text('সম্পাদনা (Edit)', style: TextStyle(fontSize: 11)),
                         ),
                         if (!isFulfilled)
                           OutlinedButton.icon(
@@ -862,14 +807,9 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
                               await ApiService.fulfillMyRequirement(reqItem['id'] as int);
                               await _loadData();
                               widget.onRefreshParent();
-                              if (mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('চাহিদাটি পূরণ হয়েছে (FULFILLED) হিসেবে চিহ্নিত করা হয়েছে।')),
-                                );
-                              }
                             },
-                            icon: const Icon(Icons.check_circle_outline, size: 17),
-                            label: const Text('চাহিদা পূরণ হয়েছে (FULFILLED)'),
+                            icon: const Icon(Icons.check_circle_outline, size: 15),
+                            label: const Text('চাহিদা পূরণ হয়েছে', style: TextStyle(fontSize: 11)),
                           ),
                       ],
                     ),
@@ -878,61 +818,71 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
               ),
             );
           }),
-        const SizedBox(height: 24),
+        const SizedBox(height: 18),
         const Text(
-          'পছন্দের জমিতে আমার আগ্রহ প্রকাশের তালিকা (My Inquiries)',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          'আমার আগ্রহ প্রকাশের তালিকা (Inquiries)',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 8),
         if (_myInquiries.isEmpty)
           const Card(
             child: Padding(
-              padding: EdgeInsets.all(20),
-              child: Text('হোম পেজ থেকে কোনো জমিতে "আগ্রহ প্রকাশ" করলে তা এখানে দেখা যাবে।'),
+              padding: EdgeInsets.all(16),
+              child: Text('হোম পেজ থেকে কোনো জমিতে আগ্রহ প্রকাশ করলে তা এখানে দেখা যাবে।'),
             ),
           )
         else
           ..._myInquiries.map((inq) => Card(
-                margin: const EdgeInsets.only(bottom: 10),
-                child: ListTile(
-                  leading: const Icon(Icons.connect_without_contact, color: Color(0xFF0B4F32)),
-                  title: Text(inq['listingTitle'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold)),
-                  subtitle: Text(
-                    'প্রস্তাবিত বাজেট: ৳${inq['offeredBudgetBdt']} • বার্তা: ${inq['message']}'
-                    '${inq['adminNote'] != null && inq['adminNote'].toString().isNotEmpty ? '\nঅ্যাডমিন আপডেট: ${inq['adminNote']}' : ''}',
+                margin: const EdgeInsets.only(bottom: 8),
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.connect_without_contact, color: Color(0xFF0B4F32), size: 22),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(inq['listingTitle'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                            Text('বাজেট: ৳${inq['offeredBudgetBdt']} • বার্তা: ${inq['message']}', style: const TextStyle(fontSize: 11, color: Colors.black54)),
+                          ],
+                        ),
+                      ),
+                      _statusChip(inq['status']),
+                    ],
                   ),
-                  trailing: _statusChip(inq['status']),
                 ),
               )),
-        const SizedBox(height: 24),
-        _buildMyProposalsSection(),
+        const SizedBox(height: 18),
+        _buildMyProposalsSection(isMobile),
       ],
     );
   }
 
-  Widget _buildMyProposalsSection() {
+  Widget _buildMyProposalsSection(bool isMobile) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          'বিশেষ সেবা ও নির্দিষ্ট পারিশ্রমিকের প্রস্তাবনা (Custom Service Fee Proposals)',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          'বিশেষ সেবা প্রস্তাবনা (Custom Proposals)',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 8),
         if (_myProposals.isEmpty)
           const Card(
             child: Padding(
-              padding: EdgeInsets.all(20),
-              child: Text('জমি কেনা বা বিক্রির জন্য নির্দিষ্ট পারিশ্রমিকের প্রস্তাব দিলে তা এখানে দেখা যাবে।'),
+              padding: EdgeInsets.all(16),
+              child: Text('জমি কেনা বা বিক্রির জন্য বিশেষ চুক্তি প্রস্তাব দিলে এখানে দেখা যাবে।'),
             ),
           )
         else
           ..._myProposals.map((p) {
             final isAgreed = p['status'] == 'MUTUALLY_AGREED' || p['status'] == 'COMPLETED';
             return Card(
-              margin: const EdgeInsets.only(bottom: 12),
+              margin: const EdgeInsets.only(bottom: 8),
               child: Padding(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(12),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -940,50 +890,26 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Expanded(
-                          child: Text(
-                            p['proposalTitle'] ?? '',
-                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                          ),
+                          child: Text(p['proposalTitle'] ?? '', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
                         ),
                         _statusChip(p['status']),
                       ],
                     ),
-                    const SizedBox(height: 6),
-                    Text(p['scopeDescription'] ?? ''),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 4),
+                    Text(p['scopeDescription'] ?? '', style: const TextStyle(fontSize: 12, color: Colors.black87)),
+                    const SizedBox(height: 4),
                     Text(
-                      'আপনার প্রস্তাবিত পারিশ্রমিক: ৳${p['customerProposedFeeBdt']}'
-                      '${p['adminCounterFeeBdt'] != null ? '  |  অ্যাডমিনের পাল্টা প্রস্তাব: ৳${p['adminCounterFeeBdt']}' : ''}'
-                      '${p['finalAgreedFeeBdt'] != null ? '  |  চূড়ান্ত সম্মত পারিশ্রমিক: ৳${p['finalAgreedFeeBdt']}' : ''}',
-                      style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0B4F32)),
+                      'প্রস্তাবিত পারিশ্রমিক: ৳${p['customerProposedFeeBdt']}${p['finalAgreedFeeBdt'] != null ? ' | চূড়ান্ত: ৳${p['finalAgreedFeeBdt']}' : ''}',
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5, color: Color(0xFF0B4F32)),
                     ),
-                    if (p['adminNote'] != null) ...[
-                      const SizedBox(height: 4),
-                      Text('অ্যাডমিন নোট: ${p['adminNote']}', style: const TextStyle(color: Colors.deepOrange)),
+                    if (isAgreed) ...[
+                      const SizedBox(height: 8),
+                      OutlinedButton.icon(
+                        onPressed: () => _showAgreementCertificateDialog(p as Map<String, dynamic>, isMobile),
+                        icon: const Icon(Icons.verified_outlined, size: 15),
+                        label: const Text('চুক্তিপত্র সনদ দেখুন', style: TextStyle(fontSize: 11)),
+                      ),
                     ],
-                    const SizedBox(height: 10),
-                    Wrap(
-                      spacing: 10,
-                      runSpacing: 8,
-                      children: [
-                        if (p['status'] == 'ADMIN_COUNTER_OFFER')
-                          ElevatedButton.icon(
-                            style: ElevatedButton.styleFrom(backgroundColor: Colors.green.shade700, foregroundColor: Colors.white),
-                            onPressed: () async {
-                              await ApiService.acceptCounterOffer(p['id'] as int);
-                              _loadData();
-                            },
-                            icon: const Icon(Icons.check),
-                            label: const Text('অ্যাডমিনের পাল্টা প্রস্তাব গ্রহণ করুন'),
-                          ),
-                        if (isAgreed)
-                          OutlinedButton.icon(
-                            onPressed: () => _showAgreementCertificateDialog(p as Map<String, dynamic>),
-                            icon: const Icon(Icons.verified_outlined, size: 18),
-                            label: const Text('📜 লিখিত চুক্তিপত্র দেখুন ও কপি করুন'),
-                          ),
-                      ],
-                    ),
                   ],
                 ),
               ),
@@ -995,7 +921,7 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
 
   // ==================== DIALOGS ====================
 
-  void _showProfileAndPasswordDialog() {
+  void _showProfileAndPasswordDialog(bool isMobile) {
     final user = ApiService.currentUser ?? {};
     final districts = _getDistricts();
     String district = user['district']?.toString() ?? districts.first;
@@ -1017,46 +943,39 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
           if (!upazilas.contains(upazila)) upazila = upazilas.first;
 
           return AlertDialog(
-            title: const Text('⚙️ প্রোফাইল তথ্য ও পাসওয়ার্ড পরিবর্তন'),
+            insetPadding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 24, vertical: 16),
+            title: const Text('⚙️ প্রোফাইল ও পাসওয়ার্ড', style: TextStyle(fontSize: 16)),
             content: SizedBox(
-              width: 500,
+              width: isMobile ? double.infinity : 480,
               child: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('১. ব্যক্তিগত প্রোফাইল আপডেট করুন:', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0B4F32))),
-                    const SizedBox(height: 10),
-                    TextField(controller: nameCtrl, decoration: const InputDecoration(labelText: 'পূর্ণ নাম *')),
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: DropdownButtonFormField<String>(
-                            initialValue: district,
-                            decoration: const InputDecoration(labelText: 'জেলা'),
-                            items: districts.map((d) => DropdownMenuItem(value: d, child: Text(d))).toList(),
-                            onChanged: (v) => setDialogState(() {
-                              district = v!;
-                              upazilas = _getUpazilasForDistrict(district);
-                              upazila = upazilas.first;
-                            }),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: DropdownButtonFormField<String>(
-                            initialValue: upazila,
-                            decoration: const InputDecoration(labelText: 'উপজেলা'),
-                            items: upazilas.map((u) => DropdownMenuItem(value: u, child: Text(u))).toList(),
-                            onChanged: (v) => setDialogState(() => upazila = v!),
-                          ),
-                        ),
-                      ],
+                    const Text('১. ব্যক্তিগত তথ্য:', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0B4F32), fontSize: 13)),
+                    const SizedBox(height: 8),
+                    TextField(controller: nameCtrl, decoration: const InputDecoration(labelText: 'পূর্ণ নাম *', isDense: true)),
+                    const SizedBox(height: 8),
+                    DropdownButtonFormField<String>(
+                      value: district,
+                      decoration: const InputDecoration(labelText: 'জেলা', isDense: true),
+                      items: districts.map((d) => DropdownMenuItem(value: d, child: Text(d))).toList(),
+                      onChanged: (v) => setDialogState(() {
+                        district = v!;
+                        upazilas = _getUpazilasForDistrict(district);
+                        upazila = upazilas.first;
+                      }),
                     ),
-                    const SizedBox(height: 10),
-                    TextField(controller: addressCtrl, decoration: const InputDecoration(labelText: 'বিস্তারিত ঠিকানা')),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 8),
+                    DropdownButtonFormField<String>(
+                      value: upazila,
+                      decoration: const InputDecoration(labelText: 'উপজেলা', isDense: true),
+                      items: upazilas.map((u) => DropdownMenuItem(value: u, child: Text(u))).toList(),
+                      onChanged: (v) => setDialogState(() => upazila = v!),
+                    ),
+                    const SizedBox(height: 8),
+                    TextField(controller: addressCtrl, decoration: const InputDecoration(labelText: 'বিস্তারিত ঠিকানা', isDense: true)),
+                    const SizedBox(height: 8),
                     Align(
                       alignment: Alignment.centerRight,
                       child: ElevatedButton.icon(
@@ -1074,7 +993,7 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
                             widget.onRefreshParent();
                             if (!mounted) return;
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('প্রোফাইল তথ্য সফলভাবে আপডেট হয়েছে!')),
+                              const SnackBar(content: Text('প্রোফাইল আপডেট হয়েছে!')),
                             );
                           } catch (e) {
                             if (mounted) {
@@ -1082,25 +1001,17 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
                             }
                           }
                         },
-                        icon: const Icon(Icons.save, size: 17),
-                        label: const Text('প্রোফাইল সংরক্ষণ করুন'),
+                        icon: const Icon(Icons.save, size: 15),
+                        label: const Text('সংরক্ষণ করুন', style: TextStyle(fontSize: 12)),
                       ),
                     ),
-                    const Divider(height: 28),
-                    const Text('২. পাসওয়ার্ড পরিবর্তন করুন:', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0B4F32))),
-                    const SizedBox(height: 10),
-                    TextField(
-                      controller: currentPassCtrl,
-                      obscureText: true,
-                      decoration: const InputDecoration(labelText: 'বর্তমান পাসওয়ার্ড *'),
-                    ),
-                    const SizedBox(height: 10),
-                    TextField(
-                      controller: newPassCtrl,
-                      obscureText: true,
-                      decoration: const InputDecoration(labelText: 'নতুন পাসওয়ার্ড (কমপক্ষে ৪ অক্ষর) *'),
-                    ),
-                    const SizedBox(height: 10),
+                    const Divider(height: 22),
+                    const Text('২. পাসওয়ার্ড পরিবর্তন:', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0B4F32), fontSize: 13)),
+                    const SizedBox(height: 8),
+                    TextField(controller: currentPassCtrl, obscureText: true, decoration: const InputDecoration(labelText: 'বর্তমান পাসওয়ার্ড *', isDense: true)),
+                    const SizedBox(height: 8),
+                    TextField(controller: newPassCtrl, obscureText: true, decoration: const InputDecoration(labelText: 'নতুন পাসওয়ার্ড *', isDense: true)),
+                    const SizedBox(height: 8),
                     Align(
                       alignment: Alignment.centerRight,
                       child: ElevatedButton.icon(
@@ -1123,8 +1034,8 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
                             }
                           }
                         },
-                        icon: const Icon(Icons.lock_reset, size: 18),
-                        label: const Text('পাসওয়ার্ড পরিবর্তন করুন'),
+                        icon: const Icon(Icons.lock_reset, size: 15),
+                        label: const Text('পাসওয়ার্ড পরিবর্তন', style: TextStyle(fontSize: 12)),
                       ),
                     ),
                   ],
@@ -1140,7 +1051,7 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
     );
   }
 
-  void _showOfficerPayoutRequestDialog(dynamic pendingPayable) {
+  void _showOfficerPayoutRequestDialog(dynamic pendingPayable, bool isMobile) {
     final user = ApiService.currentUser ?? {};
     String method = 'বিকাশ (bKash)';
     final numberCtrl = TextEditingController(text: user['phoneNumber']?.toString() ?? '');
@@ -1150,43 +1061,34 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) => AlertDialog(
-          title: const Text('💸 বকেয়া সম্মানী উত্তোলনের অনুরোধ (Payout Request)'),
+          insetPadding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 24, vertical: 16),
+          title: const Text('💸 সম্মানী উত্তোলনের অনুরোধ', style: TextStyle(fontSize: 16)),
           content: SizedBox(
-            width: 460,
+            width: isMobile ? double.infinity : 440,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'আপনার বর্তমান প্রাপ্য বকেয়া সম্মানী: ৳$pendingPayable',
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Color(0xFF0B4F32)),
-                ),
-                const SizedBox(height: 12),
+                Text('বর্তমান বকেয়া সম্মানী: ৳$pendingPayable', style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0B4F32), fontSize: 14)),
+                const SizedBox(height: 10),
                 DropdownButtonFormField<String>(
-                  initialValue: method,
-                  decoration: const InputDecoration(labelText: 'টাকা গ্রহণের মাধ্যম'),
+                  value: method,
+                  decoration: const InputDecoration(labelText: 'মাধ্যম', isDense: true),
                   items: const ['বিকাশ (bKash)', 'নগদ (Nagad)', 'রকেট (Rocket)', 'ব্যাংক অ্যাকাউন্ট']
                       .map((m) => DropdownMenuItem(value: m, child: Text(m)))
                       .toList(),
                   onChanged: (v) => setDialogState(() => method = v!),
                 ),
-                const SizedBox(height: 10),
-                TextField(
-                  controller: numberCtrl,
-                  decoration: const InputDecoration(labelText: 'বিকাশ/নগদ বা অ্যাকাউন্ট নম্বর *'),
-                ),
-                const SizedBox(height: 10),
-                TextField(
-                  controller: noteCtrl,
-                  maxLines: 2,
-                  decoration: const InputDecoration(labelText: 'অতিরিক্ত নোট (ঐচ্ছিক)'),
-                ),
+                const SizedBox(height: 8),
+                TextField(controller: numberCtrl, decoration: const InputDecoration(labelText: 'বিকাশ/নগদ নম্বর *', isDense: true)),
+                const SizedBox(height: 8),
+                TextField(controller: noteCtrl, maxLines: 2, decoration: const InputDecoration(labelText: 'নোট (ঐচ্ছিক)', isDense: true)),
               ],
             ),
           ),
           actions: [
             TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('বাতিল')),
-            ElevatedButton.icon(
+            ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
               onPressed: () async {
                 try {
@@ -1199,7 +1101,7 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
                   Navigator.pop(ctx);
                   if (!mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(res['message']?.toString() ?? 'উত্তোলনের অনুরোধ জমা হয়েছে!')),
+                    SnackBar(content: Text(res['message']?.toString() ?? 'অনুরোধ জমা হয়েছে!')),
                   );
                 } catch (e) {
                   if (mounted) {
@@ -1207,8 +1109,7 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
                   }
                 }
               },
-              icon: const Icon(Icons.send, size: 17),
-              label: const Text('অনুরোধ পাঠান'),
+              child: const Text('অনুরোধ পাঠান'),
             ),
           ],
         ),
@@ -1224,7 +1125,7 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text('🔔 আমার নোটিফিকেশনসমূহ'),
+            const Text('🔔 নোটিফিকেশন', style: TextStyle(fontSize: 16)),
             if (list.isNotEmpty)
               TextButton.icon(
                 onPressed: () async {
@@ -1233,14 +1134,14 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
                   Navigator.pop(ctx);
                   _loadData();
                 },
-                icon: const Icon(Icons.done_all, size: 18),
-                label: const Text('সব পঠিত করুন'),
+                icon: const Icon(Icons.done_all, size: 16),
+                label: const Text('সব পঠিত', style: TextStyle(fontSize: 11)),
               ),
           ],
         ),
         content: SizedBox(
-          width: 520,
-          height: 380,
+          width: 480,
+          height: 350,
           child: list.isEmpty
               ? const Center(child: Text('কোনো নোটিফিকেশন নেই।'))
               : ListView.separated(
@@ -1253,12 +1154,10 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
                       leading: Icon(
                         isRead ? Icons.notifications_none : Icons.notifications_active,
                         color: isRead ? Colors.grey : const Color(0xFF0B4F32),
+                        size: 20,
                       ),
-                      title: Text(
-                        n['title'] ?? '',
-                        style: TextStyle(fontWeight: isRead ? FontWeight.normal : FontWeight.bold),
-                      ),
-                      subtitle: Text(n['message'] ?? ''),
+                      title: Text(n['title'] ?? '', style: TextStyle(fontSize: 13, fontWeight: isRead ? FontWeight.normal : FontWeight.bold)),
+                      subtitle: Text(n['message'] ?? '', style: const TextStyle(fontSize: 11)),
                     );
                   },
                 ),
@@ -1270,7 +1169,7 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
     );
   }
 
-  void _showResubmitPaymentDialog() {
+  void _showResubmitPaymentDialog(bool isMobile) {
     final user = ApiService.currentUser ?? {};
     final paymentMethods = (_publicConfig['paymentMethods'] as List<dynamic>?) ?? [];
     final options = paymentMethods.isNotEmpty
@@ -1287,28 +1186,23 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) => AlertDialog(
-          title: const Text('সংশোধিত পেমেন্ট তথ্য (TrxID) জমা দিন'),
+          insetPadding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 24, vertical: 16),
+          title: const Text('সঠিক TrxID পুনরায় জমা দিন', style: TextStyle(fontSize: 16)),
           content: SizedBox(
-            width: 460,
+            width: isMobile ? double.infinity : 440,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 DropdownButtonFormField<String>(
-                  initialValue: selectedMethod,
-                  decoration: const InputDecoration(labelText: 'পেমেন্টের মাধ্যম'),
+                  value: selectedMethod,
+                  decoration: const InputDecoration(labelText: 'পেমেন্টের মাধ্যম', isDense: true),
                   items: options.map((p) => DropdownMenuItem(value: p, child: Text(p))).toList(),
                   onChanged: (v) => setDialogState(() => selectedMethod = v!),
                 ),
-                const SizedBox(height: 10),
-                TextField(
-                  controller: senderCtrl,
-                  decoration: const InputDecoration(labelText: 'প্রেরক মোবাইল নম্বর *'),
-                ),
-                const SizedBox(height: 10),
-                TextField(
-                  controller: trxCtrl,
-                  decoration: const InputDecoration(labelText: 'সঠিক ট্রানজ্যাকশন আইডি (TrxID) *'),
-                ),
+                const SizedBox(height: 8),
+                TextField(controller: senderCtrl, decoration: const InputDecoration(labelText: 'প্রেরক মোবাইল নম্বর *', isDense: true)),
+                const SizedBox(height: 8),
+                TextField(controller: trxCtrl, decoration: const InputDecoration(labelText: 'সঠিক TrxID *', isDense: true)),
               ],
             ),
           ),
@@ -1331,7 +1225,7 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
                     const SnackBar(content: Text('সংশোধিত TrxID সফলভাবে জমা হয়েছে!')),
                   );
                 } catch (e) {
-                  if (ctx.mounted) {
+                  if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
                   }
                 }
@@ -1344,15 +1238,16 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
     );
   }
 
-  void _showPrivateDocumentPreviewDialog(Map<String, dynamic> listing) {
+  void _showPrivateDocumentPreviewDialog(Map<String, dynamic> listing, bool isMobile) {
     final docUrl = listing['privateDocumentUrl']?.toString() ?? '';
     final docName = listing['privateDocumentName']?.toString() ?? 'গোপনীয় দলিল';
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text('গোপনীয় দলিল/খতিয়ান: $docName'),
+        insetPadding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 24, vertical: 16),
+        title: Text('দলিল/খতিয়ান: $docName', style: const TextStyle(fontSize: 16)),
         content: SizedBox(
-          width: 560,
+          width: isMobile ? double.infinity : 540,
           child: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -1360,13 +1255,19 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
                 if (docUrl.startsWith('data:image/') || docUrl.startsWith('http'))
                   ClipRRect(
                     borderRadius: BorderRadius.circular(10),
-                    child: ApiService.buildSmartImage(docUrl, height: 340, width: double.infinity, fit: BoxFit.contain),
+                    child: ApiService.buildSmartImage(
+                      docUrl,
+                      height: isMobile ? 260 : 340,
+                      width: double.infinity,
+                      fit: BoxFit.contain,
+                      enableZoom: true,
+                    ),
                   )
                 else
                   Container(
-                    padding: const EdgeInsets.all(20),
+                    padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(color: Colors.grey.shade100, borderRadius: BorderRadius.circular(10)),
-                    child: Text('সংযুক্ত ফাইল: $docName (ডকুমেন্ট ডেটা সংরক্ষিত আছে)'),
+                    child: Text('সংযুক্ত ফাইল: $docName'),
                   ),
               ],
             ),
@@ -1379,7 +1280,7 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
     );
   }
 
-  void _showAgreementCertificateDialog(Map<String, dynamic> p) {
+  void _showAgreementCertificateDialog(Map<String, dynamic> p, bool isMobile) {
     final agreedFee = p['finalAgreedFeeBdt'] ?? p['adminCounterFeeBdt'] ?? p['customerProposedFeeBdt'];
     final certText = '''
 ===================================================
@@ -1400,27 +1301,27 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
 চূড়ান্ত সম্মত পারিশ্রমিক: ৳$agreedFee (টাকা)
 সময়সীমা: ${p['timelineTerms'] ?? 'আলোচনা সাপেক্ষে'}
 পরিশোধের শর্ত: ${p['paymentTerms'] ?? 'চুক্তি অনুযায়ী'}
-অ্যাডমিন নোট: ${p['adminNote'] ?? 'প্রযোজ্য নয়'}
 ===================================================
 ''';
 
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('📜 ডিজিটাল সেবা চুক্তিপত্র (Service Agreement)'),
+        insetPadding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 24, vertical: 16),
+        title: const Text('📜 ডিজিটাল চুক্তিপত্র', style: TextStyle(fontSize: 16)),
         content: SizedBox(
-          width: 540,
+          width: isMobile ? double.infinity : 520,
           child: SingleChildScrollView(
             child: Container(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: const Color(0xFFF4FBF7),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(10),
                 border: Border.all(color: const Color(0xFF0B4F32)),
               ),
               child: SelectableText(
                 certText,
-                style: const TextStyle(fontFamily: 'monospace', fontSize: 13),
+                style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
               ),
             ),
           ),
@@ -1432,18 +1333,18 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
             onPressed: () {
               Clipboard.setData(ClipboardData(text: certText));
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('চুক্তিপত্রটি ক্লিপবোর্ডে কপি করা হয়েছে!')),
+                const SnackBar(content: Text('চুক্তিপত্রটি কপি করা হয়েছে!')),
               );
             },
-            icon: const Icon(Icons.copy, size: 18),
-            label: const Text('চুক্তিপত্র কপি করুন'),
+            icon: const Icon(Icons.copy, size: 16),
+            label: const Text('কপি করুন'),
           ),
         ],
       ),
     );
   }
 
-  void _showListingFormDialog({Map<String, dynamic>? existing}) {
+  void _showListingFormDialog({Map<String, dynamic>? existing, bool isMobile = false}) {
     final isEdit = existing != null;
     final districts = _getDistricts();
     String district = existing?['district']?.toString() ?? districts.first;
@@ -1471,7 +1372,7 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
     final descCtrl = TextEditingController(text: existing?['description']?.toString() ?? '');
 
     String uploadedImageDataUrl = existing?['imageUrl']?.toString() ?? '';
-    String uploadedImageName = uploadedImageDataUrl.isNotEmpty ? 'সংরক্ষিত মূল ছবি' : '';
+    String uploadedImageName = uploadedImageDataUrl.isNotEmpty ? 'সংরক্ষিত ছবি' : '';
     String additionalImagesJoined = existing?['additionalImageUrls']?.toString() ?? '';
     int extraPhotoCount = additionalImagesJoined.isEmpty ? 0 : additionalImagesJoined.split('|||').where((s) => s.isNotEmpty).length;
     String uploadedDeedDataUrl = existing?['privateDocumentUrl']?.toString() ?? '';
@@ -1485,133 +1386,120 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
           if (!upazilas.contains(upazila)) upazila = upazilas.first;
 
           return AlertDialog(
-            title: Text(isEdit ? 'জমির বিজ্ঞাপন সম্পাদনা করুন' : 'নতুন জমির বিজ্ঞাপন ও দলিল জমা দিন'),
+            insetPadding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 24, vertical: 16),
+            title: Text(isEdit ? 'বিজ্ঞাপন সম্পাদনা' : 'নতুন জমির বিজ্ঞাপন জমা দিন', style: const TextStyle(fontSize: 16)),
             content: SizedBox(
-              width: 600,
+              width: isMobile ? double.infinity : 560,
               child: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    TextField(controller: titleCtrl, decoration: const InputDecoration(labelText: 'বিজ্ঞাপনের শিরোনাম *')),
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: DropdownButtonFormField<String>(
-                            initialValue: district,
-                            decoration: const InputDecoration(labelText: 'জেলা'),
-                            items: districts.map((d) => DropdownMenuItem(value: d, child: Text(d))).toList(),
-                            onChanged: (v) => setDialogState(() {
-                              district = v!;
-                              upazilas = _getUpazilasForDistrict(district);
-                              upazila = upazilas.first;
-                            }),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: DropdownButtonFormField<String>(
-                            initialValue: upazila,
-                            decoration: const InputDecoration(labelText: 'উপজেলা'),
-                            items: upazilas.map((u) => DropdownMenuItem(value: u, child: Text(u))).toList(),
-                            onChanged: (v) => setDialogState(() => upazila = v!),
-                          ),
-                        ),
-                      ],
+                    TextField(controller: titleCtrl, decoration: const InputDecoration(labelText: 'বিজ্ঞাপনের শিরোনাম *', isDense: true)),
+                    const SizedBox(height: 8),
+                    LayoutBuilder(
+                      builder: (c, cs) {
+                        final half = isMobile ? cs.maxWidth : (cs.maxWidth - 8) / 2;
+                        return Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            SizedBox(
+                              width: half,
+                              child: DropdownButtonFormField<String>(
+                                value: district,
+                                decoration: const InputDecoration(labelText: 'জেলা', isDense: true),
+                                items: districts.map((d) => DropdownMenuItem(value: d, child: Text(d))).toList(),
+                                onChanged: (v) => setDialogState(() {
+                                  district = v!;
+                                  upazilas = _getUpazilasForDistrict(district);
+                                  upazila = upazilas.first;
+                                }),
+                              ),
+                            ),
+                            SizedBox(
+                              width: half,
+                              child: DropdownButtonFormField<String>(
+                                value: upazila,
+                                decoration: const InputDecoration(labelText: 'উপজেলা', isDense: true),
+                                items: upazilas.map((u) => DropdownMenuItem(value: u, child: Text(u))).toList(),
+                                onChanged: (v) => setDialogState(() => upazila = v!),
+                              ),
+                            ),
+                            SizedBox(
+                              width: half,
+                              child: TextField(controller: areaNameCtrl, decoration: const InputDecoration(labelText: 'এলাকা / ইউনিয়ন *', isDense: true)),
+                            ),
+                            SizedBox(
+                              width: half,
+                              child: TextField(controller: mouzaCtrl, decoration: const InputDecoration(labelText: 'মৌজার নাম', isDense: true)),
+                            ),
+                            SizedBox(
+                              width: half,
+                              child: DropdownButtonFormField<String>(
+                                value: landType,
+                                decoration: const InputDecoration(labelText: 'জমির ধরন', isDense: true),
+                                items: const ['আবাসিক', 'বাণিজ্যিক', 'কৃষি', 'বাগান/খামার']
+                                    .map((t) => DropdownMenuItem(value: t, child: Text(t)))
+                                    .toList(),
+                                onChanged: (v) => setDialogState(() => landType = v!),
+                              ),
+                            ),
+                            SizedBox(
+                              width: half,
+                              child: TextField(controller: decimalCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'পরিমাণ (শতাংশ) *', isDense: true)),
+                            ),
+                            SizedBox(
+                              width: half,
+                              child: TextField(controller: priceCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'প্রত্যাশিত মোট মূল্য (৳) *', isDense: true)),
+                            ),
+                            SizedBox(
+                              width: half,
+                              child: TextField(controller: feeCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'প্রস্তাবিত পারিশ্রমিক (৳)', isDense: true)),
+                            ),
+                            SizedBox(
+                              width: half,
+                              child: TextField(controller: khatianCtrl, decoration: const InputDecoration(labelText: 'খতিয়ান নং (গোপনীয়)', isDense: true)),
+                            ),
+                            SizedBox(
+                              width: half,
+                              child: TextField(controller: dagCtrl, decoration: const InputDecoration(labelText: 'দাগ নং (গোপনীয়)', isDense: true)),
+                            ),
+                          ],
+                        );
+                      },
                     ),
-                    const SizedBox(height: 10),
-                    TextField(controller: areaNameCtrl, decoration: const InputDecoration(labelText: 'এলাকা / ইউনিয়ন / রোড *')),
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        Expanded(child: TextField(controller: mouzaCtrl, decoration: const InputDecoration(labelText: 'মৌজার নাম'))),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: DropdownButtonFormField<String>(
-                            initialValue: landType,
-                            decoration: const InputDecoration(labelText: 'জমির ধরন'),
-                            items: const ['আবাসিক', 'বাণিজ্যিক', 'কৃষি', 'বাগান/খামার']
-                                .map((t) => DropdownMenuItem(value: t, child: Text(t)))
-                                .toList(),
-                            onChanged: (v) => setDialogState(() => landType = v!),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        Expanded(child: TextField(controller: decimalCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'পরিমাণ (শতাংশ) *', hintText: 'যেমন: 10'))),
-                        const SizedBox(width: 10),
-                        Expanded(child: TextField(controller: priceCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'প্রত্যাশিত মোট মূল্য (৳) *', hintText: 'যেমন: 3500000'))),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    TextField(
-                      controller: feeCtrl,
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
-                        labelText: 'ভূমি সেতুকে প্রস্তাবিত নির্দিষ্ট পারিশ্রমিক (৳)',
-                        helperText: 'জমি বিক্রিতে সহায়তা করলে আপনি কত টাকা পারিশ্রমিক দেবেন',
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        Expanded(child: TextField(controller: khatianCtrl, decoration: const InputDecoration(labelText: 'খতিয়ান নং (গোপনীয়)'))),
-                        const SizedBox(width: 10),
-                        Expanded(child: TextField(controller: dagCtrl, decoration: const InputDecoration(labelText: 'দাগ নং (গোপনীয়)'))),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    TextField(controller: mutationCtrl, decoration: const InputDecoration(labelText: 'দলিল ও নামজারির অবস্থা (শুধু অ্যাডমিন যাচাইয়ের জন্য)')),
-                    const SizedBox(height: 10),
-                    TextField(controller: roadCtrl, decoration: const InputDecoration(labelText: 'রাস্তার তথ্য (যেমন: ১২ ফুট পাকা রাস্তা সংলগ্ন)')),
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextField(
-                            controller: videoCtrl,
-                            decoration: const InputDecoration(labelText: 'ভিডিও ট্যুর লিংক (YouTube/Drive)'),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: TextField(
-                            controller: mapLinkCtrl,
-                            decoration: const InputDecoration(labelText: 'Google Maps লোকেশন লিংক'),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    TextField(controller: descCtrl, maxLines: 2, decoration: const InputDecoration(labelText: 'অতিরিক্ত বিবরণ')),
-                    const SizedBox(height: 14),
+                    const SizedBox(height: 8),
+                    TextField(controller: mutationCtrl, decoration: const InputDecoration(labelText: 'নামজারি ও খাজনার অবস্থা', isDense: true)),
+                    const SizedBox(height: 8),
+                    TextField(controller: roadCtrl, decoration: const InputDecoration(labelText: 'রাস্তার বিবরণ (যেমন: ১২ ফুট পাকা রাস্তা)', isDense: true)),
+                    const SizedBox(height: 8),
+                    TextField(controller: videoCtrl, decoration: const InputDecoration(labelText: 'ভিডিও ট্যুর লিংক (ঐচ্ছিক)', isDense: true)),
+                    const SizedBox(height: 8),
+                    TextField(controller: mapLinkCtrl, decoration: const InputDecoration(labelText: 'Google Maps লিংক (ঐচ্ছিক)', isDense: true)),
+                    const SizedBox(height: 8),
+                    TextField(controller: descCtrl, maxLines: 2, decoration: const InputDecoration(labelText: 'অতিরিক্ত বিবরণ', isDense: true)),
+                    const SizedBox(height: 12),
 
-                    // Device Photo, Gallery & Private Deed File Picker
+                    // File Pickers
                     Container(
-                      padding: const EdgeInsets.all(12),
+                      padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
                         color: const Color(0xFFF3F8F5),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: const Color(0xFF0B4F32).withValues(alpha: 0.3)),
+                        borderRadius: BorderRadius.circular(8),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('ছবি গ্যালারি ও গোপনীয় দলিল আপলোড:', style: TextStyle(fontWeight: FontWeight.bold)),
+                          const Text('ছবি ও গোপনীয় দলিল আপলোড:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
                           const SizedBox(height: 8),
                           Wrap(
-                            spacing: 10,
+                            spacing: 8,
                             runSpacing: 8,
                             children: [
                               OutlinedButton.icon(
                                 onPressed: () async {
-                                  final f = await FilePicker.pickFile(
-                                    type: FileType.image,
-                                  );
+                                  final f = await FilePicker.pickFile(type: FileType.image);
                                   if (f != null) {
                                     final bytes = await f.readAsBytes();
                                     final ext = (f.extension ?? 'jpg').toLowerCase();
@@ -1622,14 +1510,12 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
                                     });
                                   }
                                 },
-                                icon: const Icon(Icons.photo_camera_outlined, size: 18),
-                                label: Text(uploadedImageName.isEmpty ? 'মূল ছবি নির্বাচন করুন' : 'মূল ছবি: $uploadedImageName'),
+                                icon: const Icon(Icons.photo_camera, size: 16),
+                                label: Text(uploadedImageName.isEmpty ? 'মূল ছবি নির্বাচন' : uploadedImageName, style: const TextStyle(fontSize: 11)),
                               ),
                               OutlinedButton.icon(
                                 onPressed: () async {
-                                  final files = await FilePicker.pickFiles(
-                                    type: FileType.image,
-                                  );
+                                  final files = await FilePicker.pickFiles(type: FileType.image);
                                   if (files.isNotEmpty) {
                                     final List<String> dataUrls = [];
                                     for (final f in files) {
@@ -1644,12 +1530,8 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
                                     });
                                   }
                                 },
-                                icon: const Icon(Icons.collections_outlined, size: 18),
-                                label: Text(
-                                  extraPhotoCount == 0
-                                      ? 'অতিরিক্ত একাধিক ছবি (Gallery)'
-                                      : 'গ্যালারি ছবি: $extraPhotoCountটি যুক্ত',
-                                ),
+                                icon: const Icon(Icons.collections, size: 16),
+                                label: Text(extraPhotoCount == 0 ? 'গ্যালারি ছবি (+)' : 'গ্যালারি ($extraPhotoCount)', style: const TextStyle(fontSize: 11)),
                               ),
                               OutlinedButton.icon(
                                 onPressed: () async {
@@ -1660,21 +1542,15 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
                                   if (f != null) {
                                     final bytes = await f.readAsBytes();
                                     final ext = (f.extension ?? 'jpg').toLowerCase();
-                                    final mime = ext == 'pdf'
-                                        ? 'application/pdf'
-                                        : (ext == 'png' ? 'image/png' : 'image/jpeg');
+                                    final mime = ext == 'pdf' ? 'application/pdf' : (ext == 'png' ? 'image/png' : 'image/jpeg');
                                     setDialogState(() {
                                       uploadedDeedName = f.name;
                                       uploadedDeedDataUrl = 'data:$mime;base64,${base64Encode(bytes)}';
                                     });
                                   }
                                 },
-                                icon: const Icon(Icons.upload_file_outlined, size: 18),
-                                label: Text(
-                                  uploadedDeedName.isEmpty
-                                      ? 'গোপনীয় দলিল/খতিয়ান সংযুক্ত করুন'
-                                      : 'দলিল: $uploadedDeedName',
-                                ),
+                                icon: const Icon(Icons.upload_file, size: 16),
+                                label: Text(uploadedDeedName.isEmpty ? 'দলিল/খতিয়ান সংযুক্ত' : uploadedDeedName, style: const TextStyle(fontSize: 11)),
                               ),
                             ],
                           ),
@@ -1693,7 +1569,7 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
                   final decText = decimalCtrl.text.trim().isEmpty ? '10' : decimalCtrl.text.trim();
                   final prText = priceCtrl.text.trim().isEmpty ? '1000000' : priceCtrl.text.trim();
                   final payload = {
-                    'title': titleCtrl.text.trim().isEmpty ? '$upazila-এ $decText শতাংশ $landType জমি বিক্রি' : titleCtrl.text.trim(),
+                    'title': titleCtrl.text.trim().isEmpty ? '$upazila-এ $decText শতাংশ $landType জমি' : titleCtrl.text.trim(),
                     'district': district,
                     'upazila': upazila,
                     'areaName': areaNameCtrl.text.trim(),
@@ -1724,7 +1600,7 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
                   _loadData();
                   widget.onRefreshParent();
                 },
-                child: Text(isEdit ? 'আপডেট সংরক্ষণ করুন' : 'জমা দিন'),
+                child: Text(isEdit ? 'আপডেট' : 'জমা দিন'),
               ),
             ],
           );
@@ -1733,7 +1609,7 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
     );
   }
 
-  void _showRequirementFormDialog({Map<String, dynamic>? existing}) {
+  void _showRequirementFormDialog({Map<String, dynamic>? existing, bool isMobile = false}) {
     final isEdit = existing != null;
     final districts = _getDistricts();
     String district = existing?['preferredDistrict']?.toString() ?? districts.first;
@@ -1751,8 +1627,8 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
     final maxDecCtrl = TextEditingController(text: existing?['maxAreaDecimal']?.toString() ?? '');
     final minBudCtrl = TextEditingController(text: existing?['minBudgetBdt']?.toString() ?? '');
     final maxBudCtrl = TextEditingController(text: existing?['maxBudgetBdt']?.toString() ?? '');
-    final purposeCtrl = TextEditingController(text: existing?['purpose']?.toString() ?? 'আবাসিক বাড়ি নির্মাণ');
-    final timelineCtrl = TextEditingController(text: existing?['purchaseTimeline']?.toString() ?? '১-৩ মাসের মধ্যে');
+    final purposeCtrl = TextEditingController(text: existing?['purpose']?.toString() ?? 'বাড়ি নির্মাণ');
+    final timelineCtrl = TextEditingController(text: existing?['purchaseTimeline']?.toString() ?? '১-৩ মাস');
     final feeCtrl = TextEditingController(text: existing?['proposedServiceFeeBdt']?.toString() ?? '');
     final notesCtrl = TextEditingController(text: existing?['specialRequirements']?.toString() ?? '');
 
@@ -1764,73 +1640,86 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
           if (!upazilas.contains(upazila)) upazila = upazilas.first;
 
           return AlertDialog(
-            title: Text(isEdit ? 'জমির চাহিদা সম্পাদনা করুন' : 'জমি কেনার চাহিদা নিবন্ধন করুন'),
+            insetPadding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 24, vertical: 16),
+            title: Text(isEdit ? 'চাহিদা সম্পাদনা' : 'জমি কেনার চাহিদা দিন', style: const TextStyle(fontSize: 16)),
             content: SizedBox(
-              width: 520,
+              width: isMobile ? double.infinity : 500,
               child: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: DropdownButtonFormField<String>(
-                            initialValue: district,
-                            decoration: const InputDecoration(labelText: 'পছন্দের জেলা'),
-                            items: districts.map((d) => DropdownMenuItem(value: d, child: Text(d))).toList(),
-                            onChanged: (v) => setDialogState(() {
-                              district = v!;
-                              upazilas = _getUpazilasForDistrict(district);
-                              upazila = upazilas.first;
-                            }),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: DropdownButtonFormField<String>(
-                            initialValue: upazila,
-                            decoration: const InputDecoration(labelText: 'পছন্দের উপজেলা'),
-                            items: upazilas.map((u) => DropdownMenuItem(value: u, child: Text(u))).toList(),
-                            onChanged: (v) => setDialogState(() => upazila = v!),
-                          ),
-                        ),
-                      ],
+                    LayoutBuilder(
+                      builder: (c, cs) {
+                        final half = isMobile ? cs.maxWidth : (cs.maxWidth - 8) / 2;
+                        return Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            SizedBox(
+                              width: half,
+                              child: DropdownButtonFormField<String>(
+                                value: district,
+                                decoration: const InputDecoration(labelText: 'পছন্দের জেলা', isDense: true),
+                                items: districts.map((d) => DropdownMenuItem(value: d, child: Text(d))).toList(),
+                                onChanged: (v) => setDialogState(() {
+                                  district = v!;
+                                  upazilas = _getUpazilasForDistrict(district);
+                                  upazila = upazilas.first;
+                                }),
+                              ),
+                            ),
+                            SizedBox(
+                              width: half,
+                              child: DropdownButtonFormField<String>(
+                                value: upazila,
+                                decoration: const InputDecoration(labelText: 'পছন্দের উপজেলা', isDense: true),
+                                items: upazilas.map((u) => DropdownMenuItem(value: u, child: Text(u))).toList(),
+                                onChanged: (v) => setDialogState(() => upazila = v!),
+                              ),
+                            ),
+                            SizedBox(
+                              width: half,
+                              child: TextField(controller: areaCtrl, decoration: const InputDecoration(labelText: 'পছন্দের এলাকা', isDense: true)),
+                            ),
+                            SizedBox(
+                              width: half,
+                              child: DropdownButtonFormField<String>(
+                                value: landType,
+                                decoration: const InputDecoration(labelText: 'জমির ধরন', isDense: true),
+                                items: const ['আবাসিক', 'বাণিজ্যিক', 'কৃষি', 'বাগান/খামার']
+                                    .map((t) => DropdownMenuItem(value: t, child: Text(t)))
+                                    .toList(),
+                                onChanged: (v) => setDialogState(() => landType = v!),
+                              ),
+                            ),
+                            SizedBox(
+                              width: half,
+                              child: TextField(controller: minDecCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'সর্বনিম্ন শতাংশ', isDense: true)),
+                            ),
+                            SizedBox(
+                              width: half,
+                              child: TextField(controller: maxDecCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'সর্বোচ্চ শতাংশ', isDense: true)),
+                            ),
+                            SizedBox(
+                              width: half,
+                              child: TextField(controller: minBudCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'সর্বনিম্ন বাজেট (৳)', isDense: true)),
+                            ),
+                            SizedBox(
+                              width: half,
+                              child: TextField(controller: maxBudCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'সর্বোচ্চ বাজেট (৳)', isDense: true)),
+                            ),
+                          ],
+                        );
+                      },
                     ),
-                    const SizedBox(height: 10),
-                    TextField(controller: areaCtrl, decoration: const InputDecoration(labelText: 'পছন্দের এলাকা / ইউনিয়ন')),
-                    const SizedBox(height: 10),
-                    DropdownButtonFormField<String>(
-                      initialValue: landType,
-                      decoration: const InputDecoration(labelText: 'জমির ধরন'),
-                      items: const ['আবাসিক', 'বাণিজ্যিক', 'কৃষি', 'বাগান/খামার']
-                          .map((t) => DropdownMenuItem(value: t, child: Text(t)))
-                          .toList(),
-                      onChanged: (v) => setDialogState(() => landType = v!),
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        Expanded(child: TextField(controller: minDecCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'সর্বনিম্ন পরিমাণ (শতাংশ)', hintText: 'যেমন: 5'))),
-                        const SizedBox(width: 10),
-                        Expanded(child: TextField(controller: maxDecCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'সর্বোচ্চ পরিমাণ (শতাংশ)', hintText: 'যেমন: 15'))),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        Expanded(child: TextField(controller: minBudCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'সর্বনিম্ন বাজেট (৳)', hintText: 'যেমন: 1500000'))),
-                        const SizedBox(width: 10),
-                        Expanded(child: TextField(controller: maxBudCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'সর্বোচ্চ বাজেট (৳)', hintText: 'যেমন: 3500000'))),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    TextField(controller: purposeCtrl, decoration: const InputDecoration(labelText: 'কেনার উদ্দেশ্য')),
-                    const SizedBox(height: 10),
-                    TextField(controller: timelineCtrl, decoration: const InputDecoration(labelText: 'সম্ভাব্য সময়সীমা')),
-                    const SizedBox(height: 10),
-                    TextField(controller: feeCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'প্রস্তাবিত নির্দিষ্ট পারিশ্রমিক (৳)')),
-                    const SizedBox(height: 10),
-                    TextField(controller: notesCtrl, maxLines: 2, decoration: const InputDecoration(labelText: 'অন্যান্য বিশেষ চাহিদা')),
+                    const SizedBox(height: 8),
+                    TextField(controller: purposeCtrl, decoration: const InputDecoration(labelText: 'কেনার উদ্দেশ্য', isDense: true)),
+                    const SizedBox(height: 8),
+                    TextField(controller: timelineCtrl, decoration: const InputDecoration(labelText: 'সময়সীমা', isDense: true)),
+                    const SizedBox(height: 8),
+                    TextField(controller: feeCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'প্রস্তাবিত পারিশ্রমিক (৳)', isDense: true)),
+                    const SizedBox(height: 8),
+                    TextField(controller: notesCtrl, maxLines: 2, decoration: const InputDecoration(labelText: 'অন্যান্য বিশেষ শর্ত', isDense: true)),
                   ],
                 ),
               ),
@@ -1864,7 +1753,7 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
                   _loadData();
                   widget.onRefreshParent();
                 },
-                child: Text(isEdit ? 'আপডেট সংরক্ষণ করুন' : 'চাহিদা জমা দিন'),
+                child: Text(isEdit ? 'আপডেট' : 'চাহিদা জমা দিন'),
               ),
             ],
           );
@@ -1873,7 +1762,7 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
     );
   }
 
-  void _showAddProposalDialog() {
+  void _showAddProposalDialog(bool isMobile) {
     final titleCtrl = TextEditingController();
     final scopeCtrl = TextEditingController();
     final feeCtrl = TextEditingController();
@@ -1883,22 +1772,23 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('বিশেষ সেবা ও নির্দিষ্ট পারিশ্রমিকের প্রস্তাব দিন'),
+        insetPadding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 24, vertical: 16),
+        title: const Text('বিশেষ সেবা প্রস্তাব', style: TextStyle(fontSize: 16)),
         content: SizedBox(
-          width: 500,
+          width: isMobile ? double.infinity : 480,
           child: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                TextField(controller: titleCtrl, decoration: const InputDecoration(labelText: 'প্রস্তাবের শিরোনাম *')),
-                const SizedBox(height: 10),
-                TextField(controller: scopeCtrl, maxLines: 3, decoration: const InputDecoration(labelText: 'কাজের পরিধি ও শর্তাবলি *')),
-                const SizedBox(height: 10),
-                TextField(controller: feeCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'আপনার প্রস্তাবিত নির্দিষ্ট পারিশ্রমিক (৳) *', hintText: 'যেমন: 100000')),
-                const SizedBox(height: 10),
-                TextField(controller: timelineCtrl, decoration: const InputDecoration(labelText: 'সময়সীমা')),
-                const SizedBox(height: 10),
-                TextField(controller: termsCtrl, decoration: const InputDecoration(labelText: 'অর্থ পরিশোধের শর্ত')),
+                TextField(controller: titleCtrl, decoration: const InputDecoration(labelText: 'প্রস্তাবের শিরোনাম *', isDense: true)),
+                const SizedBox(height: 8),
+                TextField(controller: scopeCtrl, maxLines: 3, decoration: const InputDecoration(labelText: 'কাজের পরিধি ও শর্তাবলি *', isDense: true)),
+                const SizedBox(height: 8),
+                TextField(controller: feeCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'প্রস্তাবিত পারিশ্রমিক (৳) *', isDense: true)),
+                const SizedBox(height: 8),
+                TextField(controller: timelineCtrl, decoration: const InputDecoration(labelText: 'সময়সীমা', isDense: true)),
+                const SizedBox(height: 8),
+                TextField(controller: termsCtrl, decoration: const InputDecoration(labelText: 'অর্থ পরিশোধের শর্ত', isDense: true)),
               ],
             ),
           ),
@@ -1909,7 +1799,7 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
             style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
             onPressed: () async {
               await ApiService.createProposal({
-                'proposalTitle': titleCtrl.text.trim().isEmpty ? 'বিশেষ ক্রয়/বিক্রয় সহায়তা চুক্তি' : titleCtrl.text.trim(),
+                'proposalTitle': titleCtrl.text.trim().isEmpty ? 'বিশেষ ক্রয়/বিক্রয় চুক্তি' : titleCtrl.text.trim(),
                 'scopeDescription': scopeCtrl.text.trim(),
                 'customerProposedFeeBdt': feeCtrl.text.trim().isEmpty ? '50000' : feeCtrl.text.trim(),
                 'timelineTerms': timelineCtrl.text.trim(),
@@ -1926,31 +1816,30 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
     );
   }
 
-  Widget _kpiCard(String title, String value, IconData icon, Color color) {
+  Widget _kpiCard(String title, String value, IconData icon, Color color, double width) {
     return Container(
-      width: 265,
-      padding: const EdgeInsets.all(18),
+      width: width,
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: color.withValues(alpha: 0.25)),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8)],
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
       ),
       child: Row(
         children: [
           CircleAvatar(
-            radius: 22,
-            backgroundColor: color.withValues(alpha: 0.12),
-            child: Icon(icon, color: color),
+            radius: 18,
+            backgroundColor: color.withValues(alpha: 0.1),
+            child: Icon(icon, color: color, size: 18),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 8),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Text(title, style: const TextStyle(fontSize: 12, color: Colors.black54)),
-                const SizedBox(height: 4),
-                Text(value, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: color)),
+                Text(title, style: const TextStyle(fontSize: 11, color: Colors.black54), overflow: TextOverflow.ellipsis),
+                Text(value, style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: color)),
               ],
             ),
           ),
@@ -1961,26 +1850,26 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
 
   String _roleBangla(String? role) {
     return switch (role) {
-      'SELLER' => 'বিক্রেতা (Seller)',
+      'SELLER' => 'বিক্রেতা',
       'MARKETING_OFFICER' => 'মার্কেটিং অফিসার',
       'ADMIN' => 'অ্যাডমিন',
-      _ => 'ক্রেতা (Buyer)',
+      _ => 'ক্রেতা',
     };
   }
 
   Widget _verificationBadge(String? status) {
     final (label, color) = switch (status) {
-      'FIELD_VERIFIED' => ('🟢 সরেজমিনে ও নথি যাচাইকৃত', Colors.green.shade800),
-      'DOC_CHECKED' => ('🔵 কাগজপত্র প্রাথমিক যাচাইকৃত', Colors.blue.shade800),
-      _ => ('⚪ প্রাথমিক তথ্য প্রাপ্ত', Colors.grey.shade700),
+      'FIELD_VERIFIED' => ('🟢 যাচাইকৃত', Colors.green.shade800),
+      'DOC_CHECKED' => ('🔵 প্রাথমিক যাচাই', Colors.blue.shade800),
+      _ => ('⚪ অনির্দিষ্ট', Colors.grey.shade700),
     };
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(12),
       ),
-      child: Text(label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: color)),
+      child: Text(label, style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: color)),
     );
   }
 
@@ -1991,12 +1880,12 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
       _ => (status ?? 'PENDING', Colors.orange.shade800),
     };
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(20),
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(12),
       ),
-      child: Text(label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: color)),
+      child: Text(label, style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: color)),
     );
   }
 }
