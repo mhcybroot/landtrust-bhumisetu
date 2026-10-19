@@ -1,0 +1,54 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
+class AgreementCertificateDialog {
+  static void show(
+    BuildContext context, {
+    required Map<String, dynamic> proposal,
+    required bool isMobile,
+  }) {
+    final certText = '''
+=============================================================
+         ভূমি সেতু (BHUMI SETU) — বিশেষ সেবা চুক্তিপত্র সনদ
+=============================================================
+সনদ নম্বর: LT-AGR-${proposal['id']}
+তারিখ: ${proposal['agreedAt'] ?? proposal['updatedAt'] ?? '২০২৬'}
+
+গ্রাহক / সদস্য: ${proposal['customerName']}
+ভূমিকা: ${proposal['customerRole']}
+প্রস্তাব শিরোনাম: ${proposal['proposalTitle']}
+কাজের বিবরণ: ${proposal['scopeDescription']}
+
+চূড়ান্ত পারস্পরিক সম্মত ফি: ৳${proposal['finalAgreedFeeBdt'] ?? proposal['customerProposedFeeBdt']}
+স্ট্যাটাস: ${proposal['status']}
+=============================================================
+শর্তাবলী: উভয় পক্ষের সম্মতি ছাড়া কোনো অতিরিক্ত বা গোপন চার্জ প্রযোজ্য নয়।
+''';
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        insetPadding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 24, vertical: 16),
+        title: Text('বিশেষ সেবা চুক্তিপত্র সনদ (LT-AGR-${proposal['id']})', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        content: SizedBox(
+          width: isMobile ? double.infinity : 600,
+          child: SingleChildScrollView(
+            child: SelectableText(certText, style: const TextStyle(fontFamily: 'monospace', fontSize: 12)),
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('বন্ধ করুন')),
+          ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
+            onPressed: () {
+              Clipboard.setData(ClipboardData(text: certText));
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('চুক্তিপত্র সনদ কপি হয়েছে!')));
+            },
+            icon: const Icon(Icons.copy, size: 16),
+            label: const Text('কপি করুন (Copy)'),
+          ),
+        ],
+      ),
+    );
+  }
+}
