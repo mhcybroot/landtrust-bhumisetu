@@ -40,8 +40,10 @@ services:
     restart: unless-stopped
     depends_on:
       - backend
+    ports:
+      - "9999:9999"
     expose:
-      - "80"
+      - "9999"
 
 volumes:
   landtrust_pgdata:
