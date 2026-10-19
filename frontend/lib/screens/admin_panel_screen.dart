@@ -374,6 +374,17 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                           },
                           child: const Text('বাতিল (Reject)'),
                         ),
+                        OutlinedButton.icon(
+                          onPressed: () => _showResetUserPasswordDialog(u as Map<String, dynamic>),
+                          icon: const Icon(Icons.lock_reset, size: 16),
+                          label: const Text('পাসওয়ার্ড রিসেট'),
+                        ),
+                        OutlinedButton.icon(
+                          style: OutlinedButton.styleFrom(foregroundColor: Colors.purple.shade800),
+                          onPressed: () => _showRefundUserFeeDialog(u as Map<String, dynamic>),
+                          icon: const Icon(Icons.currency_exchange, size: 16),
+                          label: const Text('ফি রিফান্ড (Refund)'),
+                        ),
                       ],
                     ],
                   ),
@@ -383,6 +394,120 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
           );
         }),
       ],
+    );
+  }
+
+  void _showResetUserPasswordDialog(Map<String, dynamic> u) {
+    final newPassCtrl = TextEditingController(text: '123456');
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('🔑 পাসওয়ার্ড রিসেট: ${u['fullName']}'),
+        content: SizedBox(
+          width: 420,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('মোবাইল: ${u['phoneNumber']} (${u['role']})'),
+              const SizedBox(height: 12),
+              TextField(
+                controller: newPassCtrl,
+                decoration: const InputDecoration(
+                  labelText: 'নতুন পাসওয়ার্ড নির্ধারণ করুন *',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('বাতিল')),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
+            onPressed: () async {
+              try {
+                final res = await ApiService.adminResetUserPassword(u['id'] as int, newPassCtrl.text.trim());
+                if (!ctx.mounted) return;
+                Navigator.pop(ctx);
+                if (!mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(res['message']?.toString() ?? 'পাসওয়ার্ড রিসেট সম্পন্ন!')),
+                );
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+                }
+              }
+            },
+            child: const Text('পাসওয়ার্ড রিসেট করুন'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showRefundUserFeeDialog(Map<String, dynamic> u) {
+    final amountCtrl = TextEditingController(text: '${u['registrationFeeAmount'] ?? 500}');
+    final trxCtrl = TextEditingController(text: 'REFUND-${DateTime.now().millisecondsSinceEpoch % 100000}');
+    final reasonCtrl = TextEditingController(text: 'গ্রাহকের আবেদনের প্রেক্ষিতে নিবন্ধন ফি ফেরত প্রদান');
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('💸 নিবন্ধন ফি রিফান্ড: ${u['fullName']}'),
+        content: SizedBox(
+          width: 460,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: amountCtrl,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(labelText: 'রিফান্ডের পরিমাণ (৳) *', border: OutlineInputBorder()),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: trxCtrl,
+                decoration: const InputDecoration(labelText: 'রিফান্ড রেফারেন্স / TrxID', border: OutlineInputBorder()),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: reasonCtrl,
+                maxLines: 2,
+                decoration: const InputDecoration(labelText: 'রিফান্ডের কারণ / নোট', border: OutlineInputBorder()),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('বাতিল')),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.purple.shade800, foregroundColor: Colors.white),
+            onPressed: () async {
+              try {
+                final res = await ApiService.adminRefundUserFee(u['id'] as int, {
+                  'amountBdt': amountCtrl.text.trim(),
+                  'transactionId': trxCtrl.text.trim(),
+                  'reason': reasonCtrl.text.trim(),
+                });
+                if (!ctx.mounted) return;
+                Navigator.pop(ctx);
+                await _loadAllAdminData();
+                if (!mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(res['message']?.toString() ?? 'রিফান্ড সম্পন্ন হয়েছে!')),
+                );
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+                }
+              }
+            },
+            child: const Text('রিফান্ড অনুমোদন করুন'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -669,7 +794,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                       style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF0B4F32)),
                     ),
                     const SizedBox(height: 4),
-                    Text('ক্রেতার প্রস্তাবিত বাজেট: ৳${inq['offeredPriceBdt']} • বার্তা: ${inq['message'] ?? ''}'),
+                    Text('ক্রেতার প্রস্তাবিত বাজেট: ৳${inq['offeredBudgetBdt'] ?? inq['offeredPriceBdt'] ?? '-'} • বার্তা: ${inq['message'] ?? ''}'),
                     if ((inq['adminNote'] ?? '').toString().isNotEmpty)
                       Padding(
                         padding: const EdgeInsets.only(top: 4),
@@ -1327,6 +1452,9 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
     final dealFixedCtrl = TextEditingController(text: '${s['dealClosureFixedCommission'] ?? 5000}');
     final dealPctCtrl = TextEditingController(text: '${s['dealClosurePercentCommission'] ?? 10}');
     final reservePctCtrl = TextEditingController(text: '${s['advisoryReservePercent'] ?? 25}');
+    final supportPhoneCtrl = TextEditingController(text: '${s['supportPhone'] ?? '01800-000000'}');
+    final supportEmailCtrl = TextEditingController(text: '${s['supportEmail'] ?? 'support@landtrust.com.bd'}');
+    final officeAddressCtrl = TextEditingController(text: '${s['officeAddress'] ?? 'মাইজদী কোর্ট, নোয়াখালী সদর, নোয়াখালী'}');
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1339,7 +1467,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  '১. নিবন্ধন ফি এবং মার্কেটিং অফিসার কমিশন নির্ধারণ (অ্যাডমিন যেকোনো সময় পরিবর্তন করতে পারবেন)',
+                  '১. নিবন্ধন ফি, কমিশন এবং হেল্পলাইন/অফিস ঠিকানা নির্ধারণ (অ্যাডমিন যেকোনো সময় পরিবর্তন করতে পারবেন)',
                   style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Color(0xFF0B4F32)),
                 ),
                 const SizedBox(height: 16),
@@ -1407,6 +1535,27 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                         ),
                       ),
                     ),
+                    SizedBox(
+                      width: 250,
+                      child: TextField(
+                        controller: supportPhoneCtrl,
+                        decoration: const InputDecoration(labelText: 'হেল্পলাইন নম্বর (Support Phone)', border: OutlineInputBorder()),
+                      ),
+                    ),
+                    SizedBox(
+                      width: 280,
+                      child: TextField(
+                        controller: supportEmailCtrl,
+                        decoration: const InputDecoration(labelText: 'সাপোর্ট ইমেইল (Support Email)', border: OutlineInputBorder()),
+                      ),
+                    ),
+                    SizedBox(
+                      width: 450,
+                      child: TextField(
+                        controller: officeAddressCtrl,
+                        decoration: const InputDecoration(labelText: 'প্রধান কার্যালয়ের ঠিকানা (Office Address)', border: OutlineInputBorder()),
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 16),
@@ -1425,10 +1574,13 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                       'dealClosureFixedCommission': dealFixedCtrl.text,
                       'dealClosurePercentCommission': dealPctCtrl.text,
                       'advisoryReservePercent': reservePctCtrl.text,
+                      'supportPhone': supportPhoneCtrl.text.trim(),
+                      'supportEmail': supportEmailCtrl.text.trim(),
+                      'officeAddress': officeAddressCtrl.text.trim(),
                     });
                     if (mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('সিস্টেম ফি ও কমিশন সেটিংস সফলভাবে আপডেট হয়েছে!')),
+                        const SnackBar(content: Text('সিস্টেম ফি, কমিশন ও অফিস তথ্য সফলভাবে আপডেট হয়েছে!')),
                       );
                     }
                     _loadAllAdminData();
@@ -1510,9 +1662,11 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
               spacing: 10,
               runSpacing: 10,
               children: _locations.map((loc) {
+                final dist = loc['districtNameBn'] ?? loc['district'] ?? '';
+                final upz = loc['upazilaNameBn'] ?? loc['upazila'] ?? '';
                 return Chip(
                   avatar: const Icon(Icons.location_on, size: 16, color: Color(0xFF0B4F32)),
-                  label: Text('${loc['district']} — ${loc['upazila']}'),
+                  label: Text('$dist — $upz'),
                   deleteIcon: const Icon(Icons.close, size: 16, color: Colors.red),
                   onDeleted: () async {
                     await ApiService.deleteAdminLocation(loc['id'] as int);
@@ -1566,8 +1720,8 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
             onPressed: () async {
               if (districtCtrl.text.trim().isEmpty || upazilaCtrl.text.trim().isEmpty) return;
               await ApiService.addAdminLocation({
-                'district': districtCtrl.text.trim(),
-                'upazila': upazilaCtrl.text.trim(),
+                'districtNameBn': districtCtrl.text.trim(),
+                'upazilaNameBn': upazilaCtrl.text.trim(),
               });
               if (!ctx.mounted) return;
               Navigator.pop(ctx);

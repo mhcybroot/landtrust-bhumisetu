@@ -3,6 +3,7 @@ package bd.com.landtrust.controller;
 import bd.com.landtrust.entity.*;
 import bd.com.landtrust.repository.*;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -26,6 +27,7 @@ public class AdminController {
     private final CommissionEntryRepository commissionRepository;
     private final FinancialTransactionRepository transactionRepository;
     private final NotificationRepository notificationRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public AdminController(
             UserRepository userRepository,
@@ -38,7 +40,8 @@ public class AdminController {
             ServiceProposalRepository proposalRepository,
             CommissionEntryRepository commissionRepository,
             FinancialTransactionRepository transactionRepository,
-            NotificationRepository notificationRepository) {
+            NotificationRepository notificationRepository,
+            PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.settingRepository = settingRepository;
         this.paymentMethodRepository = paymentMethodRepository;
@@ -50,6 +53,7 @@ public class AdminController {
         this.commissionRepository = commissionRepository;
         this.transactionRepository = transactionRepository;
         this.notificationRepository = notificationRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     private void notifyUser(Long userId, String title, String message) {
@@ -340,6 +344,55 @@ public class AdminController {
         }
 
         return ResponseEntity.ok(PublicAndAuthController.sanitizeUser(user));
+    }
+
+    @PutMapping("/users/{id}/reset-password")
+    public ResponseEntity<?> resetUserPassword(@PathVariable Long id, @RequestBody Map<String, String> body) {
+        Optional<UserEntity> userOpt = userRepository.findById(id);
+        if (userOpt.isEmpty()) return ResponseEntity.notFound().build();
+
+        UserEntity user = userOpt.get();
+        String newPassword = body.getOrDefault("newPassword", "123456").trim();
+        if (newPassword.isBlank()) newPassword = "123456";
+
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+
+        notifyUser(user.getId(), "অ্যাডমিন কর্তৃক পাসওয়ার্ড রিসেট",
+                "অ্যাডমিন আপনার অ্যাকাউন্টের পাসওয়ার্ড রিসেট করেছেন। ড্যাশবোর্ড থেকে আপনি পুনরায় পাসওয়ার্ড পরিবর্তন করতে পারবেন।");
+
+        return ResponseEntity.ok(Map.of("message", user.getFullName() + " এর পাসওয়ার্ড সফলভাবে রিসেট করা হয়েছে।"));
+    }
+
+    @PostMapping("/users/{id}/refund")
+    public ResponseEntity<?> refundUserRegistrationFee(@PathVariable Long id, @RequestBody Map<String, String> body) {
+        Optional<UserEntity> userOpt = userRepository.findById(id);
+        if (userOpt.isEmpty()) return ResponseEntity.notFound().build();
+
+        UserEntity user = userOpt.get();
+        BigDecimal refundAmount = parseDecimal(body.get("amountBdt"),
+                user.getRegistrationFeeAmount() != null ? user.getRegistrationFeeAmount() : new BigDecimal("500"));
+        String refundRef = body.getOrDefault("paymentReference", "REFUND-" + System.currentTimeMillis() % 100000);
+        String reason = body.getOrDefault("reason", "নিবন্ধন ফি রিফান্ড");
+
+        FinancialTransactionEntity txn = new FinancialTransactionEntity();
+        txn.setUserId(user.getId());
+        txn.setUserName(user.getFullName());
+        txn.setUserRole(user.getRole());
+        txn.setFundBucket("REG_FEE_FUND");
+        txn.setTxnType("REFUND");
+        txn.setAmountBdt(refundAmount);
+        txn.setPaymentMethod(user.getPaymentMethod() != null ? user.getPaymentMethod() : "বিকাশ/নগদ");
+        txn.setSenderPhone(user.getSenderPhone() != null ? user.getSenderPhone() : user.getPhoneNumber());
+        txn.setTransactionId(refundRef);
+        txn.setDescription("নিবন্ধন ফি রিফান্ড (" + user.getFullName() + "): " + reason);
+        txn.setStatus("APPROVED");
+        transactionRepository.save(txn);
+
+        notifyUser(user.getId(), "নিবন্ধন ফি রিফান্ড সম্পন্ন: ৳" + refundAmount,
+                "আপনার ৳" + refundAmount + " নিবন্ধন ফি রিফান্ড করা হয়েছে (রেফারেন্স: " + refundRef + ")। কারণ: " + reason);
+
+        return ResponseEntity.ok(txn);
     }
 
     // ==================== LAND LISTINGS (APPROVE / SUSPEND / REJECT AT ANY STAGE) ====================
@@ -665,7 +718,17 @@ public class AdminController {
     }
 
     @PostMapping("/locations")
-    public ResponseEntity<LocationEntity> addLocation(@RequestBody LocationEntity loc) {
+    public ResponseEntity<LocationEntity> addLocation(@RequestBody Map<String, Object> body) {
+        String distBn = String.valueOf(body.getOrDefault("districtNameBn", body.getOrDefault("district", "নোয়াখালী"))).trim();
+        String upzBn = String.valueOf(body.getOrDefault("upazilaNameBn", body.getOrDefault("upazila", ""))).trim();
+        String distEn = String.valueOf(body.getOrDefault("districtNameEn", distBn)).trim();
+        String upzEn = String.valueOf(body.getOrDefault("upazilaNameEn", upzBn)).trim();
+
+        LocationEntity loc = new LocationEntity();
+        loc.setDistrictNameBn(distBn);
+        loc.setDistrictNameEn(distEn);
+        loc.setUpazilaNameBn(upzBn);
+        loc.setUpazilaNameEn(upzEn);
         loc.setActive(true);
         return ResponseEntity.ok(locationRepository.save(loc));
     }

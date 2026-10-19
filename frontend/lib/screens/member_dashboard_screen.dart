@@ -15,6 +15,7 @@ class MemberDashboardScreen extends StatefulWidget {
 
 class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
   bool _loading = true;
+  String _activePortalMode = '';
   Map<String, dynamic> _publicConfig = {};
   Map<String, dynamic> _notificationsData = {'unreadCount': 0, 'notifications': []};
   Map<String, dynamic>? _officerDashboard;
@@ -35,17 +36,18 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
       await ApiService.refreshMe();
       _publicConfig = await ApiService.getPublicConfig();
       _notificationsData = await ApiService.getMyNotifications();
-      final role = ApiService.currentUser?['role'] ?? 'BUYER';
+      final role = ApiService.currentUser?['role']?.toString() ?? 'BUYER';
+      if (_activePortalMode.isEmpty) {
+        _activePortalMode = role == 'ADMIN' ? 'SELLER' : role;
+      }
       if (role == 'MARKETING_OFFICER') {
         _officerDashboard = await ApiService.getOfficerDashboard();
-      } else if (role == 'SELLER') {
-        _myListings = await ApiService.getMyListings();
-        _myProposals = await ApiService.getMyProposals();
-      } else if (role == 'BUYER') {
-        _myRequirements = await ApiService.getMyRequirements();
-        _myInquiries = await ApiService.getMyInquiries();
-        _myProposals = await ApiService.getMyProposals();
       }
+      // Load both Seller & Buyer data so any member can use Dual Buyer-Seller Mode
+      _myListings = await ApiService.getMyListings();
+      _myRequirements = await ApiService.getMyRequirements();
+      _myInquiries = await ApiService.getMyInquiries();
+      _myProposals = await ApiService.getMyProposals();
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('ত্রুটি: $e')));
@@ -91,6 +93,7 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
     final role = user['role'] as String? ?? 'BUYER';
     final status = user['accountStatus'] as String? ?? 'PAYMENT_SUBMITTED';
     final unreadCount = (_notificationsData['unreadCount'] as num?)?.toInt() ?? 0;
+    final currentMode = _activePortalMode.isEmpty ? role : _activePortalMode;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
@@ -131,7 +134,7 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          'ভূমিকা: ${_roleBangla(role)}  •  মোবাইল: ${user['phoneNumber']}  •  উপজেলা: ${user['upazila'] ?? 'নোয়াখালী সদর'}',
+                          'নিবন্ধিত ভূমিকা: ${_roleBangla(role)}  •  মোবাইল: ${user['phoneNumber']}  •  উপজেলা: ${user['upazila'] ?? 'নোয়াখালী সদর'}',
                           style: const TextStyle(color: Colors.white70, fontSize: 14),
                         ),
                         if (user['referredByCode'] != null) ...[
@@ -149,6 +152,15 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
                       crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
                         _statusChip(status),
+                        ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white24,
+                            foregroundColor: Colors.white,
+                          ),
+                          onPressed: _showProfileAndPasswordDialog,
+                          icon: const Icon(Icons.manage_accounts_outlined, size: 18),
+                          label: const Text('প্রোফাইল ও পাসওয়ার্ড'),
+                        ),
                         // Notification Bell Button with Badge
                         ElevatedButton.icon(
                           style: ElevatedButton.styleFrom(
@@ -238,11 +250,64 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
                   ),
                 ),
               ],
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
 
-              if (role == 'MARKETING_OFFICER') _buildMarketingOfficerView(),
-              if (role == 'SELLER') _buildSellerView(),
-              if (role == 'BUYER') _buildBuyerView(),
+              // Dual Buyer-Seller & Officer Mode Switcher Bar
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.grey.shade300),
+                ),
+                child: Wrap(
+                  spacing: 10,
+                  runSpacing: 8,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    const Text(
+                      'ড্যাশবোর্ড মোড পরিবর্তন করুন (একই অ্যাকাউন্টে ক্রয় ও বিক্রয় সুবিধা):',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF0B4F32)),
+                    ),
+                    if (role == 'MARKETING_OFFICER')
+                      ChoiceChip(
+                        selected: currentMode == 'MARKETING_OFFICER',
+                        selectedColor: const Color(0xFF0B4F32),
+                        labelStyle: TextStyle(
+                          color: currentMode == 'MARKETING_OFFICER' ? Colors.white : Colors.black87,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        label: const Text('📊 মার্কেটিং অফিসার পোর্টাল'),
+                        onSelected: (_) => setState(() => _activePortalMode = 'MARKETING_OFFICER'),
+                      ),
+                    ChoiceChip(
+                      selected: currentMode == 'BUYER',
+                      selectedColor: const Color(0xFF0B4F32),
+                      labelStyle: TextStyle(
+                        color: currentMode == 'BUYER' ? Colors.white : Colors.black87,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      label: Text('🛒 ক্রেতা মোড (${_myRequirements.length} চাহিদা)'),
+                      onSelected: (_) => setState(() => _activePortalMode = 'BUYER'),
+                    ),
+                    ChoiceChip(
+                      selected: currentMode == 'SELLER',
+                      selectedColor: const Color(0xFF0B4F32),
+                      labelStyle: TextStyle(
+                        color: currentMode == 'SELLER' ? Colors.white : Colors.black87,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      label: Text('🏞️ বিক্রেতা মোড (${_myListings.length} বিজ্ঞাপন)'),
+                      onSelected: (_) => setState(() => _activePortalMode = 'SELLER'),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              if (currentMode == 'MARKETING_OFFICER') _buildMarketingOfficerView(),
+              if (currentMode == 'SELLER') _buildSellerView(),
+              if (currentMode == 'BUYER') _buildBuyerView(),
             ],
           ),
         ),
@@ -346,6 +411,16 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
                           },
                           icon: const Icon(Icons.link, size: 18),
                           label: const Text('রেফারেল লিংক কপি করুন'),
+                        ),
+                        ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.deepOrange.shade700,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                          ),
+                          onPressed: () => _showOfficerPayoutRequestDialog(pendingPayable),
+                          icon: const Icon(Icons.payments_outlined, size: 18),
+                          label: Text('সম্মানী উত্তোলনের অনুরোধ (৳$pendingPayable)'),
                         ),
                       ],
                     ),
@@ -508,6 +583,34 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
               },
             ),
           ),
+
+        const SizedBox(height: 24),
+        // Training Guidelines & Code of Conduct for Marketing Officers
+        const Text(
+          '৩. মার্কেটিং অফিসারদের কাজের নির্দেশিকা ও আচরণবিধি (Training & Guidelines)',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 10),
+        Card(
+          color: const Color(0xFFF3F8F5),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          child: const Padding(
+            padding: EdgeInsets.all(18),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '✅ ১. সত্য ও নির্ভুল তথ্য সংগ্রহ: বিক্রেতার জমির খতিয়ান, দাগ নম্বর ও মালিকানা কাগজপত্র প্রাথমিকভাবে দেখে নিবন্ধনে সহায়তা করুন।\n'
+                  '✅ ২. রেফারেল লিংক ও কোড ব্যবহার: গ্রাহক নিবন্ধনের সময় আপনার ইউনিক রেফারেল কোড বা শেয়ার লিংক ব্যবহার করলে অ্যাডমিন পেমেন্ট অনুমোদনের সাথে সাথেই আপনার নির্ধারিত নিবন্ধন বোনাস লেজারে জমা হবে।\n'
+                  '✅ ৩. লেনদেন সম্পন্ন হলে বিশেষ কমিশন: আপনার রেফারকৃত ক্রেতা বা বিক্রেতার জমি ক্রয়-বিক্রয় সফলভাবে সম্পন্ন হলে নির্ধারিত হারে (%) অথবা এককালীন ডিল ক্লোজার কমিশন পাবেন।\n'
+                  '✅ ৪. গোপনীয়তা ও সততা রক্ষা: প্রতিষ্ঠানের অনুমোদন ছাড়া ক্রেতা বা বিক্রেতার ব্যক্তিগত নম্বর বা গোপন দলিল বাইরে প্রকাশ করা সম্পূর্ণ নিষিদ্ধ।\n'
+                  '✅ ৫. সম্মানী উত্তোলন: বকেয়া সম্মানী (Payable) জমা হলে উপরের "সম্মানী উত্তোলনের অনুরোধ" বাটনে ক্লিক করে আপনার বিকাশ/নগদ নম্বর পাঠালে অ্যাডমিন দ্রুত পরিশোধ করবেন।',
+                  style: TextStyle(fontSize: 13.5, height: 1.6, color: Colors.black87),
+                ),
+              ],
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -535,7 +638,7 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
                     backgroundColor: const Color(0xFF0B4F32),
                     foregroundColor: Colors.white,
                   ),
-                  onPressed: _showAddListingDialog,
+                  onPressed: () => _showListingFormDialog(),
                   icon: const Icon(Icons.add_home_work),
                   label: const Text('নতুন জমির বিজ্ঞাপন জমা দিন'),
                 ),
@@ -558,8 +661,9 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
           )
         else
           ..._myListings.map((l) {
-            final hasPrivateDoc = l['privateDocumentUrl'] != null && l['privateDocumentUrl'].toString().isNotEmpty;
-            final isSold = l['listingStatus'] == 'SOLD';
+            final mapItem = l as Map<String, dynamic>;
+            final hasPrivateDoc = mapItem['privateDocumentUrl'] != null && mapItem['privateDocumentUrl'].toString().isNotEmpty;
+            final isSold = mapItem['listingStatus'] == 'SOLD';
             return Card(
               margin: const EdgeInsets.only(bottom: 12),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -579,7 +683,7 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
                             ClipRRect(
                               borderRadius: BorderRadius.circular(8),
                               child: ApiService.buildSmartImage(
-                                l['imageUrl'] as String?,
+                                mapItem['imageUrl'] as String?,
                                 height: 54,
                                 width: 72,
                               ),
@@ -587,7 +691,7 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
                             const SizedBox(width: 12),
                             Flexible(
                               child: Text(
-                                l['title'] ?? '',
+                                mapItem['title'] ?? '',
                                 style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
                               ),
                             ),
@@ -596,31 +700,31 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
                         Wrap(
                           spacing: 8,
                           children: [
-                            _verificationBadge(l['verificationStatus']),
-                            _statusChip(l['listingStatus']),
+                            _verificationBadge(mapItem['verificationStatus']),
+                            _statusChip(mapItem['listingStatus']),
                           ],
                         ),
                       ],
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'অবস্থান: ${l['areaName']}, ${l['upazila']}, ${l['district']} • মৌজা: ${l['mouzaName'] ?? 'N/A'}',
+                      'অবস্থান: ${mapItem['areaName']}, ${mapItem['upazila']}, ${mapItem['district']} • মৌজা: ${mapItem['mouzaName'] ?? 'N/A'}',
                       style: const TextStyle(color: Colors.black87),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'পরিমাণ: ${l['areaDecimal']} শতাংশ (${l['landType']}) • প্রত্যাশিত মূল্য: ৳${l['expectedPriceBdt']} • প্রস্তাবিত পারিশ্রমিক: ৳${l['proposedServiceFeeBdt']}',
+                      'পরিমাণ: ${mapItem['areaDecimal']} শতাংশ (${mapItem['landType']}) • প্রত্যাশিত মূল্য: ৳${mapItem['expectedPriceBdt']} • প্রস্তাবিত পারিশ্রমিক: ৳${mapItem['proposedServiceFeeBdt']}',
                       style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF0B4F32)),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'গোপনীয় দলিল তথ্য (শুধু অ্যাডমিন দেখবেন): খতিয়ান: ${l['khatianNo']} | দাগ: ${l['dagNo']} | নামজারি: ${l['mutationInfo']}',
+                      'গোপনীয় দলিল তথ্য (শুধু অ্যাডমিন দেখবেন): খতিয়ান: ${mapItem['khatianNo']} | দাগ: ${mapItem['dagNo']} | নামজারি: ${mapItem['mutationInfo']}',
                       style: const TextStyle(fontSize: 12, color: Colors.black54),
                     ),
-                    if (l['adminRemark'] != null && l['adminRemark'].toString().isNotEmpty) ...[
+                    if (mapItem['adminRemark'] != null && mapItem['adminRemark'].toString().isNotEmpty) ...[
                       const SizedBox(height: 6),
                       Text(
-                        'অ্যাডমিন মন্তব্য: ${l['adminRemark']}',
+                        'অ্যাডমিন মন্তব্য: ${mapItem['adminRemark']}',
                         style: const TextStyle(color: Colors.deepOrange, fontWeight: FontWeight.w600),
                       ),
                     ],
@@ -629,17 +733,22 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
                       spacing: 10,
                       runSpacing: 8,
                       children: [
+                        OutlinedButton.icon(
+                          onPressed: () => _showListingFormDialog(existing: mapItem),
+                          icon: const Icon(Icons.edit_outlined, size: 17),
+                          label: const Text('বিজ্ঞাপন সম্পাদনা (Edit)'),
+                        ),
                         if (hasPrivateDoc)
                           OutlinedButton.icon(
-                            onPressed: () => _showPrivateDocumentPreviewDialog(l as Map<String, dynamic>),
+                            onPressed: () => _showPrivateDocumentPreviewDialog(mapItem),
                             icon: const Icon(Icons.description_outlined, size: 17),
-                            label: Text('সংযুক্ত দলিল দেখুন (${l['privateDocumentName'] ?? 'Deed'})'),
+                            label: Text('সংযুক্ত দলিল দেখুন (${mapItem['privateDocumentName'] ?? 'Deed'})'),
                           ),
                         if (!isSold)
                           OutlinedButton.icon(
                             style: OutlinedButton.styleFrom(foregroundColor: Colors.red.shade700),
                             onPressed: () async {
-                              await ApiService.closeListing(l['id'] as int);
+                              await ApiService.closeListing(mapItem['id'] as int);
                               await _loadData();
                               widget.onRefreshParent();
                               if (mounted) {
@@ -687,7 +796,7 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
                     backgroundColor: const Color(0xFF0B4F32),
                     foregroundColor: Colors.white,
                   ),
-                  onPressed: _showAddRequirementDialog,
+                  onPressed: () => _showRequirementFormDialog(),
                   icon: const Icon(Icons.post_add),
                   label: const Text('নতুন চাহিদা নিবন্ধন করুন'),
                 ),
@@ -709,20 +818,66 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
             ),
           )
         else
-          ..._myRequirements.map((r) => Card(
-                margin: const EdgeInsets.only(bottom: 12),
-                child: ListTile(
-                  title: Text(
-                    'পছন্দের এলাকা: ${r['preferredUpazila']}, ${r['preferredDistrict']} (${r['preferredArea'] ?? ''}) — ${r['landType']} জমি',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  subtitle: Text(
-                    'পরিমাণ: ${r['minAreaDecimal']}–${r['maxAreaDecimal']} শতাংশ • বাজেট: ৳${r['minBudgetBdt']}–৳${r['maxBudgetBdt']} • উদ্দেশ্য: ${r['purpose']} • প্রস্তাবিত পারিশ্রমিক: ৳${r['proposedServiceFeeBdt']}'
-                    '${r['adminRemark'] != null && r['adminRemark'].toString().isNotEmpty ? '\nঅ্যাডমিন নোট: ${r['adminRemark']}' : ''}',
-                  ),
-                  trailing: _statusChip(r['status']),
+          ..._myRequirements.map((r) {
+            final reqItem = r as Map<String, dynamic>;
+            final isFulfilled = reqItem['status'] == 'FULFILLED';
+            return Card(
+              margin: const EdgeInsets.only(bottom: 12),
+              child: Padding(
+                padding: const EdgeInsets.all(14),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            'পছন্দের এলাকা: ${reqItem['preferredUpazila']}, ${reqItem['preferredDistrict']} (${reqItem['preferredArea'] ?? ''}) — ${reqItem['landType']} জমি',
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                          ),
+                        ),
+                        _statusChip(reqItem['status']),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'পরিমাণ: ${reqItem['minAreaDecimal']}–${reqItem['maxAreaDecimal']} শতাংশ • বাজেট: ৳${reqItem['minBudgetBdt']}–৳${reqItem['maxBudgetBdt']} • উদ্দেশ্য: ${reqItem['purpose']} • প্রস্তাবিত পারিশ্রমিক: ৳${reqItem['proposedServiceFeeBdt']}'
+                      '${reqItem['adminRemark'] != null && reqItem['adminRemark'].toString().isNotEmpty ? '\nঅ্যাডমিন নোট: ${reqItem['adminRemark']}' : ''}',
+                    ),
+                    const SizedBox(height: 10),
+                    Wrap(
+                      spacing: 10,
+                      runSpacing: 8,
+                      children: [
+                        OutlinedButton.icon(
+                          onPressed: () => _showRequirementFormDialog(existing: reqItem),
+                          icon: const Icon(Icons.edit_outlined, size: 17),
+                          label: const Text('চাহিদা সম্পাদনা (Edit)'),
+                        ),
+                        if (!isFulfilled)
+                          OutlinedButton.icon(
+                            style: OutlinedButton.styleFrom(foregroundColor: Colors.green.shade800),
+                            onPressed: () async {
+                              await ApiService.fulfillMyRequirement(reqItem['id'] as int);
+                              await _loadData();
+                              widget.onRefreshParent();
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('চাহিদাটি পূরণ হয়েছে (FULFILLED) হিসেবে চিহ্নিত করা হয়েছে।')),
+                                );
+                              }
+                            },
+                            icon: const Icon(Icons.check_circle_outline, size: 17),
+                            label: const Text('চাহিদা পূরণ হয়েছে (FULFILLED)'),
+                          ),
+                      ],
+                    ),
+                  ],
                 ),
-              )),
+              ),
+            );
+          }),
         const SizedBox(height: 24),
         const Text(
           'পছন্দের জমিতে আমার আগ্রহ প্রকাশের তালিকা (My Inquiries)',
@@ -839,6 +994,227 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
   }
 
   // ==================== DIALOGS ====================
+
+  void _showProfileAndPasswordDialog() {
+    final user = ApiService.currentUser ?? {};
+    final districts = _getDistricts();
+    String district = user['district']?.toString() ?? districts.first;
+    if (!districts.contains(district)) district = districts.first;
+    List<String> upazilas = _getUpazilasForDistrict(district);
+    String upazila = user['upazila']?.toString() ?? upazilas.first;
+    if (!upazilas.contains(upazila)) upazila = upazilas.first;
+
+    final nameCtrl = TextEditingController(text: user['fullName']?.toString() ?? '');
+    final addressCtrl = TextEditingController(text: user['address']?.toString() ?? '');
+    final currentPassCtrl = TextEditingController();
+    final newPassCtrl = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) {
+          upazilas = _getUpazilasForDistrict(district);
+          if (!upazilas.contains(upazila)) upazila = upazilas.first;
+
+          return AlertDialog(
+            title: const Text('⚙️ প্রোফাইল তথ্য ও পাসওয়ার্ড পরিবর্তন'),
+            content: SizedBox(
+              width: 500,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('১. ব্যক্তিগত প্রোফাইল আপডেট করুন:', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0B4F32))),
+                    const SizedBox(height: 10),
+                    TextField(controller: nameCtrl, decoration: const InputDecoration(labelText: 'পূর্ণ নাম *')),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: DropdownButtonFormField<String>(
+                            initialValue: district,
+                            decoration: const InputDecoration(labelText: 'জেলা'),
+                            items: districts.map((d) => DropdownMenuItem(value: d, child: Text(d))).toList(),
+                            onChanged: (v) => setDialogState(() {
+                              district = v!;
+                              upazilas = _getUpazilasForDistrict(district);
+                              upazila = upazilas.first;
+                            }),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: DropdownButtonFormField<String>(
+                            initialValue: upazila,
+                            decoration: const InputDecoration(labelText: 'উপজেলা'),
+                            items: upazilas.map((u) => DropdownMenuItem(value: u, child: Text(u))).toList(),
+                            onChanged: (v) => setDialogState(() => upazila = v!),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    TextField(controller: addressCtrl, decoration: const InputDecoration(labelText: 'বিস্তারিত ঠিকানা')),
+                    const SizedBox(height: 10),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
+                        onPressed: () async {
+                          try {
+                            await ApiService.updateMyProfile({
+                              'fullName': nameCtrl.text.trim(),
+                              'district': district,
+                              'upazila': upazila,
+                              'address': addressCtrl.text.trim(),
+                            });
+                            if (!ctx.mounted) return;
+                            await _loadData();
+                            widget.onRefreshParent();
+                            if (!mounted) return;
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('প্রোফাইল তথ্য সফলভাবে আপডেট হয়েছে!')),
+                            );
+                          } catch (e) {
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+                            }
+                          }
+                        },
+                        icon: const Icon(Icons.save, size: 17),
+                        label: const Text('প্রোফাইল সংরক্ষণ করুন'),
+                      ),
+                    ),
+                    const Divider(height: 28),
+                    const Text('২. পাসওয়ার্ড পরিবর্তন করুন:', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0B4F32))),
+                    const SizedBox(height: 10),
+                    TextField(
+                      controller: currentPassCtrl,
+                      obscureText: true,
+                      decoration: const InputDecoration(labelText: 'বর্তমান পাসওয়ার্ড *'),
+                    ),
+                    const SizedBox(height: 10),
+                    TextField(
+                      controller: newPassCtrl,
+                      obscureText: true,
+                      decoration: const InputDecoration(labelText: 'নতুন পাসওয়ার্ড (কমপক্ষে ৪ অক্ষর) *'),
+                    ),
+                    const SizedBox(height: 10),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.deepOrange.shade700, foregroundColor: Colors.white),
+                        onPressed: () async {
+                          try {
+                            await ApiService.changeMyPassword({
+                              'currentPassword': currentPassCtrl.text.trim(),
+                              'newPassword': newPassCtrl.text.trim(),
+                            });
+                            if (!ctx.mounted) return;
+                            Navigator.pop(ctx);
+                            if (!mounted) return;
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('পাসওয়ার্ড সফলভাবে পরিবর্তন করা হয়েছে!')),
+                            );
+                          } catch (e) {
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+                            }
+                          }
+                        },
+                        icon: const Icon(Icons.lock_reset, size: 18),
+                        label: const Text('পাসওয়ার্ড পরিবর্তন করুন'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('বন্ধ করুন')),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  void _showOfficerPayoutRequestDialog(dynamic pendingPayable) {
+    final user = ApiService.currentUser ?? {};
+    String method = 'বিকাশ (bKash)';
+    final numberCtrl = TextEditingController(text: user['phoneNumber']?.toString() ?? '');
+    final noteCtrl = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          title: const Text('💸 বকেয়া সম্মানী উত্তোলনের অনুরোধ (Payout Request)'),
+          content: SizedBox(
+            width: 460,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'আপনার বর্তমান প্রাপ্য বকেয়া সম্মানী: ৳$pendingPayable',
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Color(0xFF0B4F32)),
+                ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
+                  initialValue: method,
+                  decoration: const InputDecoration(labelText: 'টাকা গ্রহণের মাধ্যম'),
+                  items: const ['বিকাশ (bKash)', 'নগদ (Nagad)', 'রকেট (Rocket)', 'ব্যাংক অ্যাকাউন্ট']
+                      .map((m) => DropdownMenuItem(value: m, child: Text(m)))
+                      .toList(),
+                  onChanged: (v) => setDialogState(() => method = v!),
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: numberCtrl,
+                  decoration: const InputDecoration(labelText: 'বিকাশ/নগদ বা অ্যাকাউন্ট নম্বর *'),
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: noteCtrl,
+                  maxLines: 2,
+                  decoration: const InputDecoration(labelText: 'অতিরিক্ত নোট (ঐচ্ছিক)'),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('বাতিল')),
+            ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
+              onPressed: () async {
+                try {
+                  final res = await ApiService.requestOfficerPayout({
+                    'paymentMethod': method,
+                    'accountNumber': numberCtrl.text.trim(),
+                    'note': noteCtrl.text.trim(),
+                  });
+                  if (!ctx.mounted) return;
+                  Navigator.pop(ctx);
+                  if (!mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(res['message']?.toString() ?? 'উত্তোলনের অনুরোধ জমা হয়েছে!')),
+                  );
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+                  }
+                }
+              },
+              icon: const Icon(Icons.send, size: 17),
+              label: const Text('অনুরোধ পাঠান'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   void _showNotificationsDialog() {
     final list = (_notificationsData['notifications'] as List<dynamic>?) ?? [];
@@ -1067,29 +1443,39 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
     );
   }
 
-  void _showAddListingDialog() {
+  void _showListingFormDialog({Map<String, dynamic>? existing}) {
+    final isEdit = existing != null;
     final districts = _getDistricts();
-    String district = districts.first;
+    String district = existing?['district']?.toString() ?? districts.first;
+    if (!districts.contains(district)) district = districts.first;
     List<String> upazilas = _getUpazilasForDistrict(district);
-    String upazila = upazilas.first;
+    String upazila = existing?['upazila']?.toString() ?? upazilas.first;
+    if (!upazilas.contains(upazila)) upazila = upazilas.first;
 
-    final titleCtrl = TextEditingController();
-    final areaNameCtrl = TextEditingController();
-    final mouzaCtrl = TextEditingController();
-    final khatianCtrl = TextEditingController();
-    final dagCtrl = TextEditingController();
-    final mutationCtrl = TextEditingController(text: 'নামজারি ও খাজনা হালনাগাদ');
-    String landType = 'আবাসিক';
-    final decimalCtrl = TextEditingController();
-    final priceCtrl = TextEditingController();
-    final feeCtrl = TextEditingController();
-    final roadCtrl = TextEditingController();
-    final descCtrl = TextEditingController();
+    final titleCtrl = TextEditingController(text: existing?['title']?.toString() ?? '');
+    final areaNameCtrl = TextEditingController(text: existing?['areaName']?.toString() ?? '');
+    final mouzaCtrl = TextEditingController(text: existing?['mouzaName']?.toString() ?? '');
+    final khatianCtrl = TextEditingController(text: existing?['khatianNo']?.toString() ?? '');
+    final dagCtrl = TextEditingController(text: existing?['dagNo']?.toString() ?? '');
+    final mutationCtrl = TextEditingController(text: existing?['mutationInfo']?.toString() ?? 'নামজারি ও খাজনা হালনাগাদ');
+    String landType = existing?['landType']?.toString() ?? 'আবাসিক';
+    if (!const ['আবাসিক', 'বাণিজ্যিক', 'কৃষি', 'বাগান/খামার'].contains(landType)) {
+      landType = 'আবাসিক';
+    }
+    final decimalCtrl = TextEditingController(text: existing?['areaDecimal']?.toString() ?? '');
+    final priceCtrl = TextEditingController(text: existing?['expectedPriceBdt']?.toString() ?? '');
+    final feeCtrl = TextEditingController(text: existing?['proposedServiceFeeBdt']?.toString() ?? '');
+    final roadCtrl = TextEditingController(text: existing?['roadAccessInfo']?.toString() ?? '');
+    final videoCtrl = TextEditingController(text: existing?['videoUrl']?.toString() ?? '');
+    final mapLinkCtrl = TextEditingController(text: existing?['mapLink']?.toString() ?? '');
+    final descCtrl = TextEditingController(text: existing?['description']?.toString() ?? '');
 
-    String uploadedImageDataUrl = '';
-    String uploadedImageName = '';
-    String uploadedDeedDataUrl = '';
-    String uploadedDeedName = '';
+    String uploadedImageDataUrl = existing?['imageUrl']?.toString() ?? '';
+    String uploadedImageName = uploadedImageDataUrl.isNotEmpty ? 'সংরক্ষিত মূল ছবি' : '';
+    String additionalImagesJoined = existing?['additionalImageUrls']?.toString() ?? '';
+    int extraPhotoCount = additionalImagesJoined.isEmpty ? 0 : additionalImagesJoined.split('|||').where((s) => s.isNotEmpty).length;
+    String uploadedDeedDataUrl = existing?['privateDocumentUrl']?.toString() ?? '';
+    String uploadedDeedName = existing?['privateDocumentName']?.toString() ?? '';
 
     showDialog(
       context: context,
@@ -1099,9 +1485,9 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
           if (!upazilas.contains(upazila)) upazila = upazilas.first;
 
           return AlertDialog(
-            title: const Text('নতুন জমির বিজ্ঞাপন ও দলিল জমা দিন'),
+            title: Text(isEdit ? 'জমির বিজ্ঞাপন সম্পাদনা করুন' : 'নতুন জমির বিজ্ঞাপন ও দলিল জমা দিন'),
             content: SizedBox(
-              width: 580,
+              width: 600,
               child: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -1183,10 +1569,28 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
                     const SizedBox(height: 10),
                     TextField(controller: roadCtrl, decoration: const InputDecoration(labelText: 'রাস্তার তথ্য (যেমন: ১২ ফুট পাকা রাস্তা সংলগ্ন)')),
                     const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: videoCtrl,
+                            decoration: const InputDecoration(labelText: 'ভিডিও ট্যুর লিংক (YouTube/Drive)'),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: TextField(
+                            controller: mapLinkCtrl,
+                            decoration: const InputDecoration(labelText: 'Google Maps লোকেশন লিংক'),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
                     TextField(controller: descCtrl, maxLines: 2, decoration: const InputDecoration(labelText: 'অতিরিক্ত বিবরণ')),
                     const SizedBox(height: 14),
 
-                    // Device Photo & Private Deed File Picker
+                    // Device Photo, Gallery & Private Deed File Picker
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
@@ -1197,7 +1601,7 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('ছবি ও গোপনীয় দলিল আপলোড:', style: TextStyle(fontWeight: FontWeight.bold)),
+                          const Text('ছবি গ্যালারি ও গোপনীয় দলিল আপলোড:', style: TextStyle(fontWeight: FontWeight.bold)),
                           const SizedBox(height: 8),
                           Wrap(
                             spacing: 10,
@@ -1219,7 +1623,33 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
                                   }
                                 },
                                 icon: const Icon(Icons.photo_camera_outlined, size: 18),
-                                label: Text(uploadedImageName.isEmpty ? 'জমির ছবি নির্বাচন করুন' : 'ছবি: $uploadedImageName'),
+                                label: Text(uploadedImageName.isEmpty ? 'মূল ছবি নির্বাচন করুন' : 'মূল ছবি: $uploadedImageName'),
+                              ),
+                              OutlinedButton.icon(
+                                onPressed: () async {
+                                  final files = await FilePicker.pickFiles(
+                                    type: FileType.image,
+                                  );
+                                  if (files.isNotEmpty) {
+                                    final List<String> dataUrls = [];
+                                    for (final f in files) {
+                                      final bytes = await f.readAsBytes();
+                                      final ext = (f.extension ?? 'jpg').toLowerCase();
+                                      final mime = ext == 'png' ? 'image/png' : 'image/jpeg';
+                                      dataUrls.add('data:$mime;base64,${base64Encode(bytes)}');
+                                    }
+                                    setDialogState(() {
+                                      additionalImagesJoined = dataUrls.join('|||');
+                                      extraPhotoCount = dataUrls.length;
+                                    });
+                                  }
+                                },
+                                icon: const Icon(Icons.collections_outlined, size: 18),
+                                label: Text(
+                                  extraPhotoCount == 0
+                                      ? 'অতিরিক্ত একাধিক ছবি (Gallery)'
+                                      : 'গ্যালারি ছবি: $extraPhotoCountটি যুক্ত',
+                                ),
                               ),
                               OutlinedButton.icon(
                                 onPressed: () async {
@@ -1262,7 +1692,7 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
                 onPressed: () async {
                   final decText = decimalCtrl.text.trim().isEmpty ? '10' : decimalCtrl.text.trim();
                   final prText = priceCtrl.text.trim().isEmpty ? '1000000' : priceCtrl.text.trim();
-                  await ApiService.createListing({
+                  final payload = {
                     'title': titleCtrl.text.trim().isEmpty ? '$upazila-এ $decText শতাংশ $landType জমি বিক্রি' : titleCtrl.text.trim(),
                     'district': district,
                     'upazila': upazila,
@@ -1278,15 +1708,23 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
                     'roadAccessInfo': roadCtrl.text.trim().isEmpty ? 'পাকা রাস্তা সংলগ্ন' : roadCtrl.text.trim(),
                     'description': descCtrl.text.trim(),
                     'imageUrl': uploadedImageDataUrl,
+                    'additionalImageUrls': additionalImagesJoined,
+                    'videoUrl': videoCtrl.text.trim(),
+                    'mapLink': mapLinkCtrl.text.trim(),
                     'privateDocumentUrl': uploadedDeedDataUrl,
                     'privateDocumentName': uploadedDeedName,
-                  });
+                  };
+                  if (isEdit) {
+                    await ApiService.updateMyListing(existing['id'] as int, payload);
+                  } else {
+                    await ApiService.createListing(payload);
+                  }
                   if (!ctx.mounted) return;
                   Navigator.pop(ctx);
                   _loadData();
                   widget.onRefreshParent();
                 },
-                child: const Text('জমা দিন'),
+                child: Text(isEdit ? 'আপডেট সংরক্ষণ করুন' : 'জমা দিন'),
               ),
             ],
           );
@@ -1295,22 +1733,28 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
     );
   }
 
-  void _showAddRequirementDialog() {
+  void _showRequirementFormDialog({Map<String, dynamic>? existing}) {
+    final isEdit = existing != null;
     final districts = _getDistricts();
-    String district = districts.first;
+    String district = existing?['preferredDistrict']?.toString() ?? districts.first;
+    if (!districts.contains(district)) district = districts.first;
     List<String> upazilas = _getUpazilasForDistrict(district);
-    String upazila = upazilas.first;
+    String upazila = existing?['preferredUpazila']?.toString() ?? upazilas.first;
+    if (!upazilas.contains(upazila)) upazila = upazilas.first;
 
-    String landType = 'আবাসিক';
-    final areaCtrl = TextEditingController();
-    final minDecCtrl = TextEditingController();
-    final maxDecCtrl = TextEditingController();
-    final minBudCtrl = TextEditingController();
-    final maxBudCtrl = TextEditingController();
-    final purposeCtrl = TextEditingController(text: 'আবাসিক বাড়ি নির্মাণ');
-    final timelineCtrl = TextEditingController(text: '১-৩ মাসের মধ্যে');
-    final feeCtrl = TextEditingController();
-    final notesCtrl = TextEditingController();
+    String landType = existing?['landType']?.toString() ?? 'আবাসিক';
+    if (!const ['আবাসিক', 'বাণিজ্যিক', 'কৃষি', 'বাগান/খামার'].contains(landType)) {
+      landType = 'আবাসিক';
+    }
+    final areaCtrl = TextEditingController(text: existing?['preferredArea']?.toString() ?? '');
+    final minDecCtrl = TextEditingController(text: existing?['minAreaDecimal']?.toString() ?? '');
+    final maxDecCtrl = TextEditingController(text: existing?['maxAreaDecimal']?.toString() ?? '');
+    final minBudCtrl = TextEditingController(text: existing?['minBudgetBdt']?.toString() ?? '');
+    final maxBudCtrl = TextEditingController(text: existing?['maxBudgetBdt']?.toString() ?? '');
+    final purposeCtrl = TextEditingController(text: existing?['purpose']?.toString() ?? 'আবাসিক বাড়ি নির্মাণ');
+    final timelineCtrl = TextEditingController(text: existing?['purchaseTimeline']?.toString() ?? '১-৩ মাসের মধ্যে');
+    final feeCtrl = TextEditingController(text: existing?['proposedServiceFeeBdt']?.toString() ?? '');
+    final notesCtrl = TextEditingController(text: existing?['specialRequirements']?.toString() ?? '');
 
     showDialog(
       context: context,
@@ -1320,7 +1764,7 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
           if (!upazilas.contains(upazila)) upazila = upazilas.first;
 
           return AlertDialog(
-            title: const Text('জমি কেনার চাহিদা নিবন্ধন করুন'),
+            title: Text(isEdit ? 'জমির চাহিদা সম্পাদনা করুন' : 'জমি কেনার চাহিদা নিবন্ধন করুন'),
             content: SizedBox(
               width: 520,
               child: SingleChildScrollView(
@@ -1396,7 +1840,7 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
               ElevatedButton(
                 style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
                 onPressed: () async {
-                  await ApiService.createRequirement({
+                  final payload = {
                     'preferredDistrict': district,
                     'preferredUpazila': upazila,
                     'preferredArea': areaCtrl.text.trim(),
@@ -1409,13 +1853,18 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
                     'purchaseTimeline': timelineCtrl.text.trim(),
                     'proposedServiceFeeBdt': feeCtrl.text.trim().isEmpty ? '0' : feeCtrl.text.trim(),
                     'specialRequirements': notesCtrl.text.trim(),
-                  });
+                  };
+                  if (isEdit) {
+                    await ApiService.updateMyRequirement(existing['id'] as int, payload);
+                  } else {
+                    await ApiService.createRequirement(payload);
+                  }
                   if (!ctx.mounted) return;
                   Navigator.pop(ctx);
                   _loadData();
                   widget.onRefreshParent();
                 },
-                child: const Text('চাহিদা জমা দিন'),
+                child: Text(isEdit ? 'আপডেট সংরক্ষণ করুন' : 'চাহিদা জমা দিন'),
               ),
             ],
           );
@@ -1537,7 +1986,7 @@ class _MemberDashboardScreenState extends State<MemberDashboardScreen> {
 
   Widget _statusChip(String? status) {
     final (label, color) = switch (status) {
-      'ACTIVE' || 'APPROVED_PUBLISHED' || 'MUTUALLY_AGREED' || 'COMPLETED' => (status!, Colors.green.shade700),
+      'ACTIVE' || 'APPROVED_PUBLISHED' || 'MUTUALLY_AGREED' || 'COMPLETED' || 'FULFILLED' => (status!, Colors.green.shade700),
       'SUSPENDED' || 'REJECTED' => (status!, Colors.red.shade700),
       _ => (status ?? 'PENDING', Colors.orange.shade800),
     };

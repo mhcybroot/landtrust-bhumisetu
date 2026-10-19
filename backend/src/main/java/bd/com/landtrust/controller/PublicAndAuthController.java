@@ -76,7 +76,11 @@ public class PublicAndAuthController {
             @RequestParam(required = false) String district,
             @RequestParam(required = false) String upazila,
             @RequestParam(required = false) String landType,
-            @RequestParam(required = false) BigDecimal maxBudget) {
+            @RequestParam(required = false) BigDecimal maxBudget,
+            @RequestParam(required = false) String verificationStatus,
+            @RequestParam(required = false) BigDecimal minArea,
+            @RequestParam(required = false) BigDecimal maxArea,
+            @RequestParam(required = false) String keyword) {
 
         List<LandListingEntity> all = listingRepository.findAllByOrderByCreatedAtDesc();
         List<Map<String, Object>> result = all.stream()
@@ -85,6 +89,19 @@ public class PublicAndAuthController {
                 .filter(l -> upazila == null || upazila.isBlank() || upazila.equalsIgnoreCase(l.getUpazila()))
                 .filter(l -> landType == null || landType.isBlank() || landType.equalsIgnoreCase(l.getLandType()))
                 .filter(l -> maxBudget == null || l.getExpectedPriceBdt().compareTo(maxBudget) <= 0)
+                .filter(l -> verificationStatus == null || verificationStatus.isBlank() || verificationStatus.equalsIgnoreCase(l.getVerificationStatus()))
+                .filter(l -> minArea == null || (l.getAreaDecimal() != null && l.getAreaDecimal().compareTo(minArea) >= 0))
+                .filter(l -> maxArea == null || (l.getAreaDecimal() != null && l.getAreaDecimal().compareTo(maxArea) <= 0))
+                .filter(l -> {
+                    if (keyword == null || keyword.isBlank()) return true;
+                    String kw = keyword.trim().toLowerCase();
+                    return (l.getTitle() != null && l.getTitle().toLowerCase().contains(kw))
+                            || (l.getAreaName() != null && l.getAreaName().toLowerCase().contains(kw))
+                            || (l.getMouzaName() != null && l.getMouzaName().toLowerCase().contains(kw))
+                            || (l.getUpazila() != null && l.getUpazila().toLowerCase().contains(kw))
+                            || (l.getDistrict() != null && l.getDistrict().toLowerCase().contains(kw))
+                            || (l.getDescription() != null && l.getDescription().toLowerCase().contains(kw));
+                })
                 .map(this::toPublicListingMap)
                 .collect(Collectors.toList());
 
@@ -106,6 +123,9 @@ public class PublicAndAuthController {
         m.put("roadAccessInfo", l.getRoadAccessInfo());
         m.put("description", l.getDescription());
         m.put("imageUrl", l.getImageUrl());
+        m.put("additionalImageUrls", l.getAdditionalImageUrls());
+        m.put("videoUrl", l.getVideoUrl());
+        m.put("mapLink", l.getMapLink());
         m.put("verificationStatus", l.getVerificationStatus());
         m.put("listingStatus", l.getListingStatus());
         m.put("createdAt", l.getCreatedAt());

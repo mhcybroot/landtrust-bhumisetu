@@ -4,6 +4,7 @@ import bd.com.landtrust.entity.*;
 import bd.com.landtrust.repository.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -22,6 +23,7 @@ public class MemberPortalController {
     private final CommissionEntryRepository commissionRepository;
     private final FinancialTransactionRepository transactionRepository;
     private final NotificationRepository notificationRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public MemberPortalController(
             UserRepository userRepository,
@@ -31,7 +33,8 @@ public class MemberPortalController {
             ServiceProposalRepository proposalRepository,
             CommissionEntryRepository commissionRepository,
             FinancialTransactionRepository transactionRepository,
-            NotificationRepository notificationRepository) {
+            NotificationRepository notificationRepository,
+            PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.listingRepository = listingRepository;
         this.requirementRepository = requirementRepository;
@@ -40,11 +43,59 @@ public class MemberPortalController {
         this.commissionRepository = commissionRepository;
         this.transactionRepository = transactionRepository;
         this.notificationRepository = notificationRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     private UserEntity currentUser(Authentication auth) {
         UserEntity u = (UserEntity) auth.getPrincipal();
         return userRepository.findById(u.getId()).orElse(u);
+    }
+
+    // ==================== PROFILE EDIT & PASSWORD CHANGE ====================
+
+    @PutMapping("/profile")
+    public ResponseEntity<?> updateMyProfile(Authentication auth, @RequestBody Map<String, String> body) {
+        UserEntity user = currentUser(auth);
+        String fullName = body.getOrDefault("fullName", user.getFullName()).trim();
+        String district = body.getOrDefault("district", user.getDistrict()).trim();
+        String upazila = body.getOrDefault("upazila", user.getUpazila()).trim();
+        String address = body.getOrDefault("address", user.getAddress()).trim();
+
+        if (!fullName.isBlank()) user.setFullName(fullName);
+        if (!district.isBlank()) user.setDistrict(district);
+        if (!upazila.isBlank()) user.setUpazila(upazila);
+        user.setAddress(address);
+        user = userRepository.save(user);
+
+        return ResponseEntity.ok(Map.of(
+                "user", PublicAndAuthController.sanitizeUser(user),
+                "message", "প্রোফাইল তথ্য সফলভাবে আপডেট হয়েছে!"
+        ));
+    }
+
+    @PutMapping("/change-password")
+    public ResponseEntity<?> changeMyPassword(Authentication auth, @RequestBody Map<String, String> body) {
+        UserEntity user = currentUser(auth);
+        String currentPassword = body.getOrDefault("currentPassword", "");
+        String newPassword = body.getOrDefault("newPassword", "").trim();
+
+        if (newPassword.length() < 4) {
+            return ResponseEntity.badRequest().body(Map.of("message", "নতুন পাসওয়ার্ড কমপক্ষে ৪ অক্ষরের হতে হবে।"));
+        }
+        if (!passwordEncoder.matches(currentPassword, user.getPasswordHash())) {
+            return ResponseEntity.badRequest().body(Map.of("message", "বর্তমান পাসওয়ার্ড সঠিক নয়।"));
+        }
+
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+
+        NotificationEntity n = new NotificationEntity();
+        n.setUserId(user.getId());
+        n.setTitle("পাসওয়ার্ড পরিবর্তন সম্পন্ন");
+        n.setMessage("আপনার অ্যাকাউন্টের পাসওয়ার্ড সফলভাবে পরিবর্তন করা হয়েছে।");
+        notificationRepository.save(n);
+
+        return ResponseEntity.ok(Map.of("message", "পাসওয়ার্ড সফলভাবে পরিবর্তন হয়েছে!"));
     }
 
     // ==================== NOTIFICATIONS & PAYMENT RESUBMISSION ====================
@@ -196,6 +247,9 @@ public class MemberPortalController {
         listing.setDescription((String) body.getOrDefault("description", ""));
         String imgUrl = (String) body.getOrDefault("imageUrl", "");
         listing.setImageUrl(imgUrl.isBlank() ? "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800" : imgUrl);
+        listing.setAdditionalImageUrls((String) body.getOrDefault("additionalImageUrls", ""));
+        listing.setVideoUrl((String) body.getOrDefault("videoUrl", ""));
+        listing.setMapLink((String) body.getOrDefault("mapLink", ""));
         listing.setPrivateDocumentUrl((String) body.getOrDefault("privateDocumentUrl", ""));
         listing.setPrivateDocumentName((String) body.getOrDefault("privateDocumentName", ""));
         listing.setProposedServiceFeeBdt(proposedFee);
@@ -204,6 +258,56 @@ public class MemberPortalController {
 
         listing = listingRepository.save(listing);
         return ResponseEntity.ok(listing);
+    }
+
+    @PutMapping("/listings/{id}")
+    public ResponseEntity<?> updateMyListing(Authentication auth, @PathVariable Long id, @RequestBody Map<String, Object> body) {
+        UserEntity user = currentUser(auth);
+        Optional<LandListingEntity> opt = listingRepository.findById(id);
+        if (opt.isEmpty() || !opt.get().getSellerId().equals(user.getId())) {
+            return ResponseEntity.status(403).body(Map.of("message", "অনুমোদনহীন অনুরোধ"));
+        }
+
+        LandListingEntity listing = opt.get();
+        if (body.containsKey("title")) listing.setTitle(String.valueOf(body.get("title")));
+        if (body.containsKey("district")) listing.setDistrict(String.valueOf(body.get("district")));
+        if (body.containsKey("upazila")) listing.setUpazila(String.valueOf(body.get("upazila")));
+        if (body.containsKey("areaName")) listing.setAreaName(String.valueOf(body.get("areaName")));
+        if (body.containsKey("mouzaName")) listing.setMouzaName(String.valueOf(body.get("mouzaName")));
+        if (body.containsKey("khatianNo")) listing.setKhatianNo(String.valueOf(body.get("khatianNo")));
+        if (body.containsKey("dagNo")) listing.setDagNo(String.valueOf(body.get("dagNo")));
+        if (body.containsKey("mutationInfo")) listing.setMutationInfo(String.valueOf(body.get("mutationInfo")));
+        if (body.containsKey("landType")) listing.setLandType(String.valueOf(body.get("landType")));
+        if (body.containsKey("areaDecimal")) {
+            listing.setAreaDecimal(parseDecimal(body.get("areaDecimal"), listing.getAreaDecimal()));
+        }
+        if (body.containsKey("expectedPriceBdt")) {
+            listing.setExpectedPriceBdt(parseDecimal(body.get("expectedPriceBdt"), listing.getExpectedPriceBdt()));
+        }
+        if (listing.getAreaDecimal() != null && listing.getAreaDecimal().compareTo(BigDecimal.ZERO) > 0 && listing.getExpectedPriceBdt() != null) {
+            listing.setPricePerDecimalBdt(listing.getExpectedPriceBdt().divide(listing.getAreaDecimal(), 0, RoundingMode.HALF_UP));
+        }
+        if (body.containsKey("proposedServiceFeeBdt")) {
+            listing.setProposedServiceFeeBdt(parseDecimal(body.get("proposedServiceFeeBdt"), listing.getProposedServiceFeeBdt()));
+        }
+        if (body.containsKey("roadAccessInfo")) listing.setRoadAccessInfo(String.valueOf(body.get("roadAccessInfo")));
+        if (body.containsKey("description")) listing.setDescription(String.valueOf(body.get("description")));
+        if (body.containsKey("imageUrl") && !String.valueOf(body.get("imageUrl")).isBlank()) {
+            listing.setImageUrl(String.valueOf(body.get("imageUrl")));
+        }
+        if (body.containsKey("additionalImageUrls")) {
+            listing.setAdditionalImageUrls(String.valueOf(body.get("additionalImageUrls")));
+        }
+        if (body.containsKey("videoUrl")) listing.setVideoUrl(String.valueOf(body.get("videoUrl")));
+        if (body.containsKey("mapLink")) listing.setMapLink(String.valueOf(body.get("mapLink")));
+        if (body.containsKey("privateDocumentUrl") && !String.valueOf(body.get("privateDocumentUrl")).isBlank()) {
+            listing.setPrivateDocumentUrl(String.valueOf(body.get("privateDocumentUrl")));
+        }
+        if (body.containsKey("privateDocumentName") && !String.valueOf(body.get("privateDocumentName")).isBlank()) {
+            listing.setPrivateDocumentName(String.valueOf(body.get("privateDocumentName")));
+        }
+
+        return ResponseEntity.ok(listingRepository.save(listing));
     }
 
     @PutMapping("/listings/{id}/close")
@@ -253,6 +357,82 @@ public class MemberPortalController {
         return ResponseEntity.ok(req);
     }
 
+    @PutMapping("/requirements/{id}")
+    public ResponseEntity<?> updateMyRequirement(Authentication auth, @PathVariable Long id, @RequestBody Map<String, Object> body) {
+        UserEntity user = currentUser(auth);
+        Optional<BuyerRequirementEntity> opt = requirementRepository.findById(id);
+        if (opt.isEmpty() || !opt.get().getBuyerId().equals(user.getId())) {
+            return ResponseEntity.status(403).body(Map.of("message", "অনুমোদনহীন অনুরোধ"));
+        }
+
+        BuyerRequirementEntity req = opt.get();
+        if (body.containsKey("preferredDistrict")) req.setPreferredDistrict(String.valueOf(body.get("preferredDistrict")));
+        if (body.containsKey("preferredUpazila")) req.setPreferredUpazila(String.valueOf(body.get("preferredUpazila")));
+        if (body.containsKey("preferredArea")) req.setPreferredArea(String.valueOf(body.get("preferredArea")));
+        if (body.containsKey("landType")) req.setLandType(String.valueOf(body.get("landType")));
+        if (body.containsKey("minAreaDecimal")) req.setMinAreaDecimal(parseDecimal(body.get("minAreaDecimal"), req.getMinAreaDecimal()));
+        if (body.containsKey("maxAreaDecimal")) req.setMaxAreaDecimal(parseDecimal(body.get("maxAreaDecimal"), req.getMaxAreaDecimal()));
+        if (body.containsKey("minBudgetBdt")) req.setMinBudgetBdt(parseDecimal(body.get("minBudgetBdt"), req.getMinBudgetBdt()));
+        if (body.containsKey("maxBudgetBdt")) req.setMaxBudgetBdt(parseDecimal(body.get("maxBudgetBdt"), req.getMaxBudgetBdt()));
+        if (body.containsKey("purpose")) req.setPurpose(String.valueOf(body.get("purpose")));
+        if (body.containsKey("purchaseTimeline")) req.setPurchaseTimeline(String.valueOf(body.get("purchaseTimeline")));
+        if (body.containsKey("proposedServiceFeeBdt")) req.setProposedServiceFeeBdt(parseDecimal(body.get("proposedServiceFeeBdt"), req.getProposedServiceFeeBdt()));
+        if (body.containsKey("specialRequirements")) req.setSpecialRequirements(String.valueOf(body.get("specialRequirements")));
+        if (body.containsKey("status")) req.setStatus(String.valueOf(body.get("status")));
+
+        return ResponseEntity.ok(requirementRepository.save(req));
+    }
+
+    @PutMapping("/requirements/{id}/fulfill")
+    public ResponseEntity<?> fulfillMyRequirement(Authentication auth, @PathVariable Long id) {
+        UserEntity user = currentUser(auth);
+        Optional<BuyerRequirementEntity> opt = requirementRepository.findById(id);
+        if (opt.isEmpty() || !opt.get().getBuyerId().equals(user.getId())) {
+            return ResponseEntity.status(403).body(Map.of("message", "অনুমোদনহীন অনুরোধ"));
+        }
+        BuyerRequirementEntity req = opt.get();
+        req.setStatus("FULFILLED");
+        return ResponseEntity.ok(requirementRepository.save(req));
+    }
+
+    @PostMapping("/requirements/{id}/seller-offer")
+    public ResponseEntity<?> submitSellerOfferForRequirement(Authentication auth, @PathVariable Long id, @RequestBody Map<String, Object> body) {
+        UserEntity seller = currentUser(auth);
+        Optional<BuyerRequirementEntity> opt = requirementRepository.findById(id);
+        if (opt.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "চাহিদাপত্র খুঁজে পাওয়া যায়নি।"));
+        }
+        BuyerRequirementEntity req = opt.get();
+        String landDetails = String.valueOf(body.getOrDefault("landDetails", "")).trim();
+        BigDecimal askingPrice = parseDecimal(body.get("askingPriceBdt"), req.getMaxBudgetBdt());
+        BigDecimal proposedFee = parseDecimal(body.get("proposedServiceFeeBdt"), new BigDecimal("50000"));
+
+        // Create a mediated ServiceProposal so Admin & Seller can track it, and notify the Buyer!
+        ServiceProposalEntity p = new ServiceProposalEntity();
+        p.setUserId(seller.getId());
+        p.setUserName(seller.getFullName());
+        p.setUserPhone(seller.getPhoneNumber());
+        p.setUserRole(seller.getRole());
+        p.setProposalTitle("ক্রেতার চাহিদা #" + req.getId() + " (" + req.getPreferredUpazila() + " - " + req.getLandType() + ") এর বিপরীতে জমির প্রস্তাব");
+        p.setScopeDescription("ক্রেতা: " + req.getBuyerName() + " | বিক্রেতার প্রস্তাবিত মূল্য: ৳" + askingPrice + " | জমির বিবরণ: " + landDetails);
+        p.setCustomerProposedFeeBdt(proposedFee);
+        p.setTimelineTerms(req.getPurchaseTimeline());
+        p.setPaymentTerms("চুক্তি ও দলিল সম্পাদনের পর পরিশোধযোগ্য");
+        p.setStatus("CUSTOMER_PROPOSED");
+        proposalRepository.save(p);
+
+        // Notify the Buyer (preserving seller privacy)
+        NotificationEntity buyerNotif = new NotificationEntity();
+        buyerNotif.setUserId(req.getBuyerId());
+        buyerNotif.setTitle("আপনার জমির চাহিদার বিপরীতে একটি জমির প্রস্তাব এসেছে!");
+        buyerNotif.setMessage(req.getPreferredUpazila() + " এলাকায় আপনার " + req.getLandType() + " জমির চাহিদার বিপরীতে একজন বিক্রেতা ৳" + askingPrice + " মূল্যে জমির প্রস্তাব পাঠিয়েছেন। ভূমি সেতু অ্যাডমিন যাচাই করে আপনার সাথে যোগাযোগ করবেন।");
+        notificationRepository.save(buyerNotif);
+
+        return ResponseEntity.ok(Map.of(
+                "message", "আপনার জমির প্রস্তাবটি সফলভাবে অ্যাডমিন মধ্যস্থতা প্যানেলে জমা হয়েছে এবং ক্রেতাকে নোটিফিকেশন পাঠানো হয়েছে!"
+        ));
+    }
+
     @PostMapping("/inquiries")
     public ResponseEntity<?> createInquiry(Authentication auth, @RequestBody Map<String, Object> body) {
         UserEntity user = currentUser(auth);
@@ -299,7 +479,6 @@ public class MemberPortalController {
         List<UserEntity> referredUsers = userRepository.findByReferredByOfficerIdOrderByCreatedAtDesc(officer.getId());
         List<CommissionEntryEntity> commissions = commissionRepository.findByOfficerIdOrderByCreatedAtDesc(officer.getId());
 
-        // Map each referred user with their name, role, status, and total commission earned from them
         List<Map<String, Object>> referredUsersView = new ArrayList<>();
         for (UserEntity ru : referredUsers) {
             BigDecimal earnedFromUser = commissions.stream()
@@ -347,6 +526,40 @@ public class MemberPortalController {
         response.put("referredUsers", referredUsersView);
         response.put("commissions", commissions);
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/officer-payout-request")
+    public ResponseEntity<?> requestOfficerPayout(Authentication auth, @RequestBody Map<String, String> body) {
+        UserEntity officer = currentUser(auth);
+        String paymentMethod = body.getOrDefault("paymentMethod", "বিকাশ (bKash)");
+        String accountNumber = body.getOrDefault("accountNumber", officer.getPhoneNumber()).trim();
+        String note = body.getOrDefault("note", "").trim();
+
+        List<CommissionEntryEntity> payableList = commissionRepository.findByOfficerIdOrderByCreatedAtDesc(officer.getId())
+                .stream()
+                .filter(c -> "APPROVED_PAYABLE".equals(c.getStatus()))
+                .toList();
+
+        if (payableList.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "বর্তমানে আপনার কোনো বকেয়া প্রাপ্য সম্মানী নেই।"));
+        }
+
+        String reqTag = " [পেআউট অনুরোধ: " + paymentMethod + " - " + accountNumber + (note.isBlank() ? "" : " (" + note + ")") + "]";
+        for (CommissionEntryEntity c : payableList) {
+            String existingNote = c.getNote() != null ? c.getNote() : "";
+            if (!existingNote.contains("[পেআউট অনুরোধ:")) {
+                c.setNote(existingNote + reqTag);
+                commissionRepository.save(c);
+            }
+        }
+
+        NotificationEntity n = new NotificationEntity();
+        n.setUserId(officer.getId());
+        n.setTitle("সম্মানী উত্তোলনের অনুরোধ জমা হয়েছে");
+        n.setMessage("আপনার প্রাপ্য সম্মানী " + paymentMethod + " (" + accountNumber + ") নম্বরে পাঠানোর অনুরোধ অ্যাডমিনের কাছে পাঠানো হয়েছে।");
+        notificationRepository.save(n);
+
+        return ResponseEntity.ok(Map.of("message", "আপনার সম্মানী উত্তোলনের অনুরোধ সফলভাবে অ্যাডমিনের কাছে পাঠানো হয়েছে!"));
     }
 
     // ==================== SPECIAL SERVICE PROPOSALS ====================

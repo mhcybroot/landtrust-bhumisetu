@@ -2,9 +2,12 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
   static const String _envApiUrl = String.fromEnvironment('API_BASE_URL');
+  static const String _prefTokenKey = 'landtrust_jwt_token';
+  static const String _prefUserKey = 'landtrust_current_user';
 
   static String get baseUrl {
     if (_envApiUrl.isNotEmpty) {
@@ -80,6 +83,38 @@ class ApiService {
   static String? token;
   static Map<String, dynamic>? currentUser;
 
+  static Future<void> restoreSession() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final savedToken = prefs.getString(_prefTokenKey);
+      final savedUserJson = prefs.getString(_prefUserKey);
+      if (savedToken != null && savedToken.isNotEmpty) {
+        token = savedToken;
+        if (savedUserJson != null && savedUserJson.isNotEmpty) {
+          currentUser = jsonDecode(savedUserJson) as Map<String, dynamic>;
+        }
+        try {
+          await refreshMe();
+        } catch (_) {
+          // If token expired or user deleted, clear session
+          await logout();
+        }
+      }
+    } catch (_) {}
+  }
+
+  static Future<void> _saveSession() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      if (token != null && token!.isNotEmpty) {
+        await prefs.setString(_prefTokenKey, token!);
+      }
+      if (currentUser != null) {
+        await prefs.setString(_prefUserKey, jsonEncode(currentUser));
+      }
+    } catch (_) {}
+  }
+
   static Map<String, String> get _headers {
     final headers = <String, String>{
       'Content-Type': 'application/json; charset=UTF-8',
@@ -103,14 +138,26 @@ class ApiService {
   }
 
   static Future<List<dynamic>> getPublicListings({
+    String? district,
     String? upazila,
     String? landType,
     String? maxBudget,
+    String? verificationStatus,
+    String? minArea,
+    String? maxArea,
+    String? keyword,
   }) async {
     final query = <String, String>{};
+    if (district != null && district.isNotEmpty) query['district'] = district;
     if (upazila != null && upazila.isNotEmpty) query['upazila'] = upazila;
     if (landType != null && landType.isNotEmpty) query['landType'] = landType;
     if (maxBudget != null && maxBudget.isNotEmpty) query['maxBudget'] = maxBudget;
+    if (verificationStatus != null && verificationStatus.isNotEmpty) {
+      query['verificationStatus'] = verificationStatus;
+    }
+    if (minArea != null && minArea.isNotEmpty) query['minArea'] = minArea;
+    if (maxArea != null && maxArea.isNotEmpty) query['maxArea'] = maxArea;
+    if (keyword != null && keyword.isNotEmpty) query['keyword'] = keyword;
 
     final uri = Uri.parse('$baseUrl/public/listings').replace(
       queryParameters: query.isEmpty ? null : query,
@@ -143,6 +190,7 @@ class ApiService {
     if (res.statusCode == 200) {
       token = data['token'] as String?;
       currentUser = data['user'] as Map<String, dynamic>?;
+      await _saveSession();
     } else {
       throw Exception(data['message'] ?? 'লগইন ব্যর্থ হয়েছে');
     }
@@ -159,6 +207,7 @@ class ApiService {
     if (res.statusCode == 200) {
       token = data['token'] as String?;
       currentUser = data['user'] as Map<String, dynamic>?;
+      await _saveSession();
     } else {
       throw Exception(data['message'] ?? 'নিবন্ধন ব্যর্থ হয়েছে');
     }
@@ -169,17 +218,51 @@ class ApiService {
     final res = await http.get(Uri.parse('$baseUrl/user/me'), headers: _headers);
     if (res.statusCode == 200) {
       currentUser = jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
+      await _saveSession();
       return currentUser!;
     }
     throw Exception('সেশন শেষ হয়েছে');
   }
 
-  static void logout() {
+  static Future<void> logout() async {
     token = null;
     currentUser = null;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_prefTokenKey);
+      await prefs.remove(_prefUserKey);
+    } catch (_) {}
   }
 
-  // ==================== NOTIFICATIONS & PAYMENT RESUBMIT ====================
+  // ==================== PROFILE, PASSWORD, NOTIFICATIONS & PAYMENT RESUBMIT ====================
+
+  static Future<Map<String, dynamic>> updateMyProfile(Map<String, String> payload) async {
+    final res = await http.put(
+      Uri.parse('$baseUrl/portal/profile'),
+      headers: _headers,
+      body: jsonEncode(payload),
+    );
+    final data = jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
+    if (res.statusCode == 200) {
+      currentUser = data['user'] as Map<String, dynamic>?;
+      await _saveSession();
+      return data;
+    }
+    throw Exception(data['message'] ?? 'প্রোফাইল আপডেট ব্যর্থ হয়েছে');
+  }
+
+  static Future<Map<String, dynamic>> changeMyPassword(Map<String, String> payload) async {
+    final res = await http.put(
+      Uri.parse('$baseUrl/portal/change-password'),
+      headers: _headers,
+      body: jsonEncode(payload),
+    );
+    final data = jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
+    if (res.statusCode == 200) {
+      return data;
+    }
+    throw Exception(data['message'] ?? 'পাসওয়ার্ড পরিবর্তন ব্যর্থ হয়েছে');
+  }
 
   static Future<Map<String, dynamic>> getMyNotifications() async {
     final res = await http.get(Uri.parse('$baseUrl/portal/notifications'), headers: _headers);
@@ -199,6 +282,7 @@ class ApiService {
     final data = jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
     if (res.statusCode == 200) {
       currentUser = data['user'] as Map<String, dynamic>?;
+      await _saveSession();
       return data;
     }
     throw Exception(data['message'] ?? 'পেমেন্ট তথ্য জমা দিতে সমস্যা হয়েছে');
@@ -214,6 +298,15 @@ class ApiService {
   static Future<Map<String, dynamic>> createListing(Map<String, dynamic> payload) async {
     final res = await http.post(
       Uri.parse('$baseUrl/portal/listings'),
+      headers: _headers,
+      body: jsonEncode(payload),
+    );
+    return jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
+  }
+
+  static Future<Map<String, dynamic>> updateMyListing(int id, Map<String, dynamic> payload) async {
+    final res = await http.put(
+      Uri.parse('$baseUrl/portal/listings/$id'),
       headers: _headers,
       body: jsonEncode(payload),
     );
@@ -242,6 +335,36 @@ class ApiService {
     return jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
   }
 
+  static Future<Map<String, dynamic>> updateMyRequirement(int id, Map<String, dynamic> payload) async {
+    final res = await http.put(
+      Uri.parse('$baseUrl/portal/requirements/$id'),
+      headers: _headers,
+      body: jsonEncode(payload),
+    );
+    return jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
+  }
+
+  static Future<Map<String, dynamic>> fulfillMyRequirement(int id) async {
+    final res = await http.put(
+      Uri.parse('$baseUrl/portal/requirements/$id/fulfill'),
+      headers: _headers,
+    );
+    return jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
+  }
+
+  static Future<Map<String, dynamic>> submitSellerOfferForRequirement(int id, Map<String, dynamic> payload) async {
+    final res = await http.post(
+      Uri.parse('$baseUrl/portal/requirements/$id/seller-offer'),
+      headers: _headers,
+      body: jsonEncode(payload),
+    );
+    final data = jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
+    if (res.statusCode == 200) {
+      return data;
+    }
+    throw Exception(data['message'] ?? 'প্রস্তাব পাঠাতে সমস্যা হয়েছে');
+  }
+
   static Future<Map<String, dynamic>> createInquiry(Map<String, dynamic> payload) async {
     final res = await http.post(
       Uri.parse('$baseUrl/portal/inquiries'),
@@ -259,6 +382,19 @@ class ApiService {
   static Future<Map<String, dynamic>> getOfficerDashboard() async {
     final res = await http.get(Uri.parse('$baseUrl/portal/officer-dashboard'), headers: _headers);
     return jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
+  }
+
+  static Future<Map<String, dynamic>> requestOfficerPayout(Map<String, String> payload) async {
+    final res = await http.post(
+      Uri.parse('$baseUrl/portal/officer-payout-request'),
+      headers: _headers,
+      body: jsonEncode(payload),
+    );
+    final data = jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
+    if (res.statusCode == 200) {
+      return data;
+    }
+    throw Exception(data['message'] ?? 'উত্তোলন অনুরোধ পাঠাতে সমস্যা হয়েছে');
   }
 
   static Future<List<dynamic>> getMyProposals() async {
@@ -348,6 +484,24 @@ class ApiService {
       Uri.parse('$baseUrl/admin/users/$id/status'),
       headers: _headers,
       body: jsonEncode({'accountStatus': status, 'adminNote': note}),
+    );
+    return jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
+  }
+
+  static Future<Map<String, dynamic>> adminResetUserPassword(int id, String newPassword) async {
+    final res = await http.put(
+      Uri.parse('$baseUrl/admin/users/$id/reset-password'),
+      headers: _headers,
+      body: jsonEncode({'newPassword': newPassword}),
+    );
+    return jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
+  }
+
+  static Future<Map<String, dynamic>> adminRefundUserFee(int id, Map<String, String> payload) async {
+    final res = await http.post(
+      Uri.parse('$baseUrl/admin/users/$id/refund'),
+      headers: _headers,
+      body: jsonEncode(payload),
     );
     return jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
   }

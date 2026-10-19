@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'services/api_service.dart';
 import 'screens/member_dashboard_screen.dart';
 import 'screens/admin_panel_screen.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const LandTrustApp());
 }
 
@@ -45,19 +47,30 @@ class _MainShellScreenState extends State<MainShellScreen> {
   List<dynamic> _listings = [];
   List<dynamic> _requirements = [];
 
-  // Search Filters
+  // Advanced Search Filters
+  String _filterDistrict = '';
   String _filterUpazila = '';
   String _filterLandType = '';
+  String _filterVerification = '';
   final TextEditingController _maxBudgetCtrl = TextEditingController();
+  final TextEditingController _minAreaCtrl = TextEditingController();
+  final TextEditingController _maxAreaCtrl = TextEditingController();
+  final TextEditingController _keywordCtrl = TextEditingController();
 
   @override
   void initState() {
     super.initState();
+    _bootstrapApp();
+  }
+
+  Future<void> _bootstrapApp() async {
+    setState(() => _loading = true);
+    await ApiService.restoreSession();
     final refParam = Uri.base.queryParameters['ref'];
     if (refParam != null && refParam.trim().isNotEmpty && ApiService.currentUser == null) {
       _selectedIndex = 3;
     }
-    _loadInitialData();
+    await _loadInitialData();
   }
 
   Future<void> _loadInitialData() async {
@@ -67,9 +80,14 @@ class _MainShellScreenState extends State<MainShellScreen> {
         ApiService.getPublicConfig(),
         ApiService.getPublicStats(),
         ApiService.getPublicListings(
+          district: _filterDistrict.isEmpty ? null : _filterDistrict,
           upazila: _filterUpazila.isEmpty ? null : _filterUpazila,
           landType: _filterLandType.isEmpty ? null : _filterLandType,
           maxBudget: _maxBudgetCtrl.text.trim().isEmpty ? null : _maxBudgetCtrl.text.trim(),
+          verificationStatus: _filterVerification.isEmpty ? null : _filterVerification,
+          minArea: _minAreaCtrl.text.trim().isEmpty ? null : _minAreaCtrl.text.trim(),
+          maxArea: _maxAreaCtrl.text.trim().isEmpty ? null : _maxAreaCtrl.text.trim(),
+          keyword: _keywordCtrl.text.trim().isEmpty ? null : _keywordCtrl.text.trim(),
         ),
         ApiService.getPublicRequirements(),
       ]);
@@ -138,7 +156,7 @@ class _MainShellScreenState extends State<MainShellScreen> {
                                 overflow: TextOverflow.ellipsis,
                               ),
                               const Text(
-                                'ক্রেতা-বিক্রেতার বিশ্বস্ত সংযোগ • নোয়াখালী',
+                                'ক্রেতা-বিক্রেতার বিশ্বস্ত সংযোগ • নোয়াখালী ও সারাদেশ',
                                 style: TextStyle(color: Colors.white70, fontSize: 11),
                                 overflow: TextOverflow.ellipsis,
                               ),
@@ -165,13 +183,13 @@ class _MainShellScreenState extends State<MainShellScreen> {
                           _navButton(
                             3,
                             isAdmin ? Icons.admin_panel_settings : Icons.dashboard_customize,
-                            isAdmin ? 'অ্যাডমিন প্যানেল' : 'আমার পোর্টাল (${user['role']})',
+                            isAdmin ? 'অ্যাডমিন প্যানেল' : 'আমার পোর্টাল (${user['fullName']})',
                           ),
                           const SizedBox(width: 8),
                           TextButton.icon(
                             style: TextButton.styleFrom(foregroundColor: Colors.amberAccent),
-                            onPressed: () {
-                              ApiService.logout();
+                            onPressed: () async {
+                              await ApiService.logout();
                               setState(() => _selectedIndex = 0);
                             },
                             icon: const Icon(Icons.logout, size: 18),
@@ -184,8 +202,8 @@ class _MainShellScreenState extends State<MainShellScreen> {
                 else if (user != null)
                   TextButton.icon(
                     style: TextButton.styleFrom(foregroundColor: Colors.amberAccent),
-                    onPressed: () {
-                      ApiService.logout();
+                    onPressed: () async {
+                      await ApiService.logout();
                       setState(() => _selectedIndex = 0);
                     },
                     icon: const Icon(Icons.logout, size: 18),
@@ -265,11 +283,16 @@ class _MainShellScreenState extends State<MainShellScreen> {
     );
   }
 
-  // ==================== TAB 0: HOME & LAND SEARCH ====================
+  // ==================== TAB 0: HOME & ADVANCED LAND SEARCH ====================
   Widget _buildHomeAndSearchTab() {
     final settings = (_config['settings'] as Map<String, dynamic>?) ?? {};
     final locations = (_config['locations'] as List<dynamic>?) ?? [];
-    final upazilas = locations.map((l) => l['upazilaNameBn'].toString()).toSet().toList();
+    final districts = locations.map((l) => l['districtNameBn'].toString()).toSet().toList();
+    final upazilas = locations
+        .where((l) => _filterDistrict.isEmpty || l['districtNameBn'] == _filterDistrict)
+        .map((l) => l['upazilaNameBn'].toString())
+        .toSet()
+        .toList();
 
     return SingleChildScrollView(
       child: Column(
@@ -277,7 +300,7 @@ class _MainShellScreenState extends State<MainShellScreen> {
           // Hero Section
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 36),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
             decoration: const BoxDecoration(
               gradient: LinearGradient(
                 colors: [Color(0xFF083A24), Color(0xFF136841)],
@@ -298,21 +321,21 @@ class _MainShellScreenState extends State<MainShellScreen> {
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: const Text(
-                        'প্রাথমিক কার্যক্রম: নোয়াখালী জেলা (পর্যায়ক্রমে সারাদেশে সম্প্রসারণযোগ্য)',
+                        'প্রাথমিক কার্যক্রম: নোয়াখালী জেলা (মাল্টি-ডিস্ট্রিক্ট সাপোর্টসহ সারাদেশে সম্প্রসারণযোগ্য)',
                         style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.black),
                       ),
                     ),
                     const SizedBox(height: 14),
                     const Text(
                       'ভূমি সেতু (Bhumi Setu) — ক্রেতা, বিক্রেতা ও মার্কেটিং অফিসারের সমন্বিত ডিজিটাল প্ল্যাটফর্ম',
-                      style: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold),
+                      style: TextStyle(color: Colors.white, fontSize: 27, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 8),
                     const Text(
                       'শুধু বিজ্ঞাপন প্রকাশ নয় — জমির ক্রেতার চাহিদা সংগ্রহ, বিক্রেতার জমির প্রাথমিক কাগজপত্র যাচাই, মার্কেটিং অফিসারের রেফারেল নেটওয়ার্ক এবং নিরাপদ মধ্যস্থতায় জমি কেনাবেচার বিশ্বস্ত মাধ্যম।',
                       style: TextStyle(color: Colors.white70, fontSize: 15),
                     ),
-                    const SizedBox(height: 22),
+                    const SizedBox(height: 20),
 
                     // Quick Role Action Buttons
                     Wrap(
@@ -351,87 +374,174 @@ class _MainShellScreenState extends State<MainShellScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 22),
 
-                    // Search & Filter Box
+                    // Advanced Search & Filter Box
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(14),
                       ),
-                      child: Wrap(
-                        spacing: 12,
-                        runSpacing: 12,
-                        crossAxisAlignment: WrapCrossAlignment.center,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          SizedBox(
-                            width: 230,
-                            child: DropdownButtonFormField<String>(
-                              initialValue: _filterUpazila.isEmpty ? null : _filterUpazila,
-                              decoration: const InputDecoration(
-                                labelText: 'উপজেলা (নোয়াখালী)',
-                                border: OutlineInputBorder(),
-                                isDense: true,
+                          const Text(
+                            '🔎 স্মার্ট জমি অনুসন্ধান ও ফিল্টার (জেলা, উপজেলা, যাচাই ব্যাজ, বাজেট ও পরিমাণ)',
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF0B4F32)),
+                          ),
+                          const SizedBox(height: 10),
+                          Wrap(
+                            spacing: 10,
+                            runSpacing: 10,
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: 175,
+                                child: DropdownButtonFormField<String>(
+                                  initialValue: _filterDistrict.isEmpty ? null : _filterDistrict,
+                                  decoration: const InputDecoration(
+                                    labelText: 'জেলা',
+                                    border: OutlineInputBorder(),
+                                    isDense: true,
+                                  ),
+                                  items: [
+                                    const DropdownMenuItem(value: '', child: Text('সকল জেলা')),
+                                    ...districts.map((d) => DropdownMenuItem(value: d, child: Text(d))),
+                                  ],
+                                  onChanged: (v) => setState(() {
+                                    _filterDistrict = v ?? '';
+                                    _filterUpazila = '';
+                                  }),
+                                ),
                               ),
-                              items: [
-                                const DropdownMenuItem(value: '', child: Text('সকল উপজেলা')),
-                                ...upazilas.map((u) => DropdownMenuItem(value: u, child: Text(u))),
-                              ],
-                              onChanged: (v) => setState(() => _filterUpazila = v ?? ''),
-                            ),
-                          ),
-                          SizedBox(
-                            width: 200,
-                            child: DropdownButtonFormField<String>(
-                              initialValue: _filterLandType.isEmpty ? null : _filterLandType,
-                              decoration: const InputDecoration(
-                                labelText: 'জমির ধরন',
-                                border: OutlineInputBorder(),
-                                isDense: true,
+                              SizedBox(
+                                width: 185,
+                                child: DropdownButtonFormField<String>(
+                                  initialValue: upazilas.contains(_filterUpazila) && _filterUpazila.isNotEmpty ? _filterUpazila : null,
+                                  decoration: const InputDecoration(
+                                    labelText: 'উপজেলা',
+                                    border: OutlineInputBorder(),
+                                    isDense: true,
+                                  ),
+                                  items: [
+                                    const DropdownMenuItem(value: '', child: Text('সকল উপজেলা')),
+                                    ...upazilas.map((u) => DropdownMenuItem(value: u, child: Text(u))),
+                                  ],
+                                  onChanged: (v) => setState(() => _filterUpazila = v ?? ''),
+                                ),
                               ),
-                              items: const [
-                                DropdownMenuItem(value: '', child: Text('সকল ধরন')),
-                                DropdownMenuItem(value: 'আবাসিক', child: Text('আবাসিক')),
-                                DropdownMenuItem(value: 'বাণিজ্যিক', child: Text('বাণিজ্যিক')),
-                                DropdownMenuItem(value: 'কৃষি', child: Text('কৃষি')),
-                                DropdownMenuItem(value: 'বাগান/খামার', child: Text('বাগান/খামার')),
-                              ],
-                              onChanged: (v) => setState(() => _filterLandType = v ?? ''),
-                            ),
-                          ),
-                          SizedBox(
-                            width: 220,
-                            child: TextField(
-                              controller: _maxBudgetCtrl,
-                              keyboardType: TextInputType.number,
-                              decoration: const InputDecoration(
-                                labelText: 'সর্বোচ্চ বাজেট (৳)',
-                                border: OutlineInputBorder(),
-                                isDense: true,
+                              SizedBox(
+                                width: 165,
+                                child: DropdownButtonFormField<String>(
+                                  initialValue: _filterLandType.isEmpty ? null : _filterLandType,
+                                  decoration: const InputDecoration(
+                                    labelText: 'জমির ধরন',
+                                    border: OutlineInputBorder(),
+                                    isDense: true,
+                                  ),
+                                  items: const [
+                                    DropdownMenuItem(value: '', child: Text('সকল ধরন')),
+                                    DropdownMenuItem(value: 'আবাসিক', child: Text('আবাসিক')),
+                                    DropdownMenuItem(value: 'বাণিজ্যিক', child: Text('বাণিজ্যিক')),
+                                    DropdownMenuItem(value: 'কৃষি', child: Text('কৃষি')),
+                                    DropdownMenuItem(value: 'বাগান/খামার', child: Text('বাগান/খামার')),
+                                  ],
+                                  onChanged: (v) => setState(() => _filterLandType = v ?? ''),
+                                ),
                               ),
-                            ),
-                          ),
-                          ElevatedButton.icon(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF0B4F32),
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 16),
-                            ),
-                            onPressed: _loadInitialData,
-                            icon: const Icon(Icons.search),
-                            label: const Text('জমি খুঁজুন'),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              setState(() {
-                                _filterUpazila = '';
-                                _filterLandType = '';
-                                _maxBudgetCtrl.clear();
-                              });
-                              _loadInitialData();
-                            },
-                            child: const Text('ফিল্টার রিসেট'),
+                              SizedBox(
+                                width: 205,
+                                child: DropdownButtonFormField<String>(
+                                  initialValue: _filterVerification.isEmpty ? null : _filterVerification,
+                                  decoration: const InputDecoration(
+                                    labelText: 'যাচাইকরণ ব্যাজ',
+                                    border: OutlineInputBorder(),
+                                    isDense: true,
+                                  ),
+                                  items: const [
+                                    DropdownMenuItem(value: '', child: Text('সকল যাচাই স্তর')),
+                                    DropdownMenuItem(value: 'FIELD_VERIFIED', child: Text('🟢 সরেজমিনে যাচাইকৃত')),
+                                    DropdownMenuItem(value: 'DOC_CHECKED', child: Text('🔵 কাগজপত্র যাচাইকৃত')),
+                                    DropdownMenuItem(value: 'SUBMITTED', child: Text('⚪ প্রাথমিক তথ্য প্রাপ্ত')),
+                                  ],
+                                  onChanged: (v) => setState(() => _filterVerification = v ?? ''),
+                                ),
+                              ),
+                              SizedBox(
+                                width: 165,
+                                child: TextField(
+                                  controller: _maxBudgetCtrl,
+                                  keyboardType: TextInputType.number,
+                                  decoration: const InputDecoration(
+                                    labelText: 'সর্বোচ্চ বাজেট (৳)',
+                                    border: OutlineInputBorder(),
+                                    isDense: true,
+                                  ),
+                                ),
+                              ),
+                              SizedBox(
+                                width: 135,
+                                child: TextField(
+                                  controller: _minAreaCtrl,
+                                  keyboardType: TextInputType.number,
+                                  decoration: const InputDecoration(
+                                    labelText: 'ন্যূনতম শতাংশ',
+                                    border: OutlineInputBorder(),
+                                    isDense: true,
+                                  ),
+                                ),
+                              ),
+                              SizedBox(
+                                width: 135,
+                                child: TextField(
+                                  controller: _maxAreaCtrl,
+                                  keyboardType: TextInputType.number,
+                                  decoration: const InputDecoration(
+                                    labelText: 'সর্বোচ্চ শতাংশ',
+                                    border: OutlineInputBorder(),
+                                    isDense: true,
+                                  ),
+                                ),
+                              ),
+                              SizedBox(
+                                width: 220,
+                                child: TextField(
+                                  controller: _keywordCtrl,
+                                  decoration: const InputDecoration(
+                                    labelText: 'মৌজা / এলাকার নাম / কিওয়ার্ড',
+                                    border: OutlineInputBorder(),
+                                    isDense: true,
+                                  ),
+                                ),
+                              ),
+                              ElevatedButton.icon(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF0B4F32),
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                                ),
+                                onPressed: _loadInitialData,
+                                icon: const Icon(Icons.search),
+                                label: const Text('জমি খুঁজুন'),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  setState(() {
+                                    _filterDistrict = '';
+                                    _filterUpazila = '';
+                                    _filterLandType = '';
+                                    _filterVerification = '';
+                                    _maxBudgetCtrl.clear();
+                                    _minAreaCtrl.clear();
+                                    _maxAreaCtrl.clear();
+                                    _keywordCtrl.clear();
+                                  });
+                                  _loadInitialData();
+                                },
+                                child: const Text('ফিল্টার রিসেট'),
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -459,7 +569,7 @@ class _MainShellScreenState extends State<MainShellScreen> {
                         _homeStatCard('অনুমোদিত জমির বিজ্ঞাপন', '${_stats['publishedListings'] ?? 0} টি', Icons.verified_outlined),
                         _homeStatCard('সক্রিয় ক্রেতার চাহিদা', '${_stats['activeBuyerRequirements'] ?? 0} টি', Icons.person_pin_circle_outlined),
                         _homeStatCard('নিবন্ধিত মার্কেটিং অফিসার', '${_stats['marketingOfficers'] ?? 0} জন', Icons.badge_outlined),
-                        _homeStatCard('নোয়াখালীর কভারকৃত উপজেলা', '${_stats['coveredUpazilas'] ?? 9} টি', Icons.map_outlined),
+                        _homeStatCard('কভারকৃত উপজেলা ও এলাকা', '${_stats['coveredUpazilas'] ?? 9} টি', Icons.map_outlined),
                       ],
                     ),
                     const SizedBox(height: 30),
@@ -506,6 +616,8 @@ class _MainShellScreenState extends State<MainShellScreen> {
       'DOC_CHECKED' => ('🔵 কাগজপত্র প্রাথমিক যাচাইকৃত', Colors.blue.shade800),
       _ => ('⚪ প্রাথমিক তথ্য প্রাপ্ত', Colors.grey.shade700),
     };
+    final hasVideo = (l['videoUrl'] ?? '').toString().trim().isNotEmpty;
+    final hasMap = (l['mapLink'] ?? '').toString().trim().isNotEmpty;
 
     return Container(
       width: 375,
@@ -518,48 +630,93 @@ class _MainShellScreenState extends State<MainShellScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Image + Badges
-          Stack(
-            children: [
-              ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-                child: ApiService.buildSmartImage(
-                  l['imageUrl'] as String?,
-                  height: 185,
-                  width: double.infinity,
-                ),
-              ),
-              Positioned(
-                top: 12,
-                left: 12,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.94),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    badgeText,
-                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: badgeColor),
+          // Image + Badges (Click to open full details)
+          InkWell(
+            onTap: () => _showPropertyDetailsDialog(l),
+            child: Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                  child: ApiService.buildSmartImage(
+                    l['imageUrl'] as String?,
+                    height: 185,
+                    width: double.infinity,
                   ),
                 ),
-              ),
-              Positioned(
-                top: 12,
-                right: 12,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF0B4F32),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    l['landType'] ?? 'আবাসিক',
-                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white),
+                Positioned(
+                  top: 12,
+                  left: 12,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.94),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      badgeText,
+                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: badgeColor),
+                    ),
                   ),
                 ),
-              ),
-            ],
+                Positioned(
+                  top: 12,
+                  right: 12,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0B4F32),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      l['landType'] ?? 'আবাসিক',
+                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white),
+                    ),
+                  ),
+                ),
+                if (hasVideo || hasMap)
+                  Positioned(
+                    bottom: 8,
+                    right: 10,
+                    child: Wrap(
+                      spacing: 6,
+                      children: [
+                        if (hasVideo)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.red.shade700,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.play_circle_fill, size: 13, color: Colors.white),
+                                SizedBox(width: 4),
+                                Text('ভিডিও ট্যুর', style: TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold)),
+                              ],
+                            ),
+                          ),
+                        if (hasMap)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.blue.shade800,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.map, size: 13, color: Colors.white),
+                                SizedBox(width: 4),
+                                Text('ম্যাপ পিন', style: TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold)),
+                              ],
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
           ),
           Padding(
             padding: const EdgeInsets.all(16),
@@ -579,7 +736,7 @@ class _MainShellScreenState extends State<MainShellScreen> {
                     const SizedBox(width: 4),
                     Expanded(
                       child: Text(
-                        '${l['areaName']}, ${l['upazila']}, ${l['district']}',
+                        '${l['areaName']}, ${l['upazila']}, ${l['district']}${l['mouzaName'] != null && l['mouzaName'].toString().isNotEmpty ? ' (মৌজা: ${l['mouzaName']})' : ''}',
                         style: const TextStyle(fontSize: 13, color: Colors.black87),
                       ),
                     ),
@@ -610,6 +767,11 @@ class _MainShellScreenState extends State<MainShellScreen> {
                             '৳${l['expectedPriceBdt']}',
                             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF0B4F32)),
                           ),
+                          if (l['pricePerDecimalBdt'] != null)
+                            Text(
+                              '(৳${l['pricePerDecimalBdt']}/শতাংশ)',
+                              style: const TextStyle(fontSize: 11, color: Colors.black54, fontWeight: FontWeight.w600),
+                            ),
                         ],
                       ),
                     ],
@@ -628,23 +790,218 @@ class _MainShellScreenState extends State<MainShellScreen> {
                   style: const TextStyle(fontSize: 12, color: Colors.black54),
                 ),
                 const SizedBox(height: 12),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF0B4F32),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 11),
+                        ),
+                        onPressed: () => _showPropertyDetailsDialog(l),
+                        icon: const Icon(Icons.visibility_outlined, size: 17),
+                        label: const Text('বিস্তারিত দেখুন', style: TextStyle(fontSize: 12)),
+                      ),
                     ),
-                    onPressed: () => _handleInquiryClick(l),
-                    icon: const Icon(Icons.support_agent, size: 18),
-                    label: const Text('পরিদর্শন ও ক্রয়ের জন্য আগ্রহ প্রকাশ করুন'),
-                  ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF0B4F32),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 11),
+                        ),
+                        onPressed: () => _handleInquiryClick(l),
+                        icon: const Icon(Icons.support_agent, size: 17),
+                        label: const Text('আগ্রহ প্রকাশ', style: TextStyle(fontSize: 12)),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showPropertyDetailsDialog(Map<String, dynamic> l) {
+    final mainImg = (l['imageUrl'] ?? '').toString().trim();
+    final extraRaw = (l['additionalImageUrls'] ?? '').toString().trim();
+    final extraImages = extraRaw.isEmpty
+        ? <String>[]
+        : extraRaw.split('|||').map((s) => s.trim()).where((s) => s.isNotEmpty).toList();
+    final allImages = <String>[
+      if (mainImg.isNotEmpty) mainImg,
+      ...extraImages,
+    ];
+    int activeImgIndex = 0;
+
+    final videoUrl = (l['videoUrl'] ?? '').toString().trim();
+    final mapLink = (l['mapLink'] ?? '').toString().trim();
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  l['title'] ?? 'জমির বিস্তারিত তথ্য',
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF0B4F32)),
+                ),
+              ),
+              IconButton(
+                onPressed: () => Navigator.pop(ctx),
+                icon: const Icon(Icons.close),
+              ),
+            ],
+          ),
+          content: SizedBox(
+            width: 680,
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (allImages.isNotEmpty) ...[
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: ApiService.buildSmartImage(
+                        allImages[activeImgIndex],
+                        height: 290,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                    if (allImages.length > 1) ...[
+                      const SizedBox(height: 10),
+                      SizedBox(
+                        height: 68,
+                        child: ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: allImages.length,
+                          separatorBuilder: (_, _) => const SizedBox(width: 8),
+                          itemBuilder: (_, idx) {
+                            final selected = idx == activeImgIndex;
+                            return InkWell(
+                              onTap: () => setDialogState(() => activeImgIndex = idx),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: selected ? const Color(0xFF0B4F32) : Colors.grey.shade300,
+                                    width: selected ? 3 : 1,
+                                  ),
+                                ),
+                                child: ApiService.buildSmartImage(
+                                  allImages[idx],
+                                  width: 88,
+                                  height: 64,
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 14),
+                  ],
+                  Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF3F8F5),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: const Color(0xFF0B4F32).withValues(alpha: 0.2)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Wrap(
+                          spacing: 16,
+                          runSpacing: 8,
+                          alignment: WrapAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'মোট মূল্য: ৳${l['expectedPriceBdt']}',
+                              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF0B4F32)),
+                            ),
+                            Text(
+                              'প্রতি শতাংশ: ৳${l['pricePerDecimalBdt'] ?? '-'} • মোট পরিমাণ: ${l['areaDecimal']} শতাংশ',
+                              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                        const Divider(height: 18),
+                        Text('📍 অবস্থান: ${l['areaName']}, উপজেলা: ${l['upazila']}, জেলা: ${l['district']}'),
+                        const SizedBox(height: 4),
+                        Text('🗺️ মৌজা: ${l['mouzaName'] ?? 'উল্লেখ নেই'}  •  জমির ধরন: ${l['landType']}'),
+                        const SizedBox(height: 4),
+                        Text('🛣️ রাস্তার সুবিধা: ${l['roadAccessInfo'] ?? 'পাকা রাস্তা সংলগ্ন'}'),
+                        const SizedBox(height: 4),
+                        Text('🔒 গোপনীয়তা: দলিল, খতিয়ান ও মালিকের ফোন নম্বর ভূমি সেতু অ্যাডমিন ভল্টে সুরক্ষিত আছে।'),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  const Text('জমির বিস্তারিত বিবরণ:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                  const SizedBox(height: 4),
+                  Text(l['description'] ?? 'কোনো অতিরিক্ত বিবরণ নেই।', style: const TextStyle(fontSize: 14, height: 1.4)),
+                  if (videoUrl.isNotEmpty || mapLink.isNotEmpty) ...[
+                    const SizedBox(height: 14),
+                    Wrap(
+                      spacing: 10,
+                      runSpacing: 10,
+                      children: [
+                        if (videoUrl.isNotEmpty)
+                          OutlinedButton.icon(
+                            icon: const Icon(Icons.play_circle_outline, color: Colors.red),
+                            label: const Text('ভিডিও ট্যুর লিংক কপি / দেখুন'),
+                            onPressed: () {
+                              Clipboard.setData(ClipboardData(text: videoUrl));
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('ভিডিও ট্যুর লিংক কপি হয়েছে: $videoUrl')),
+                              );
+                            },
+                          ),
+                        if (mapLink.isNotEmpty)
+                          OutlinedButton.icon(
+                            icon: const Icon(Icons.pin_drop_outlined, color: Colors.blue),
+                            label: const Text('Google Maps লোকেশন লিংক কপি'),
+                            onPressed: () {
+                              Clipboard.setData(ClipboardData(text: mapLink));
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Google Maps লিংক কপি হয়েছে: $mapLink')),
+                              );
+                            },
+                          ),
+                      ],
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('বন্ধ করুন')),
+            ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF0B4F32),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+              ),
+              onPressed: () {
+                Navigator.pop(ctx);
+                _handleInquiryClick(l);
+              },
+              icon: const Icon(Icons.support_agent),
+              label: const Text('পরিদর্শন ও ক্রয়ের জন্য আগ্রহ প্রকাশ করুন'),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -738,7 +1095,7 @@ class _MainShellScreenState extends State<MainShellScreen> {
                       ),
                       SizedBox(height: 4),
                       Text(
-                        'আপনার জমি যদি নিচের কোনো ক্রেতার চাহিদার সাথে মিলে যায়, তবে বিক্রেতা হিসেবে নিবন্ধন করে জমির তথ্য জমা দিন।',
+                        'আপনার জমি যদি নিচের কোনো ক্রেতার চাহিদার সাথে মিলে যায়, তবে সরাসরি “আমার কাছে উপযুক্ত জমি আছে” বাটনে ক্লিক করে প্রস্তাব পাঠান।',
                         style: TextStyle(color: Colors.black54),
                       ),
                     ],
@@ -791,6 +1148,19 @@ class _MainShellScreenState extends State<MainShellScreen> {
                           ),
                           const SizedBox(height: 4),
                           Text('কেনার উদ্দেশ্য: ${r['purpose']} • বিশেষ শর্ত: ${r['specialRequirements'] ?? 'নিষ্কণ্টক কাগজপত্র'}'),
+                          const SizedBox(height: 12),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: ElevatedButton.icon(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF0B4F32),
+                                foregroundColor: Colors.white,
+                              ),
+                              onPressed: () => _handleSellerOfferOnRequirement(r as Map<String, dynamic>),
+                              icon: const Icon(Icons.real_estate_agent_outlined, size: 18),
+                              label: const Text('আমার কাছে উপযুক্ত জমি আছে — প্রস্তাব পাঠান'),
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -798,6 +1168,94 @@ class _MainShellScreenState extends State<MainShellScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  void _handleSellerOfferOnRequirement(Map<String, dynamic> req) {
+    if (ApiService.currentUser == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('ক্রেতার চাহিদার বিপরীতে জমির প্রস্তাব পাঠাতে প্রথমে লগইন বা নিবন্ধন করুন।')),
+      );
+      setState(() => _selectedIndex = 3);
+      return;
+    }
+
+    final detailsCtrl = TextEditingController(
+      text: '${req['preferredUpazila']} এলাকায় আমার নিষ্কণ্টক ${req['landType']} জমি রয়েছে, যা আপনার চাহিদার সাথে সামঞ্জস্যপূর্ণ।',
+    );
+    final priceCtrl = TextEditingController(text: '${req['maxBudgetBdt']}');
+    final feeCtrl = TextEditingController(text: '50000');
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('ক্রেতার চাহিদার বিপরীতে জমির প্রস্তাব (${req['preferredUpazila']})'),
+        content: SizedBox(
+          width: 480,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'ক্রেতা: ${req['buyerName']} • বাজেট: ৳${req['minBudgetBdt']}–৳${req['maxBudgetBdt']}',
+                style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0B4F32)),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: detailsCtrl,
+                maxLines: 3,
+                decoration: const InputDecoration(
+                  labelText: 'আপনার জমির অবস্থান, পরিমাণ ও সংক্ষিপ্ত বিবরণ *',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: priceCtrl,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  labelText: 'আপনার প্রত্যাশিত মোট মূল্য (৳) *',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: feeCtrl,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  labelText: 'ভূমি সেতু প্ল্যাটফর্মের জন্য প্রস্তাবিত পারিশ্রমিক (৳)',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('বাতিল')),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
+            onPressed: () async {
+              try {
+                final res = await ApiService.submitSellerOfferForRequirement(req['id'] as int, {
+                  'landDetails': detailsCtrl.text.trim(),
+                  'askingPriceBdt': priceCtrl.text.trim(),
+                  'proposedServiceFeeBdt': feeCtrl.text.trim(),
+                });
+                if (!ctx.mounted) return;
+                Navigator.pop(ctx);
+                if (!mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(res['message'] ?? 'প্রস্তাব সফলভাবে পাঠানো হয়েছে!')),
+                );
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+                }
+              }
+            },
+            child: const Text('প্রস্তাব পাঠান'),
+          ),
+        ],
       ),
     );
   }
@@ -948,7 +1406,6 @@ class _AuthAndRegisterViewState extends State<_AuthAndRegisterView> {
   @override
   void initState() {
     super.initState();
-    // Auto-fill referral code if user opened a referral link (?ref=LT-NOA-1001), otherwise empty by default
     final refFromUrl = Uri.base.queryParameters['ref'] ?? '';
     _referralCodeCtrl = TextEditingController(text: refFromUrl.trim());
   }

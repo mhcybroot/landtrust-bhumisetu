@@ -57,6 +57,15 @@ public class LandListingEntity {
     private String imageUrl;
 
     @Column(columnDefinition = "TEXT")
+    private String additionalImageUrls; // Optional multiple photos (separated by ||| or newline)
+
+    @Column(length = 1000)
+    private String videoUrl; // Optional YouTube / Drive video tour URL
+
+    @Column(length = 1000)
+    private String mapLink; // Optional Google Maps location pin URL
+
+    @Column(columnDefinition = "TEXT")
     private String privateDocumentUrl; // Only visible to Admin & Seller (never exposed publicly)
 
     private String privateDocumentName;
@@ -119,6 +128,12 @@ public class LandListingEntity {
     public void setDescription(String description) { this.description = description; }
     public String getImageUrl() { return imageUrl; }
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+    public String getAdditionalImageUrls() { return additionalImageUrls; }
+    public void setAdditionalImageUrls(String additionalImageUrls) { this.additionalImageUrls = additionalImageUrls; }
+    public String getVideoUrl() { return videoUrl; }
+    public void setVideoUrl(String videoUrl) { this.videoUrl = videoUrl; }
+    public String getMapLink() { return mapLink; }
+    public void setMapLink(String mapLink) { this.mapLink = mapLink; }
     public String getPrivateDocumentUrl() { return privateDocumentUrl; }
     public void setPrivateDocumentUrl(String privateDocumentUrl) { this.privateDocumentUrl = privateDocumentUrl; }
     public String getPrivateDocumentName() { return privateDocumentName; }
