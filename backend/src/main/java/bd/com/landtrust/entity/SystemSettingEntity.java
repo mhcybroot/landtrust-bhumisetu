@@ -26,6 +26,7 @@ public class SystemSettingEntity {
     private BigDecimal advisoryReservePercent = new BigDecimal("25");
 
     private String supportPhone = "01700-000000";
+    private String supportWhatsapp = "01700-000000";
     private String supportEmail = "info@bhumisetu.com.bd";
     private String officeAddress = "মাইজদী কোর্ট, সদর, নোয়াখালী";
     private LocalDateTime updatedAt = LocalDateTime.now();
@@ -48,6 +49,8 @@ public class SystemSettingEntity {
     public void setAdvisoryReservePercent(BigDecimal advisoryReservePercent) { this.advisoryReservePercent = advisoryReservePercent; }
     public String getSupportPhone() { return supportPhone; }
     public void setSupportPhone(String supportPhone) { this.supportPhone = supportPhone; }
+    public String getSupportWhatsapp() { return supportWhatsapp; }
+    public void setSupportWhatsapp(String supportWhatsapp) { this.supportWhatsapp = supportWhatsapp; }
     public String getSupportEmail() { return supportEmail; }
     public void setSupportEmail(String supportEmail) { this.supportEmail = supportEmail; }
     public String getOfficeAddress() { return officeAddress; }

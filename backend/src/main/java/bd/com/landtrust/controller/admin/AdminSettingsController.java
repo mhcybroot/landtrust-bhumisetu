@@ -50,6 +50,7 @@ public class AdminSettingsController {
         if (body.containsKey("dealClosurePercentCommission")) s.setDealClosurePercentCommission(CommonUtils.parseDecimal(body.get("dealClosurePercentCommission"), s.getDealClosurePercentCommission()));
         if (body.containsKey("advisoryReservePercent")) s.setAdvisoryReservePercent(CommonUtils.parseDecimal(body.get("advisoryReservePercent"), s.getAdvisoryReservePercent()));
         if (body.containsKey("supportPhone")) s.setSupportPhone(String.valueOf(body.get("supportPhone")));
+        if (body.containsKey("supportWhatsapp")) s.setSupportWhatsapp(String.valueOf(body.get("supportWhatsapp")));
         if (body.containsKey("supportEmail")) s.setSupportEmail(String.valueOf(body.get("supportEmail")));
         if (body.containsKey("officeAddress")) s.setOfficeAddress(String.valueOf(body.get("officeAddress")));
         s.setUpdatedAt(LocalDateTime.now());

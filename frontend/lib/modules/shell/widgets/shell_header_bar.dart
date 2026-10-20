@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:landtrust_app/core/widgets/horizontal_scroll_fade_view.dart';
+import '../../../../core/localization/app_strings.dart';
+import '../../../../core/localization/language_toggle_button.dart';
+import '../../../../core/widgets/horizontal_scroll_fade_view.dart';
 
 class ShellHeaderBar extends StatelessWidget {
   final int selectedIndex;
@@ -57,13 +59,13 @@ class ShellHeaderBar extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Text(
-                              'ভূমি সেতু',
-                              style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                            Text(
+                              context.tr('app_title'),
+                              style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
                               overflow: TextOverflow.ellipsis,
                             ),
                             Text(
-                              'নোয়াখালী জেলা নেটওয়ার্ক',
+                              context.tr('app_subtitle'),
                               style: TextStyle(color: Colors.green.shade100, fontSize: 10),
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -80,19 +82,21 @@ class ShellHeaderBar extends StatelessWidget {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        _navBtn(0, Icons.home_outlined, 'জমি খুঁজুন'),
-                        _navBtn(1, Icons.assignment_outlined, 'জমি কিনতে চাই'),
-                        _navBtn(2, Icons.info_outline, 'নিয়মাবলি ও ফি'),
+                        _navBtn(0, Icons.home_outlined, context.tr('nav_explore')),
+                        _navBtn(1, Icons.assignment_outlined, context.tr('nav_demands')),
+                        _navBtn(2, Icons.info_outline, context.tr('nav_rules')),
                         _navBtn(
                           3,
                           isLoggedIn ? (isAdmin ? Icons.admin_panel_settings : Icons.person) : Icons.person_add_alt_1,
-                          isLoggedIn ? (isAdmin ? 'অ্যাডমিন প্যানেল' : 'আমার পোর্টাল') : 'নিবন্ধন / লগইন',
+                          isLoggedIn ? (isAdmin ? context.tr('nav_admin') : context.tr('nav_portal')) : context.tr('nav_login'),
                         ),
+                        const SizedBox(width: 6),
+                        const LanguageToggleButton(),
                         if (isLoggedIn) ...[
                           const SizedBox(width: 8),
                           IconButton(
                             icon: const Icon(Icons.logout, color: Colors.white70, size: 20),
-                            tooltip: 'লগআউট',
+                            tooltip: context.tr('logout'),
                             onPressed: onLogout,
                           ),
                         ],

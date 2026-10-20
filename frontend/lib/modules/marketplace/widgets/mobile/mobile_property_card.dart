@@ -1,17 +1,21 @@
 import 'package:flutter/material.dart';
 import '../../../../core/animations/bouncing_pressable.dart';
+import '../../../../core/localization/app_strings.dart';
+import '../../../../core/utils/whatsapp_helper.dart';
 import '../../../../core/widgets/smart_image_viewer.dart';
 
 class MobilePropertyCard extends StatelessWidget {
   final Map<String, dynamic> listing;
   final VoidCallback onDetailsClick;
   final VoidCallback onInquiryClick;
+  final String? supportPhone;
 
   const MobilePropertyCard({
     super.key,
     required this.listing,
     required this.onDetailsClick,
     required this.onInquiryClick,
+    this.supportPhone,
   });
 
   @override
@@ -35,13 +39,7 @@ class MobilePropertyCard extends StatelessWidget {
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: Colors.black.withValues(alpha: 0.06), width: 0.8),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 3),
-            ),
-          ],
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 3))],
         ),
         clipBehavior: Clip.antiAlias,
         child: Column(
@@ -128,7 +126,7 @@ class MobilePropertyCard extends StatelessWidget {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('জমির পরিমাণ: $area শতক', style: TextStyle(fontSize: 12, color: Colors.grey.shade800, fontWeight: FontWeight.w600)),
+                          Text('${context.tr('land_area')}: $area ${context.tr('decimals')}', style: TextStyle(fontSize: 12, color: Colors.grey.shade800, fontWeight: FontWeight.w600)),
                           const SizedBox(height: 2),
                           Text(
                             '৳$price',
@@ -136,23 +134,51 @@ class MobilePropertyCard extends StatelessWidget {
                           ),
                         ],
                       ),
-                      BouncingPressable(
-                        onTap: onInquiryClick,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF0B4F32),
-                            borderRadius: BorderRadius.circular(10),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          BouncingPressable(
+                            onTap: () => WhatsAppHelper.openPropertyInquiry(
+                              rawPhone: supportPhone ?? listing['supportWhatsapp']?.toString() ?? listing['sellerPhone']?.toString(),
+                              listing: listing,
+                              isEnglish: context.isEnglish,
+                            ),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF25D366),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: const Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.chat_bubble_outline_rounded, size: 14, color: Colors.white),
+                                  SizedBox(width: 4),
+                                  Text('WA', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white)),
+                                ],
+                              ),
+                            ),
                           ),
-                          child: const Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.send_rounded, size: 14, color: Colors.white),
-                              SizedBox(width: 5),
-                              Text('যোগাযোগ', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white)),
-                            ],
+                          const SizedBox(width: 6),
+                          BouncingPressable(
+                            onTap: onInquiryClick,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF0B4F32),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(Icons.send_rounded, size: 13, color: Colors.white),
+                                  const SizedBox(width: 4),
+                                  Text(context.tr('contact'), style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, color: Colors.white)),
+                                ],
+                              ),
+                            ),
                           ),
-                        ),
+                        ],
                       ),
                     ],
                   ),

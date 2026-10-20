@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/animations/bouncing_pressable.dart';
+import '../../../../core/localization/app_strings.dart';
+import '../../../../core/utils/whatsapp_helper.dart';
 import '../../../../core/widgets/smart_image_viewer.dart';
 
 class MobilePropertyDetailsSheet extends StatelessWidget {
@@ -102,32 +104,59 @@ class MobilePropertyDetailsSheet extends StatelessWidget {
               ),
             ),
             Container(
-              padding: const EdgeInsets.all(14),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(color: Colors.white, boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 8, offset: const Offset(0, -2))]),
-              child: SizedBox(
-                width: double.infinity,
-                height: 48,
-                child: BouncingPressable(
-                  onTap: () {
-                    Navigator.pop(context);
-                    onInquiryClick();
-                  },
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF0B4F32),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    alignment: Alignment.center,
-                    child: const Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.support_agent_rounded, color: Colors.white),
-                        SizedBox(width: 8),
-                        Text('যোগাযোগের অনুরোধ পাঠান', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
-                      ],
+              child: Row(
+                children: [
+                  Expanded(
+                    flex: 4,
+                    child: BouncingPressable(
+                      onTap: () {
+                        WhatsAppHelper.openPropertyInquiry(
+                          rawPhone: listing['supportWhatsapp']?.toString() ?? listing['sellerPhone']?.toString(),
+                          listing: listing,
+                          isEnglish: context.isEnglish,
+                        );
+                      },
+                      child: Container(
+                        height: 46,
+                        decoration: BoxDecoration(color: const Color(0xFF25D366), borderRadius: BorderRadius.circular(12)),
+                        alignment: Alignment.center,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.chat_bubble_outline_rounded, color: Colors.white, size: 18),
+                            const SizedBox(width: 6),
+                            Text(context.tr('whatsapp_chat'), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
-                ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    flex: 5,
+                    child: BouncingPressable(
+                      onTap: () {
+                        Navigator.pop(context);
+                        onInquiryClick();
+                      },
+                      child: Container(
+                        height: 46,
+                        decoration: BoxDecoration(color: const Color(0xFF0B4F32), borderRadius: BorderRadius.circular(12)),
+                        alignment: Alignment.center,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.support_agent_rounded, color: Colors.white, size: 18),
+                            const SizedBox(width: 6),
+                            Text(context.tr('contact'), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13.5)),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],

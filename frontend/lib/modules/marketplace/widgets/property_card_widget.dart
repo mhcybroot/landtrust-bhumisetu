@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:landtrust_app/core/widgets/smart_image_viewer.dart';
-import 'package:landtrust_app/core/widgets/status_badge.dart';
+import '../../../../core/localization/app_strings.dart';
+import '../../../../core/utils/whatsapp_helper.dart';
+import '../../../../core/widgets/smart_image_viewer.dart';
+import '../../../../core/widgets/status_badge.dart';
 
 class PropertyCardWidget extends StatelessWidget {
   final Map<String, dynamic> listing;
@@ -49,14 +51,8 @@ class PropertyCardWidget extends StatelessWidget {
                   right: 10,
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF0B4F32),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      listing['landType'] ?? 'আবাসিক',
-                      style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: Colors.white),
-                    ),
+                    decoration: BoxDecoration(color: const Color(0xFF0B4F32), borderRadius: BorderRadius.circular(20)),
+                    child: Text(listing['landType'] ?? 'আবাসিক', style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: Colors.white)),
                   ),
                 ),
                 if (hasVideo || hasMap)
@@ -137,6 +133,17 @@ class PropertyCardWidget extends StatelessWidget {
                 const SizedBox(height: 10),
                 Row(
                   children: [
+                    IconButton(
+                      icon: const Icon(Icons.chat_bubble_outline_rounded, color: Color(0xFF25D366), size: 20),
+                      tooltip: context.tr('whatsapp_chat'),
+                      onPressed: () {
+                        WhatsAppHelper.openPropertyInquiry(
+                          rawPhone: listing['supportWhatsapp']?.toString() ?? listing['sellerPhone']?.toString(),
+                          listing: listing,
+                          isEnglish: context.isEnglish,
+                        );
+                      },
+                    ),
                     Expanded(
                       child: OutlinedButton(
                         style: OutlinedButton.styleFrom(
@@ -144,7 +151,7 @@ class PropertyCardWidget extends StatelessWidget {
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                         ),
                         onPressed: onDetailsClick,
-                        child: const Text('বিস্তারিত', style: TextStyle(fontSize: 12)),
+                        child: Text(context.tr('details'), style: const TextStyle(fontSize: 12)),
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -157,7 +164,7 @@ class PropertyCardWidget extends StatelessWidget {
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                         ),
                         onPressed: onInquiryClick,
-                        child: const Text('আগ্রহ প্রকাশ', style: TextStyle(fontSize: 12)),
+                        child: Text(context.tr('contact'), style: const TextStyle(fontSize: 12)),
                       ),
                     ),
                   ],

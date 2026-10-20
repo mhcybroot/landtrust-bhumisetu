@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/animations/animated_fade_switcher.dart';
+import '../../../../core/localization/app_strings.dart';
 import '../../view_models/auth_view_model.dart';
 import '../../widgets/demo_accounts_bar.dart';
 import '../../widgets/login_form_card.dart';
@@ -47,7 +48,7 @@ class AuthMobileView extends StatelessWidget {
                     ),
                     alignment: Alignment.center,
                     child: Text(
-                      'লগইন',
+                      context.tr('login_title'),
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 13,
@@ -70,7 +71,7 @@ class AuthMobileView extends StatelessWidget {
                     ),
                     alignment: Alignment.center,
                     child: Text(
-                      'নতুন নিবন্ধন',
+                      context.tr('register_title'),
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 13,

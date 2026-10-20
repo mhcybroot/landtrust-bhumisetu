@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:landtrust_app/core/localization/app_strings.dart';
 import 'package:landtrust_app/core/session/session_manager.dart';
 import '../../../../core/animations/staggered_slide_fade.dart';
 import '../../../../core/widgets/shimmer_card_placeholder.dart';
@@ -125,9 +126,9 @@ class _HomeMarketplaceMobileViewState extends State<HomeMarketplaceMobileView> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('বিক্রয়যোগ্য জমি (${vm.listings.length})', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF0B4F32))),
+                  Text('${context.tr('lands_for_sale')} (${vm.listings.length})', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF0B4F32))),
                   if (_searchCtrl.text.isNotEmpty || vm.filterUpazila.isNotEmpty)
-                    TextButton(onPressed: _resetSearch, child: const Text('রিসেট', style: TextStyle(fontSize: 12))),
+                    TextButton(onPressed: _resetSearch, child: Text(context.tr('reset'), style: const TextStyle(fontSize: 12))),
                 ],
               ),
             ),
@@ -148,9 +149,9 @@ class _HomeMarketplaceMobileViewState extends State<HomeMarketplaceMobileView> {
                   children: [
                     const Icon(Icons.search_off, size: 48, color: Colors.grey),
                     const SizedBox(height: 10),
-                    const Text('কোনো জমির বিজ্ঞাপন পাওয়া যায়নি।'),
+                    Text(context.tr('no_lands_found')),
                     const SizedBox(height: 10),
-                    TextButton(onPressed: _resetSearch, child: const Text('সব ফিল্টার মুছুন')),
+                    TextButton(onPressed: _resetSearch, child: Text(context.tr('clear_all_filters'))),
                   ],
                 ),
               ),
@@ -160,10 +161,13 @@ class _HomeMarketplaceMobileViewState extends State<HomeMarketplaceMobileView> {
               delegate: SliverChildBuilderDelegate(
                 (context, index) {
                   final listing = vm.listings[index] as Map<String, dynamic>;
+                  final support = (vm.config['settings'] as Map<String, dynamic>?)?['supportWhatsapp']?.toString() ??
+                      (vm.config['settings'] as Map<String, dynamic>?)?['supportPhone']?.toString();
                   return StaggeredSlideFade(
                     index: index,
                     child: MobilePropertyCard(
                       listing: listing,
+                      supportPhone: support,
                       onDetailsClick: () => MobilePropertyDetailsSheet.show(
                         context,
                         listing: listing,

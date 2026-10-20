@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/animations/bouncing_pressable.dart';
+import '../../../../core/localization/app_strings.dart';
 import '../../../../core/widgets/horizontal_scroll_fade_view.dart';
 
 class MobileSearchHeader extends StatelessWidget {
@@ -42,7 +43,7 @@ class MobileSearchHeader extends StatelessWidget {
                     textInputAction: TextInputAction.search,
                     onSubmitted: (_) => onSearch(),
                     decoration: InputDecoration(
-                      hintText: 'মাইজদী, চৌমুহনী বা মৌজা খুঁজুন...',
+                      hintText: context.tr('search_hint'),
                       hintStyle: TextStyle(fontSize: 13, color: Colors.grey.shade600),
                       prefixIcon: const Icon(Icons.search, size: 20, color: Color(0xFF0B4F32)),
                       suffixIcon: searchCtrl.text.isNotEmpty
@@ -79,7 +80,7 @@ class MobileSearchHeader extends StatelessWidget {
           HorizontalScrollFadeView(
             child: Row(
               children: [
-                _chip('সব এলাকা', selectedUpazila.isEmpty, () => onUpazilaSelected('')),
+                _chip(context.tr('all_locations'), selectedUpazila.isEmpty, () => onUpazilaSelected('')),
                 ...upazilas.map((u) => _chip(u, selectedUpazila == u, () => onUpazilaSelected(u))),
               ],
             ),

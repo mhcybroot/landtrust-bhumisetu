@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/localization/app_strings.dart';
 
 class ShellBottomNav extends StatelessWidget {
   final int selectedIndex;
@@ -56,22 +57,22 @@ class ShellBottomNav extends StatelessWidget {
           BottomNavigationBarItem(
             icon: _buildAnimatedIcon(Icons.home_outlined, 0),
             activeIcon: _buildAnimatedIcon(Icons.home, 0),
-            label: 'জমি খুঁজুন',
+            label: context.tr('nav_explore'),
           ),
           BottomNavigationBarItem(
             icon: _buildAnimatedIcon(Icons.assignment_outlined, 1),
             activeIcon: _buildAnimatedIcon(Icons.assignment, 1),
-            label: 'চাহিদা',
+            label: context.tr('nav_demands'),
           ),
           BottomNavigationBarItem(
             icon: _buildAnimatedIcon(Icons.verified_user_outlined, 2),
             activeIcon: _buildAnimatedIcon(Icons.verified_user, 2),
-            label: 'নিয়ম ও ফি',
+            label: context.tr('nav_rules'),
           ),
           BottomNavigationBarItem(
             icon: _buildAnimatedIcon(profileOutlineIcon, 3),
             activeIcon: _buildAnimatedIcon(profileIcon, 3),
-            label: isLoggedIn ? (isAdmin ? 'অ্যাডমিন' : 'পোর্টাল') : 'লগইন',
+            label: isLoggedIn ? (isAdmin ? context.tr('nav_admin') : context.tr('nav_portal')) : context.tr('nav_login'),
           ),
         ],
       ),

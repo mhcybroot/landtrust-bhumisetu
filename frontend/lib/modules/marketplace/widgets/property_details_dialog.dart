@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:landtrust_app/core/widgets/smart_image_viewer.dart';
+import '../../../../core/localization/app_strings.dart';
+import '../../../../core/utils/whatsapp_helper.dart';
+import '../../../../core/widgets/smart_image_viewer.dart';
 
 class PropertyDetailsDialog {
   static void show(
@@ -99,7 +101,19 @@ class PropertyDetailsDialog {
             ),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('বন্ধ করুন')),
+            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(ctx.tr('close'))),
+            ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF25D366), foregroundColor: Colors.white),
+              onPressed: () {
+                WhatsAppHelper.openPropertyInquiry(
+                  rawPhone: listing['supportWhatsapp']?.toString() ?? listing['sellerPhone']?.toString(),
+                  listing: listing,
+                  isEnglish: ctx.isEnglish,
+                );
+              },
+              icon: const Icon(Icons.chat_bubble_outline_rounded, size: 17),
+              label: Text(ctx.tr('whatsapp_chat')),
+            ),
             ElevatedButton.icon(
               style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
               onPressed: () {
@@ -107,7 +121,7 @@ class PropertyDetailsDialog {
                 onInquiryClick();
               },
               icon: const Icon(Icons.support_agent, size: 17),
-              label: const Text('আগ্রহ প্রকাশ করুন'),
+              label: Text(ctx.tr('contact')),
             ),
           ],
         ),
