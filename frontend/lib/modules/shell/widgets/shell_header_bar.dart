@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:landtrust_app/core/widgets/horizontal_scroll_fade_view.dart';
 
 class ShellHeaderBar extends StatelessWidget {
   final int selectedIndex;
@@ -75,8 +76,7 @@ class ShellHeaderBar extends StatelessWidget {
               ),
               if (!isMobile)
                 Flexible(
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
+                  child: HorizontalScrollFadeView(
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [

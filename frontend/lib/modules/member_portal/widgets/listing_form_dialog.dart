@@ -53,15 +53,17 @@ class ListingFormDialog {
                     runSpacing: 10,
                     children: [
                       _w(isMobile, DropdownButtonFormField<String>(
+                        isExpanded: true,
                         value: landType,
                         decoration: const InputDecoration(labelText: 'জমির ধরন', isDense: true),
-                        items: ['আবাসিক', 'বাণিজ্যিক', 'কৃষি', 'ভিটা জমি', 'বাগান বাড়ি'].map((t) => DropdownMenuItem(value: t, child: Text(t))).toList(),
+                        items: ['আবাসিক', 'বাণিজ্যিক', 'কৃষি', 'ভিটা জমি', 'বাগান বাড়ি'].map((t) => DropdownMenuItem(value: t, child: Text(t, overflow: TextOverflow.ellipsis))).toList(),
                         onChanged: (v) => setDialogState(() => landType = v!),
                       )),
                       _w(isMobile, DropdownButtonFormField<String>(
+                        isExpanded: true,
                         value: district,
                         decoration: const InputDecoration(labelText: 'জেলা', isDense: true),
-                        items: districts.map((d) => DropdownMenuItem(value: d, child: Text(d))).toList(),
+                        items: districts.map((d) => DropdownMenuItem(value: d, child: Text(d, overflow: TextOverflow.ellipsis))).toList(),
                         onChanged: (v) {
                           setDialogState(() {
                             district = v!;
@@ -71,9 +73,10 @@ class ListingFormDialog {
                         },
                       )),
                       _w(isMobile, DropdownButtonFormField<String>(
+                        isExpanded: true,
                         value: upazila,
                         decoration: const InputDecoration(labelText: 'উপজেলা', isDense: true),
-                        items: upazilas.map((u) => DropdownMenuItem(value: u, child: Text(u))).toList(),
+                        items: upazilas.map((u) => DropdownMenuItem(value: u, child: Text(u, overflow: TextOverflow.ellipsis))).toList(),
                         onChanged: (v) => setDialogState(() => upazila = v!),
                       )),
                       _w(isMobile, TextField(controller: areaNameCtrl, decoration: const InputDecoration(labelText: 'গ্রাম / এলাকা *', isDense: true))),

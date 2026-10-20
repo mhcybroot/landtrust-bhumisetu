@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:landtrust_app/core/widgets/horizontal_scroll_fade_view.dart';
 import 'package:landtrust_app/core/widgets/status_badge.dart';
 import '../view_models/admin_view_model.dart';
 import '../widgets/admin_user_dialogs.dart';
@@ -71,8 +72,7 @@ class _AdminUsersTabState extends State<AdminUsersTab> {
               onChanged: (_) => setState(() {}),
             ),
             const SizedBox(height: 10),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
+            HorizontalScrollFadeView(
               child: Row(
                 children: [
                   _chip('সকল সদস্য', _filterRole.isEmpty && _filterStatus.isEmpty, () => setState(() { _filterRole = ''; _filterStatus = ''; })),

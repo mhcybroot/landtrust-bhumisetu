@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:landtrust_app/core/widgets/horizontal_scroll_fade_view.dart';
 import 'package:landtrust_app/core/widgets/smart_image_viewer.dart';
 import 'package:landtrust_app/core/widgets/status_badge.dart';
 import 'package:landtrust_app/modules/member_portal/widgets/private_document_preview_dialog.dart';
@@ -88,8 +89,7 @@ class _AdminListingsTabState extends State<AdminListingsTab> {
   }
 
   Widget _buildFilterBar() {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
+    return HorizontalScrollFadeView(
       child: Row(
         children: [
           _chip('সকল বিজ্ঞাপন (${widget.viewModel.listings.length})', _filterStatus.isEmpty, () => setState(() => _filterStatus = '')),

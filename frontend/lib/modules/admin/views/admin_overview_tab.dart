@@ -38,11 +38,14 @@ class AdminOverviewTab extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            Wrap(
+              spacing: 8,
+              runSpacing: 4,
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
               children: [
-                const Text('৩-খাত প্রাতিষ্ঠানিক আর্থিক রিজার্ভ মডেল', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF0A2E1F))),
-                Text('সর্বমোট সংগ্রহ: ৳$total', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Color(0xFF0B4F32))),
+                const Text('৩-খাত প্রাতিষ্ঠানিক আর্থিক রিজার্ভ মডেল', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Color(0xFF0A2E1F))),
+                Text('সর্বমোট সংগ্রহ: ৳$total', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF0B4F32))),
               ],
             ),
             const SizedBox(height: 4),

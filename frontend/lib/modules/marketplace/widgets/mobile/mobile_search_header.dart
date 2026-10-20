@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:landtrust_app/core/widgets/horizontal_scroll_fade_view.dart';
 
 class MobileSearchHeader extends StatelessWidget {
   final TextEditingController searchCtrl;
@@ -75,10 +76,8 @@ class MobileSearchHeader extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 10),
-          SizedBox(
-            height: 34,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
+          HorizontalScrollFadeView(
+            child: Row(
               children: [
                 _chip('সব এলাকা', selectedUpazila.isEmpty, () => onUpazilaSelected('')),
                 ...upazilas.map((u) => _chip(u, selectedUpazila == u, () => onUpazilaSelected(u))),

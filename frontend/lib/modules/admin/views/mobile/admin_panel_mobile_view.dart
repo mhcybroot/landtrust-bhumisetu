@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:landtrust_app/core/widgets/horizontal_scroll_fade_view.dart';
 import '../../view_models/admin_view_model.dart';
 import '../admin_commissions_tab.dart';
 import '../admin_demands_inquiries_tab.dart';
@@ -45,8 +46,7 @@ class AdminPanelMobileView extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 10),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
+            HorizontalScrollFadeView(
               child: Row(
                 children: List.generate(tabs.length, (idx) {
                   final sel = viewModel.selectedTab == idx;

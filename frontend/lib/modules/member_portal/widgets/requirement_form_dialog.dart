@@ -47,15 +47,17 @@ class RequirementFormDialog {
                     runSpacing: 10,
                     children: [
                       _w(isMobile, DropdownButtonFormField<String>(
+                        isExpanded: true,
                         value: landType,
                         decoration: const InputDecoration(labelText: 'জমির ধরন', isDense: true),
-                        items: ['আবাসিক', 'বাণিজ্যিক', 'কৃষি', 'ভিটা জমি', 'বাগান বাড়ি'].map((t) => DropdownMenuItem(value: t, child: Text(t))).toList(),
+                        items: ['আবাসিক', 'বাণিজ্যিক', 'কৃষি', 'ভিটা জমি', 'বাগান বাড়ি'].map((t) => DropdownMenuItem(value: t, child: Text(t, overflow: TextOverflow.ellipsis))).toList(),
                         onChanged: (v) => setDialogState(() => landType = v!),
                       )),
                       _w(isMobile, DropdownButtonFormField<String>(
+                        isExpanded: true,
                         value: district,
                         decoration: const InputDecoration(labelText: 'পছন্দের জেলা', isDense: true),
-                        items: districts.map((d) => DropdownMenuItem(value: d, child: Text(d))).toList(),
+                        items: districts.map((d) => DropdownMenuItem(value: d, child: Text(d, overflow: TextOverflow.ellipsis))).toList(),
                         onChanged: (v) {
                           setDialogState(() {
                             district = v!;
@@ -65,9 +67,10 @@ class RequirementFormDialog {
                         },
                       )),
                       _w(isMobile, DropdownButtonFormField<String>(
+                        isExpanded: true,
                         value: upazila,
                         decoration: const InputDecoration(labelText: 'পছন্দের উপজেলা', isDense: true),
-                        items: upazilas.map((u) => DropdownMenuItem(value: u, child: Text(u))).toList(),
+                        items: upazilas.map((u) => DropdownMenuItem(value: u, child: Text(u, overflow: TextOverflow.ellipsis))).toList(),
                         onChanged: (v) => setDialogState(() => upazila = v!),
                       )),
                       _w(isMobile, TextField(controller: areaCtrl, decoration: const InputDecoration(labelText: 'নির্দিষ্ট এলাকা / পাড়া', isDense: true))),
@@ -76,9 +79,10 @@ class RequirementFormDialog {
                       _w(isMobile, TextField(controller: minBudCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'সর্বনিম্ন বাজেট (৳) *', isDense: true))),
                       _w(isMobile, TextField(controller: maxBudCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'সর্বোচ্চ বাজেট (৳) *', isDense: true))),
                       _w(isMobile, DropdownButtonFormField<String>(
+                        isExpanded: true,
                         value: timeline,
                         decoration: const InputDecoration(labelText: 'ক্রয়ের সময়সীমা', isDense: true),
-                        items: ['জরুরি (৭ দিন)', '১ মাসের মধ্যে', '৩ মাসের মধ্যে', 'বাজেট অনুকূলে এলে'].map((t) => DropdownMenuItem(value: t, child: Text(t))).toList(),
+                        items: ['জরুরি (৭ দিন)', '১ মাসের মধ্যে', '৩ মাসের মধ্যে', 'বাজেট অনুকূলে এলে'].map((t) => DropdownMenuItem(value: t, child: Text(t, overflow: TextOverflow.ellipsis))).toList(),
                         onChanged: (v) => setDialogState(() => timeline = v!),
                       )),
                       _w(isMobile, TextField(controller: purposeCtrl, decoration: const InputDecoration(labelText: 'ব্যবহারের উদ্দেশ্য', isDense: true))),

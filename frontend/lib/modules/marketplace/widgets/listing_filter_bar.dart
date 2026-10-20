@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:landtrust_app/core/widgets/horizontal_scroll_fade_view.dart';
 import 'advanced_filters_panel.dart';
 
 class ListingFilterBar extends StatelessWidget {
@@ -93,8 +94,7 @@ class ListingFilterBar extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 10),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
+            HorizontalScrollFadeView(
               child: Row(
                 children: [
                   _chip('সকল জমি', selectedLandType.isEmpty && selectedVerification.isEmpty, () => onLandTypeSelected('')),

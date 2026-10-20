@@ -6,23 +6,15 @@ class AdminSettingsTab extends StatefulWidget {
   final AdminViewModel viewModel;
   final bool isMobile;
 
-  const AdminSettingsTab({
-    super.key,
-    required this.viewModel,
-    required this.isMobile,
-  });
+  const AdminSettingsTab({super.key, required this.viewModel, required this.isMobile});
 
   @override
   State<AdminSettingsTab> createState() => _AdminSettingsTabState();
 }
 
 class _AdminSettingsTabState extends State<AdminSettingsTab> {
-  late final TextEditingController _buyerFeeCtrl;
-  late final TextEditingController _sellerFeeCtrl;
-  late final TextEditingController _officerFeeCtrl;
-  late final TextEditingController _phoneCtrl;
-  late final TextEditingController _emailCtrl;
-  late final TextEditingController _addrCtrl;
+  late final TextEditingController _buyerFeeCtrl, _sellerFeeCtrl, _officerFeeCtrl;
+  late final TextEditingController _phoneCtrl, _emailCtrl, _addrCtrl;
   bool _saving = false;
 
   @override
@@ -39,12 +31,9 @@ class _AdminSettingsTabState extends State<AdminSettingsTab> {
 
   @override
   void dispose() {
-    _buyerFeeCtrl.dispose();
-    _sellerFeeCtrl.dispose();
-    _officerFeeCtrl.dispose();
-    _phoneCtrl.dispose();
-    _emailCtrl.dispose();
-    _addrCtrl.dispose();
+    for (final c in [_buyerFeeCtrl, _sellerFeeCtrl, _officerFeeCtrl, _phoneCtrl, _emailCtrl, _addrCtrl]) {
+      c.dispose();
+    }
     super.dispose();
   }
 
@@ -69,17 +58,14 @@ class _AdminSettingsTabState extends State<AdminSettingsTab> {
 
   @override
   Widget build(BuildContext context) {
-    final pms = widget.viewModel.paymentMethods;
-    final locs = widget.viewModel.locations;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildFeesCard(),
         const SizedBox(height: 14),
-        _buildPaymentMethodsCard(pms),
+        _buildPaymentMethodsCard(widget.viewModel.paymentMethods),
         const SizedBox(height: 14),
-        _buildLocationsCard(locs),
+        _buildLocationsCard(widget.viewModel.locations),
       ],
     );
   }
@@ -127,8 +113,11 @@ class _AdminSettingsTabState extends State<AdminSettingsTab> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            Wrap(
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 8,
+              runSpacing: 8,
               children: [
                 Text('নিবন্ধন ফি গ্রহণের পেমেন্ট মাধ্যম (${pms.length})', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
                 ElevatedButton.icon(
@@ -161,8 +150,11 @@ class _AdminSettingsTabState extends State<AdminSettingsTab> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            Wrap(
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 8,
+              runSpacing: 8,
               children: [
                 Text('কভারেজ জেলা ও উপজেলাসমূহ (${locs.length})', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
                 ElevatedButton.icon(

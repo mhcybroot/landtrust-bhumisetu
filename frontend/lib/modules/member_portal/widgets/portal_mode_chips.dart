@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:landtrust_app/core/widgets/horizontal_scroll_fade_view.dart';
 
 class PortalModeChips extends StatelessWidget {
   final String currentMode;
@@ -25,8 +26,7 @@ class PortalModeChips extends StatelessWidget {
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: Colors.grey.shade300),
       ),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
+      child: HorizontalScrollFadeView(
         child: Row(
           children: [
             const Text(

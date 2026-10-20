@@ -41,11 +41,12 @@ class AdvancedFiltersPanel extends StatelessWidget {
           SizedBox(
             width: colWidth,
             child: DropdownButtonFormField<String>(
+              isExpanded: true,
               value: selectedDistrict.isEmpty ? null : selectedDistrict,
               decoration: const InputDecoration(labelText: 'জেলা', isDense: true),
               items: [
-                const DropdownMenuItem(value: '', child: Text('সকল জেলা')),
-                ...districts.map((d) => DropdownMenuItem(value: d, child: Text(d))),
+                const DropdownMenuItem(value: '', child: Text('সকল জেলা', overflow: TextOverflow.ellipsis)),
+                ...districts.map((d) => DropdownMenuItem(value: d, child: Text(d, overflow: TextOverflow.ellipsis))),
               ],
               onChanged: (v) => onDistrictChanged(v ?? ''),
             ),
@@ -53,11 +54,12 @@ class AdvancedFiltersPanel extends StatelessWidget {
           SizedBox(
             width: colWidth,
             child: DropdownButtonFormField<String>(
+              isExpanded: true,
               value: upazilas.contains(selectedUpazila) && selectedUpazila.isNotEmpty ? selectedUpazila : null,
               decoration: const InputDecoration(labelText: 'উপজেলা', isDense: true),
               items: [
-                const DropdownMenuItem(value: '', child: Text('সকল উপজেলা')),
-                ...upazilas.map((u) => DropdownMenuItem(value: u, child: Text(u))),
+                const DropdownMenuItem(value: '', child: Text('সকল উপজেলা', overflow: TextOverflow.ellipsis)),
+                ...upazilas.map((u) => DropdownMenuItem(value: u, child: Text(u, overflow: TextOverflow.ellipsis))),
               ],
               onChanged: (v) => onUpazilaChanged(v ?? ''),
             ),

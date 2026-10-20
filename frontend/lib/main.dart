@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:landtrust_app/core/session/session_manager.dart';
+import 'package:landtrust_app/core/theme/app_scroll_behavior.dart';
 import 'package:landtrust_app/core/theme/app_theme.dart';
 import 'package:landtrust_app/modules/shell/views/main_shell_screen.dart';
 
@@ -17,6 +18,7 @@ class LandTrustApp extends StatelessWidget {
     return MaterialApp(
       title: 'ভূমি সেতু (Bhumi Setu)',
       debugShowCheckedModeBanner: false,
+      scrollBehavior: const AppScrollBehavior(),
       theme: AppTheme.theme,
       home: const MainShellScreen(),
     );
