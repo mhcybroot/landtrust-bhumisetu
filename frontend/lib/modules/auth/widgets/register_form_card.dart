@@ -155,8 +155,8 @@ class _RegisterFormCardState extends State<RegisterFormCard> {
         SizedBox(width: half, child: TextField(controller: _fullNameCtrl, decoration: const InputDecoration(labelText: 'পূর্ণ নাম *', isDense: true))),
         SizedBox(width: half, child: TextField(controller: _phoneCtrl, decoration: const InputDecoration(labelText: 'মোবাইল নম্বর (01XXXXXXXXX) *', isDense: true))),
         SizedBox(width: half, child: TextField(controller: _passCtrl, obscureText: true, decoration: const InputDecoration(labelText: 'পাসওয়ার্ড দিন *', isDense: true))),
-        SizedBox(width: half, child: DropdownButtonFormField<String>(value: _district, decoration: const InputDecoration(labelText: 'জেলা', isDense: true), items: districts.map((d) => DropdownMenuItem(value: d, child: Text(d))).toList(), onChanged: (v) => setState(() => _district = v!))),
-        SizedBox(width: half, child: DropdownButtonFormField<String>(value: _upazila, decoration: const InputDecoration(labelText: 'উপজেলা', isDense: true), items: upazilas.map((u) => DropdownMenuItem(value: u, child: Text(u))).toList(), onChanged: (v) => setState(() => _upazila = v!))),
+        SizedBox(width: half, child: DropdownButtonFormField<String>(isExpanded: true, value: _district, decoration: const InputDecoration(labelText: 'জেলা', isDense: true), items: districts.map((d) => DropdownMenuItem(value: d, child: Text(d, overflow: TextOverflow.ellipsis))).toList(), onChanged: (v) => setState(() => _district = v!))),
+        SizedBox(width: half, child: DropdownButtonFormField<String>(isExpanded: true, value: _upazila, decoration: const InputDecoration(labelText: 'উপজেলা', isDense: true), items: upazilas.map((u) => DropdownMenuItem(value: u, child: Text(u, overflow: TextOverflow.ellipsis))).toList(), onChanged: (v) => setState(() => _upazila = v!))),
         SizedBox(width: half, child: TextField(controller: _addressCtrl, decoration: const InputDecoration(labelText: 'বর্তমান ঠিকানা / এলাকা', isDense: true))),
       ]);
     });
@@ -166,7 +166,7 @@ class _RegisterFormCardState extends State<RegisterFormCard> {
     return LayoutBuilder(builder: (ctx, constraints) {
       final half = widget.isMobile ? constraints.maxWidth : (constraints.maxWidth - 10) / 2;
       return Wrap(spacing: 10, runSpacing: 10, children: [
-        SizedBox(width: half, child: DropdownButtonFormField<String>(value: _selectedPaymentMethod, decoration: const InputDecoration(labelText: 'পেমেন্টের মাধ্যম', isDense: true), items: options.map((p) => DropdownMenuItem(value: p, child: Text(p))).toList(), onChanged: (v) => setState(() => _selectedPaymentMethod = v!))),
+        SizedBox(width: half, child: DropdownButtonFormField<String>(isExpanded: true, value: _selectedPaymentMethod, decoration: const InputDecoration(labelText: 'পেমেন্টের মাধ্যম', isDense: true), items: options.map((p) => DropdownMenuItem(value: p, child: Text(p, overflow: TextOverflow.ellipsis))).toList(), onChanged: (v) => setState(() => _selectedPaymentMethod = v!))),
         SizedBox(width: half, child: TextField(controller: _senderPhoneCtrl, decoration: const InputDecoration(labelText: 'প্রেরক মোবাইল নম্বর *', isDense: true))),
         SizedBox(width: constraints.maxWidth, child: TextField(controller: _trxIdCtrl, decoration: const InputDecoration(labelText: 'ট্রানজ্যাকশন আইডি (TrxID) *', isDense: true))),
       ]);

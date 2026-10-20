@@ -8,6 +8,7 @@ class ShellHeaderBar extends StatelessWidget {
   final Map<String, dynamic>? user;
   final ValueChanged<int> onTabSelected;
   final VoidCallback onLogout;
+  final VoidCallback? onOpenDrawer;
 
   const ShellHeaderBar({
     super.key,
@@ -18,6 +19,7 @@ class ShellHeaderBar extends StatelessWidget {
     required this.user,
     required this.onTabSelected,
     required this.onLogout,
+    this.onOpenDrawer,
   });
 
   @override
@@ -26,7 +28,7 @@ class ShellHeaderBar extends StatelessWidget {
       color: const Color(0xFF0B4F32),
       padding: EdgeInsets.symmetric(
         horizontal: isMobile ? 12 : 24,
-        vertical: isMobile ? 10 : 12,
+        vertical: isMobile ? 8 : 12,
       ),
       child: Center(
         child: ConstrainedBox(
@@ -34,61 +36,99 @@ class ShellHeaderBar extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              InkWell(
-                onTap: () => onTabSelected(0),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(7),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(10),
+              Flexible(
+                child: InkWell(
+                  onTap: () => onTabSelected(0),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(Icons.terrain, color: Color(0xFF0B4F32), size: 22),
                       ),
-                      child: const Icon(Icons.terrain, color: Color(0xFF0B4F32), size: 24),
-                    ),
-                    const SizedBox(width: 10),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'ভূমি সেতু',
-                          style: TextStyle(color: Colors.white, fontSize: 19, fontWeight: FontWeight.bold),
+                      const SizedBox(width: 8),
+                      Flexible(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text(
+                              'ভূমি সেতু',
+                              style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            Text(
+                              'নোয়াখালী জেলা নেটওয়ার্ক',
+                              style: TextStyle(color: Colors.green.shade100, fontSize: 10),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
                         ),
-                        Text(
-                          'নোয়াখালী জেলা নেটওয়ার্ক',
-                          style: TextStyle(color: Colors.green.shade100, fontSize: 10),
-                        ),
-                      ],
-                    ),
-                  ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
               if (!isMobile)
-                Row(
-                  children: [
-                    _navBtn(0, Icons.home_outlined, 'জমি খুঁজুন'),
-                    _navBtn(1, Icons.assignment_outlined, 'জমি কিনতে চাই'),
-                    _navBtn(2, Icons.info_outline, 'নিয়মাবলি ও ফি'),
-                    _navBtn(
-                      3,
-                      isLoggedIn ? (isAdmin ? Icons.admin_panel_settings : Icons.person) : Icons.person_add_alt_1,
-                      isLoggedIn ? (isAdmin ? 'অ্যাডমিন প্যানেল' : 'আমার পোর্টাল') : 'নিবন্ধন / লগইন',
+                Flexible(
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _navBtn(0, Icons.home_outlined, 'জমি খুঁজুন'),
+                        _navBtn(1, Icons.assignment_outlined, 'জমি কিনতে চাই'),
+                        _navBtn(2, Icons.info_outline, 'নিয়মাবলি ও ফি'),
+                        _navBtn(
+                          3,
+                          isLoggedIn ? (isAdmin ? Icons.admin_panel_settings : Icons.person) : Icons.person_add_alt_1,
+                          isLoggedIn ? (isAdmin ? 'অ্যাডমিন প্যানেল' : 'আমার পোর্টাল') : 'নিবন্ধন / লগইন',
+                        ),
+                        if (isLoggedIn) ...[
+                          const SizedBox(width: 8),
+                          IconButton(
+                            icon: const Icon(Icons.logout, color: Colors.white70, size: 20),
+                            tooltip: 'লগআউট',
+                            onPressed: onLogout,
+                          ),
+                        ],
+                      ],
                     ),
-                    if (isLoggedIn) ...[
-                      const SizedBox(width: 8),
-                      IconButton(
-                        icon: const Icon(Icons.logout, color: Colors.white70, size: 20),
-                        tooltip: 'লগআউট',
-                        onPressed: onLogout,
-                      ),
-                    ],
-                  ],
+                  ),
                 )
-              else if (isLoggedIn)
-                IconButton(
-                  icon: const Icon(Icons.logout, color: Colors.white, size: 20),
-                  tooltip: 'লগআউট',
-                  onPressed: onLogout,
+              else
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (!isLoggedIn)
+                      TextButton.icon(
+                        style: TextButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          backgroundColor: Colors.white.withValues(alpha: 0.15),
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          visualDensity: VisualDensity.compact,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        ),
+                        onPressed: () => onTabSelected(3),
+                        icon: const Icon(Icons.login, size: 16),
+                        label: const Text('লগইন', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                      )
+                    else
+                      IconButton(
+                        icon: const Icon(Icons.account_circle, color: Colors.white, size: 22),
+                        tooltip: 'পোর্টাল',
+                        onPressed: () => onTabSelected(3),
+                      ),
+                    IconButton(
+                      icon: const Icon(Icons.menu_rounded, color: Colors.white, size: 26),
+                      tooltip: 'মেনু খুলুন',
+                      onPressed: onOpenDrawer,
+                    ),
+                  ],
                 ),
             ],
           ),

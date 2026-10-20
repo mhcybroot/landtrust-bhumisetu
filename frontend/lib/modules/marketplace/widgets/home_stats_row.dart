@@ -14,7 +14,7 @@ class HomeStatsRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (ctx, constraints) {
-      final cardWidth = isMobile ? (constraints.maxWidth - 10) / 2 : (constraints.maxWidth - 36) / 4;
+      final cardWidth = isMobile ? ((constraints.maxWidth - 10) / 2).floorToDouble() : ((constraints.maxWidth - 36) / 4).floorToDouble();
       return Wrap(
         spacing: 10,
         runSpacing: 10,

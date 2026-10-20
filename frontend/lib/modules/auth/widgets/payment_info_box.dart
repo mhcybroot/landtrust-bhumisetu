@@ -24,7 +24,7 @@ class PaymentInfoBox extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'নিবন্ধন ফি: ৳$fee (নিচের নম্বরে Send Money করুন)',
+            'নিবন্ধন ফি: ৳${(fee as num?)?.toInt() ?? fee} (নিচের নম্বরে Send Money করুন)',
             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
           ),
           const SizedBox(height: 6),

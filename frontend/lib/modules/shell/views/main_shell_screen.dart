@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:landtrust_app/modules/admin/views/admin_panel_screen.dart';
 import 'package:landtrust_app/modules/auth/views/auth_screen.dart';
@@ -7,8 +8,8 @@ import 'package:landtrust_app/modules/marketplace/views/home_marketplace_view.da
 import 'package:landtrust_app/modules/marketplace/views/rules_and_fees_view.dart';
 import 'package:landtrust_app/modules/member_portal/views/member_dashboard_screen.dart';
 import '../view_models/shell_view_model.dart';
-import '../widgets/shell_footer.dart';
-import '../widgets/shell_header_bar.dart';
+import 'mobile/mobile_shell_view.dart';
+import 'web/web_shell_view.dart';
 
 class MainShellScreen extends StatefulWidget {
   const MainShellScreen({super.key});
@@ -41,50 +42,16 @@ class _MainShellScreenState extends State<MainShellScreen> {
     return ListenableBuilder(
       listenable: Listenable.merge([_shellVm, _marketplaceVm]),
       builder: (context, _) {
-        final isMobile = MediaQuery.of(context).size.width < 768;
+        final isMobile = !kIsWeb || MediaQuery.of(context).size.width < 960;
         final selectedTab = _shellVm.selectedTabIndex;
         final isLoggedIn = _shellVm.isLoggedIn;
         final isAdmin = _shellVm.isAdmin;
 
-        return Scaffold(
-          body: Column(
-            children: [
-              ShellHeaderBar(
-                selectedIndex: selectedTab,
-                isMobile: isMobile,
-                isLoggedIn: isLoggedIn,
-                isAdmin: isAdmin,
-                user: _shellVm.currentUser,
-                onTabSelected: _shellVm.setTabIndex,
-                onLogout: _shellVm.logout,
-              ),
-              Expanded(
-                child: _buildActiveView(isMobile, selectedTab, isLoggedIn, isAdmin),
-              ),
-              if (!isMobile) ShellFooter(isMobile: isMobile),
-            ],
-          ),
-          bottomNavigationBar: isMobile
-              ? BottomNavigationBar(
-                  currentIndex: selectedTab,
-                  onTap: _shellVm.setTabIndex,
-                  type: BottomNavigationBarType.fixed,
-                  selectedItemColor: const Color(0xFF0B4F32),
-                  unselectedItemColor: Colors.grey,
-                  selectedFontSize: 11,
-                  unselectedFontSize: 10,
-                  items: [
-                    const BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'জমি খুঁজুন'),
-                    const BottomNavigationBarItem(icon: Icon(Icons.assignment_outlined), label: 'চাহিদা'),
-                    const BottomNavigationBarItem(icon: Icon(Icons.info_outline), label: 'নিয়ম ও ফি'),
-                    BottomNavigationBarItem(
-                      icon: Icon(isLoggedIn ? (isAdmin ? Icons.admin_panel_settings : Icons.person) : Icons.person_add_alt_1),
-                      label: isLoggedIn ? (isAdmin ? 'অ্যাডমিন' : 'পোর্টাল') : 'লগইন/নিবন্ধন',
-                    ),
-                  ],
-                )
-              : null,
-        );
+        final activeView = _buildActiveView(isMobile, selectedTab, isLoggedIn, isAdmin);
+
+        return isMobile
+            ? MobileShellView(shellVm: _shellVm, activeView: activeView)
+            : WebShellView(shellVm: _shellVm, activeView: activeView);
       },
     );
   }
