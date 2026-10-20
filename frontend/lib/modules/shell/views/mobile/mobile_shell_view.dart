@@ -28,57 +28,62 @@ class MobileShellView extends StatelessWidget {
         backgroundColor: const Color(0xFF0B4F32),
         elevation: 0,
         centerTitle: false,
+        titleSpacing: 10,
         title: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              padding: const EdgeInsets.all(5),
+              padding: const EdgeInsets.all(4),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Icon(Icons.terrain, color: Color(0xFF0B4F32), size: 20),
+              child: const Icon(Icons.terrain, color: Color(0xFF0B4F32), size: 18),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 6),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   context.tr('app_title'),
-                  style: const TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold),
+                  style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 Text(
                   context.tr('app_subtitle'),
-                  style: const TextStyle(color: Colors.white70, fontSize: 9.5),
+                  style: const TextStyle(color: Colors.white70, fontSize: 9),
                 ),
               ],
             ),
           ],
         ),
         actions: [
-          const LanguageToggleButton(),
+          const LanguageToggleButton(compact: true),
           if (!isLoggedIn)
             TextButton(
               onPressed: () => shellVm.setTabIndex(3),
               style: TextButton.styleFrom(
                 foregroundColor: Colors.white,
                 backgroundColor: Colors.white.withValues(alpha: 0.15),
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
               ),
-              child: Text(context.tr('nav_login'), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+              child: Text(context.tr('nav_login'), style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold)),
             )
           else
             IconButton(
-              icon: const Icon(Icons.account_circle, color: Colors.white, size: 24),
+              icon: const Icon(Icons.account_circle, color: Colors.white, size: 22),
               tooltip: 'আমার পোর্টাল',
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(minWidth: 32),
               onPressed: () => shellVm.setTabIndex(3),
             ),
           Builder(
             builder: (ctx) => IconButton(
-              icon: const Icon(Icons.menu_rounded, color: Colors.white, size: 24),
+              icon: const Icon(Icons.menu_rounded, color: Colors.white, size: 22),
               tooltip: 'মেনু',
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(minWidth: 36),
               onPressed: () => Scaffold.of(ctx).openEndDrawer(),
             ),
           ),

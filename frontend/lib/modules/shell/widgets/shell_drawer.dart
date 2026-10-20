@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../../../core/localization/app_strings.dart';
+import '../../../../core/localization/language_toggle_button.dart';
 
 class ShellDrawer extends StatelessWidget {
   final int selectedIndex;
@@ -34,10 +36,26 @@ class ShellDrawer extends StatelessWidget {
                   _drawerItem(1, Icons.assignment_rounded, 'জমি ক্রয়ের চাহিদা সমূহ', context),
                   _drawerItem(2, Icons.verified_user_rounded, 'নিয়মাবলি ও প্ল্যাটফর্ম ফি', context),
                   const Divider(height: 24, thickness: 1),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(Icons.language_rounded, color: Color(0xFF0B4F32), size: 20),
+                            const SizedBox(width: 12),
+                            Text(context.isBangla ? 'ভাষা পরিবর্তন' : 'Language', style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13.5)),
+                          ],
+                        ),
+                        const LanguageToggleButton(),
+                      ],
+                    ),
+                  ),
                   _drawerItem(
                     3,
                     isLoggedIn ? (isAdmin ? Icons.admin_panel_settings_rounded : Icons.person_rounded) : Icons.login_rounded,
-                    isLoggedIn ? (isAdmin ? 'অ্যাডমিন ড্যাশবোর্ড' : 'আমার পোর্টাল') : 'লগইন / নতুন নিবন্ধন',
+                    isLoggedIn ? (isAdmin ? context.tr('nav_admin') : context.tr('nav_portal')) : context.tr('nav_login'),
                     context,
                   ),
                   ListTile(
