@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/animations/animated_fade_switcher.dart';
 import '../../view_models/shell_view_model.dart';
 import '../../widgets/shell_bottom_nav.dart';
 import '../../widgets/shell_drawer.dart';
@@ -89,7 +90,12 @@ class MobileShellView extends StatelessWidget {
         onTabSelected: shellVm.setTabIndex,
         onLogout: shellVm.logout,
       ),
-      body: activeView,
+      body: AnimatedFadeSwitcher(
+        child: KeyedSubtree(
+          key: ValueKey(selectedTab),
+          child: activeView,
+        ),
+      ),
       bottomNavigationBar: ShellBottomNav(
         selectedIndex: selectedTab,
         isLoggedIn: isLoggedIn,
@@ -99,3 +105,4 @@ class MobileShellView extends StatelessWidget {
     );
   }
 }
+

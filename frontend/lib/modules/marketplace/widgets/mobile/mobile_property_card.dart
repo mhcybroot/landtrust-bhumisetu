@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:landtrust_app/core/widgets/smart_image_viewer.dart';
+import '../../../../core/animations/bouncing_pressable.dart';
+import '../../../../core/widgets/smart_image_viewer.dart';
 
 class MobilePropertyCard extends StatelessWidget {
   final Map<String, dynamic> listing;
@@ -15,6 +16,7 @@ class MobilePropertyCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final id = listing['id']?.toString() ?? '0';
     final title = listing['title']?.toString() ?? 'নামবিহীন জমি';
     final district = listing['district']?.toString() ?? 'নোয়াখালী';
     final upazila = listing['upazila']?.toString() ?? '';
@@ -24,22 +26,24 @@ class MobilePropertyCard extends StatelessWidget {
     final status = listing['status']?.toString() ?? 'APPROVED';
     final photoUrl = listing['primaryPhotoUrl']?.toString();
 
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onDetailsClick,
+    return BouncingPressable(
+      onTap: onDetailsClick,
+      scaleFactor: 0.98,
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.black.withValues(alpha: 0.06), width: 0.8),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        clipBehavior: Clip.antiAlias,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -48,7 +52,10 @@ class MobilePropertyCard extends StatelessWidget {
                 SizedBox(
                   height: 180,
                   width: double.infinity,
-                  child: SmartImageViewer(url: photoUrl),
+                  child: Hero(
+                    tag: 'property_img_$id',
+                    child: SmartImageViewer(url: photoUrl),
+                  ),
                 ),
                 Positioned(
                   top: 10,
@@ -129,17 +136,23 @@ class MobilePropertyCard extends StatelessWidget {
                           ),
                         ],
                       ),
-                      ElevatedButton.icon(
-                        onPressed: onInquiryClick,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF0B4F32),
-                          foregroundColor: Colors.white,
+                      BouncingPressable(
+                        onTap: onInquiryClick,
+                        child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                          visualDensity: VisualDensity.compact,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF0B4F32),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.send_rounded, size: 14, color: Colors.white),
+                              SizedBox(width: 5),
+                              Text('যোগাযোগ', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white)),
+                            ],
+                          ),
                         ),
-                        icon: const Icon(Icons.send_rounded, size: 14),
-                        label: const Text('যোগাযোগ', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
                       ),
                     ],
                   ),
@@ -152,3 +165,4 @@ class MobilePropertyCard extends StatelessWidget {
     );
   }
 }
+

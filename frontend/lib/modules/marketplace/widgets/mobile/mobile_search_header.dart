@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:landtrust_app/core/widgets/horizontal_scroll_fade_view.dart';
+import '../../../../core/animations/bouncing_pressable.dart';
+import '../../../../core/widgets/horizontal_scroll_fade_view.dart';
 
 class MobileSearchHeader extends StatelessWidget {
   final TextEditingController searchCtrl;
@@ -60,17 +61,16 @@ class MobileSearchHeader extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              Container(
-                height: 44,
-                width: 44,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF0B4F32),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: IconButton(
-                  icon: const Icon(Icons.tune_rounded, color: Colors.white, size: 20),
-                  tooltip: 'ফিল্টার',
-                  onPressed: onFilterClick,
+              BouncingPressable(
+                onTap: onFilterClick,
+                child: Container(
+                  height: 44,
+                  width: 44,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0B4F32),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(Icons.tune_rounded, color: Colors.white, size: 20),
                 ),
               ),
             ],
@@ -92,10 +92,12 @@ class MobileSearchHeader extends StatelessWidget {
   Widget _chip(String label, bool active, VoidCallback onTap) {
     return Padding(
       padding: const EdgeInsets.only(right: 6),
-      child: InkWell(
+      child: BouncingPressable(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(20),
-        child: Container(
+        scaleFactor: 0.95,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeInOut,
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
           decoration: BoxDecoration(
             color: active ? const Color(0xFF0B4F32) : const Color(0xFFF1F5F3),
@@ -119,3 +121,4 @@ class MobileSearchHeader extends StatelessWidget {
     );
   }
 }
+

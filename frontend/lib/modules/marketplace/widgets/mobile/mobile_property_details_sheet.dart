@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:landtrust_app/core/widgets/smart_image_viewer.dart';
+import '../../../../core/animations/bouncing_pressable.dart';
+import '../../../../core/widgets/smart_image_viewer.dart';
 
 class MobilePropertyDetailsSheet extends StatelessWidget {
   final Map<String, dynamic> listing;
@@ -25,6 +26,7 @@ class MobilePropertyDetailsSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final id = listing['id']?.toString() ?? '0';
     final title = listing['title']?.toString() ?? 'নামবিহীন জমি';
     final district = listing['district']?.toString() ?? 'নোয়াখালী';
     final upazila = listing['upazila']?.toString() ?? '';
@@ -60,7 +62,14 @@ class MobilePropertyDetailsSheet extends StatelessWidget {
                 children: [
                   ClipRRect(
                     borderRadius: BorderRadius.circular(14),
-                    child: SizedBox(height: 200, width: double.infinity, child: SmartImageViewer(url: photoUrl)),
+                    child: SizedBox(
+                      height: 200,
+                      width: double.infinity,
+                      child: Hero(
+                        tag: 'property_img_$id',
+                        child: SmartImageViewer(url: photoUrl),
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 14),
                   Row(
@@ -98,14 +107,26 @@ class MobilePropertyDetailsSheet extends StatelessWidget {
               child: SizedBox(
                 width: double.infinity,
                 height: 48,
-                child: ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-                  onPressed: () {
+                child: BouncingPressable(
+                  onTap: () {
                     Navigator.pop(context);
                     onInquiryClick();
                   },
-                  icon: const Icon(Icons.support_agent_rounded),
-                  label: const Text('যোগাযোগের অনুরোধ পাঠান', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0B4F32),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    alignment: Alignment.center,
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.support_agent_rounded, color: Colors.white),
+                        SizedBox(width: 8),
+                        Text('যোগাযোগের অনুরোধ পাঠান', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -114,6 +135,7 @@ class MobilePropertyDetailsSheet extends StatelessWidget {
       },
     );
   }
+
 
   Widget _infoRow(String label, String value) {
     return Padding(

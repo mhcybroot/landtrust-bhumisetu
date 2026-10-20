@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:landtrust_app/core/session/session_manager.dart';
+import '../../../../core/animations/staggered_slide_fade.dart';
+import '../../../../core/widgets/shimmer_card_placeholder.dart';
 import '../../view_models/marketplace_view_model.dart';
 import '../../widgets/contact_inquiry_dialog.dart';
 import '../../widgets/mobile/mobile_filter_bottom_sheet.dart';
@@ -131,8 +133,11 @@ class _HomeMarketplaceMobileViewState extends State<HomeMarketplaceMobileView> {
             ),
           ),
           if (vm.isLoading)
-            const SliverFillRemaining(
-              child: Center(child: CircularProgressIndicator(color: Color(0xFF0B4F32))),
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) => const ShimmerCardPlaceholder(),
+                childCount: 4,
+              ),
             )
           else if (vm.listings.isEmpty)
             SliverFillRemaining(
@@ -155,14 +160,17 @@ class _HomeMarketplaceMobileViewState extends State<HomeMarketplaceMobileView> {
               delegate: SliverChildBuilderDelegate(
                 (context, index) {
                   final listing = vm.listings[index] as Map<String, dynamic>;
-                  return MobilePropertyCard(
-                    listing: listing,
-                    onDetailsClick: () => MobilePropertyDetailsSheet.show(
-                      context,
+                  return StaggeredSlideFade(
+                    index: index,
+                    child: MobilePropertyCard(
                       listing: listing,
+                      onDetailsClick: () => MobilePropertyDetailsSheet.show(
+                        context,
+                        listing: listing,
+                        onInquiryClick: () => _handleInquiry(listing),
+                      ),
                       onInquiryClick: () => _handleInquiry(listing),
                     ),
-                    onInquiryClick: () => _handleInquiry(listing),
                   );
                 },
                 childCount: vm.listings.length,

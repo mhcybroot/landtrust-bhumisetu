@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:landtrust_app/core/animations/animated_fade_switcher.dart';
 import 'package:landtrust_app/core/network/api_client.dart';
 import '../../view_models/member_portal_view_model.dart';
 import '../../widgets/add_custom_proposal_dialog.dart';
@@ -75,37 +76,46 @@ class MemberDashboardMobileView extends StatelessWidget {
             const SizedBox(height: 12),
             PortalModeChips(currentMode: currentMode, userRole: role, listingsCount: viewModel.myListings.length, requirementsCount: viewModel.myRequirements.length, onModeChanged: viewModel.switchMode),
             const SizedBox(height: 14),
-            if (currentMode == 'MARKETING_OFFICER')
-              MarketingOfficerView(
-                officerData: viewModel.officerDashboard,
-                isMobile: true,
-                onPayoutRequest: () => OfficerPayoutDialog.show(context, pendingPayable: viewModel.officerDashboard['pendingPayableCommission'] ?? 0, isMobile: true, onSubmit: viewModel.requestOfficerPayout),
-              )
-            else if (currentMode == 'SELLER') ...[
-              SellerWorkspaceView(
-                myListings: viewModel.myListings,
-                isMobile: true,
-                onAddListing: () => ListingFormDialog.show(context, isMobile: true, districts: getDistricts(), getUpazilas: getUpazilas, onSubmit: (p) async { await viewModel.createListing(p); onRefreshParent(); }),
-                onAddProposal: () => AddCustomProposalDialog.show(context, isMobile: true, onSubmitted: viewModel.loadData),
-                onEditListing: (item) => ListingFormDialog.show(context, existing: item, isMobile: true, districts: getDistricts(), getUpazilas: getUpazilas, onSubmit: (p) async { await viewModel.updateListing(item['id'] as int, p); onRefreshParent(); }),
-                onPreviewDoc: (item) => PrivateDocumentPreviewDialog.show(context, listing: item, isMobile: true),
-                onMarkSold: (id) async { await ApiClient.post('/member/seller/listings/$id/sold'); await viewModel.loadData(); onRefreshParent(); },
+            AnimatedFadeSwitcher(
+              child: KeyedSubtree(
+                key: ValueKey(currentMode),
+                child: Column(
+                  children: [
+                    if (currentMode == 'MARKETING_OFFICER')
+                      MarketingOfficerView(
+                        officerData: viewModel.officerDashboard,
+                        isMobile: true,
+                        onPayoutRequest: () => OfficerPayoutDialog.show(context, pendingPayable: viewModel.officerDashboard['pendingPayableCommission'] ?? 0, isMobile: true, onSubmit: viewModel.requestOfficerPayout),
+                      )
+                    else if (currentMode == 'SELLER') ...[
+                      SellerWorkspaceView(
+                        myListings: viewModel.myListings,
+                        isMobile: true,
+                        onAddListing: () => ListingFormDialog.show(context, isMobile: true, districts: getDistricts(), getUpazilas: getUpazilas, onSubmit: (p) async { await viewModel.createListing(p); onRefreshParent(); }),
+                        onAddProposal: () => AddCustomProposalDialog.show(context, isMobile: true, onSubmitted: viewModel.loadData),
+                        onEditListing: (item) => ListingFormDialog.show(context, existing: item, isMobile: true, districts: getDistricts(), getUpazilas: getUpazilas, onSubmit: (p) async { await viewModel.updateListing(item['id'] as int, p); onRefreshParent(); }),
+                        onPreviewDoc: (item) => PrivateDocumentPreviewDialog.show(context, listing: item, isMobile: true),
+                        onMarkSold: (id) async { await ApiClient.post('/member/seller/listings/$id/sold'); await viewModel.loadData(); onRefreshParent(); },
+                      ),
+                      const SizedBox(height: 16),
+                      MemberProposalsSection(proposals: viewModel.myProposals, isMobile: true, onShowCertificate: (p) => AgreementCertificateDialog.show(context, proposal: p, isMobile: true)),
+                    ] else ...[
+                      BuyerWorkspaceView(
+                        myRequirements: viewModel.myRequirements,
+                        myInquiries: viewModel.myInquiries,
+                        isMobile: true,
+                        onAddRequirement: () => RequirementFormDialog.show(context, isMobile: true, districts: getDistricts(), getUpazilas: getUpazilas, onSubmit: (p) async { await viewModel.createRequirement(p); onRefreshParent(); }),
+                        onAddProposal: () => AddCustomProposalDialog.show(context, isMobile: true, onSubmitted: viewModel.loadData),
+                        onEditRequirement: (item) => RequirementFormDialog.show(context, existing: item, isMobile: true, districts: getDistricts(), getUpazilas: getUpazilas, onSubmit: (p) async { await viewModel.createRequirement(p); onRefreshParent(); }),
+                        onFulfillRequirement: (id) async { await ApiClient.post('/member/buyer/requirements/$id/fulfill'); await viewModel.loadData(); onRefreshParent(); },
+                      ),
+                      const SizedBox(height: 16),
+                      MemberProposalsSection(proposals: viewModel.myProposals, isMobile: true, onShowCertificate: (p) => AgreementCertificateDialog.show(context, proposal: p, isMobile: true)),
+                    ],
+                  ],
+                ),
               ),
-              const SizedBox(height: 16),
-              MemberProposalsSection(proposals: viewModel.myProposals, isMobile: true, onShowCertificate: (p) => AgreementCertificateDialog.show(context, proposal: p, isMobile: true)),
-            ] else ...[
-              BuyerWorkspaceView(
-                myRequirements: viewModel.myRequirements,
-                myInquiries: viewModel.myInquiries,
-                isMobile: true,
-                onAddRequirement: () => RequirementFormDialog.show(context, isMobile: true, districts: getDistricts(), getUpazilas: getUpazilas, onSubmit: (p) async { await viewModel.createRequirement(p); onRefreshParent(); }),
-                onAddProposal: () => AddCustomProposalDialog.show(context, isMobile: true, onSubmitted: viewModel.loadData),
-                onEditRequirement: (item) => RequirementFormDialog.show(context, existing: item, isMobile: true, districts: getDistricts(), getUpazilas: getUpazilas, onSubmit: (p) async { await viewModel.createRequirement(p); onRefreshParent(); }),
-                onFulfillRequirement: (id) async { await ApiClient.post('/member/buyer/requirements/$id/fulfill'); await viewModel.loadData(); onRefreshParent(); },
-              ),
-              const SizedBox(height: 16),
-              MemberProposalsSection(proposals: viewModel.myProposals, isMobile: true, onShowCertificate: (p) => AgreementCertificateDialog.show(context, proposal: p, isMobile: true)),
-            ],
+            ),
           ],
         ),
       ),

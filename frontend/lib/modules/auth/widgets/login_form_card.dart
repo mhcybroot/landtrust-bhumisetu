@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/animations/bouncing_pressable.dart';
 
 class LoginFormCard extends StatefulWidget {
   final bool isMobile;
@@ -25,6 +26,16 @@ class _LoginFormCardState extends State<LoginFormCard> {
     _phoneCtrl.dispose();
     _passCtrl.dispose();
     super.dispose();
+  }
+
+  void _handleLogin() {
+    if (_phoneCtrl.text.trim().isEmpty || _passCtrl.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('অনুগ্রহ করে মোবাইল নম্বর ও পাসওয়ার্ড লিখুন।')),
+      );
+      return;
+    }
+    widget.onSubmit(_phoneCtrl.text.trim(), _passCtrl.text);
   }
 
   @override
@@ -62,48 +73,25 @@ class _LoginFormCardState extends State<LoginFormCard> {
               ),
             ),
             const SizedBox(height: 18),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF0B4F32),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
+            BouncingPressable(
+              onTap: widget.isLoading ? null : _handleLogin,
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0B4F32),
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                onPressed: widget.isLoading
-                    ? null
-                    : () {
-                        if (_phoneCtrl.text.trim().isEmpty ||
-                            _passCtrl.text.isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                  'অনুগ্রহ করে মোবাইল নম্বর ও পাসওয়ার্ড লিখুন।'),
-                            ),
-                          );
-                          return;
-                        }
-                        widget.onSubmit(
-                          _phoneCtrl.text.trim(),
-                          _passCtrl.text,
-                        );
-                      },
+                alignment: Alignment.center,
                 child: widget.isLoading
                     ? const SizedBox(
                         height: 20,
                         width: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
+                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                       )
                     : const Text(
                         'লগইন করুন',
-                        style: TextStyle(
-                            fontSize: 15, fontWeight: FontWeight.bold),
+                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white),
                       ),
               ),
             ),
@@ -113,3 +101,4 @@ class _LoginFormCardState extends State<LoginFormCard> {
     );
   }
 }
+

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/animations/animated_fade_switcher.dart';
 import '../../view_models/auth_view_model.dart';
 import '../../widgets/demo_accounts_bar.dart';
 import '../../widgets/login_form_card.dart';
@@ -36,7 +37,9 @@ class AuthMobileView extends StatelessWidget {
               Expanded(
                 child: InkWell(
                   onTap: () => viewModel.setLoginMode(true),
-                  child: Container(
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    curve: Curves.easeInOut,
                     padding: const EdgeInsets.symmetric(vertical: 10),
                     decoration: BoxDecoration(
                       color: isLogin ? const Color(0xFF0B4F32) : Colors.transparent,
@@ -57,7 +60,9 @@ class AuthMobileView extends StatelessWidget {
               Expanded(
                 child: InkWell(
                   onTap: () => viewModel.setLoginMode(false),
-                  child: Container(
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    curve: Curves.easeInOut,
                     padding: const EdgeInsets.symmetric(vertical: 10),
                     decoration: BoxDecoration(
                       color: !isLogin ? const Color(0xFF0B4F32) : Colors.transparent,
@@ -84,20 +89,25 @@ class AuthMobileView extends StatelessWidget {
           onDemoSelect: onLogin,
         ),
         const SizedBox(height: 14),
-        if (isLogin)
-          LoginFormCard(
-            isMobile: true,
-            isLoading: viewModel.isLoading,
-            onSubmit: onLogin,
-          )
-        else
-          RegisterFormCard(
-            config: config,
-            isMobile: true,
-            isLoading: viewModel.isLoading,
-            onSubmit: onRegister,
+        AnimatedFadeSwitcher(
+          child: KeyedSubtree(
+            key: ValueKey(isLogin),
+            child: isLogin
+                ? LoginFormCard(
+                    isMobile: true,
+                    isLoading: viewModel.isLoading,
+                    onSubmit: onLogin,
+                  )
+                : RegisterFormCard(
+                    config: config,
+                    isMobile: true,
+                    isLoading: viewModel.isLoading,
+                    onSubmit: onRegister,
+                  ),
           ),
+        ),
       ],
     );
   }
 }
+

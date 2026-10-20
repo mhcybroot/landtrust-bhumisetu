@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/animations/animated_fade_switcher.dart';
 import '../../view_models/shell_view_model.dart';
 import '../../widgets/shell_footer.dart';
 import '../../widgets/shell_header_bar.dart';
@@ -33,7 +34,12 @@ class WebShellView extends StatelessWidget {
             onLogout: shellVm.logout,
           ),
           Expanded(
-            child: activeView,
+            child: AnimatedFadeSwitcher(
+              child: KeyedSubtree(
+                key: ValueKey(selectedTab),
+                child: activeView,
+              ),
+            ),
           ),
           const ShellFooter(isMobile: false),
         ],
@@ -41,3 +47,4 @@ class WebShellView extends StatelessWidget {
     );
   }
 }
+

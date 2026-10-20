@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:landtrust_app/core/animations/animated_fade_switcher.dart';
 import 'package:landtrust_app/core/widgets/horizontal_scroll_fade_view.dart';
 import '../../view_models/admin_view_model.dart';
 import '../admin_commissions_tab.dart';
@@ -66,18 +67,24 @@ class AdminPanelMobileView extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
-            switch (viewModel.selectedTab) {
-              1 => AdminUsersTab(viewModel: viewModel, isMobile: true),
-              2 => AdminListingsTab(viewModel: viewModel, isMobile: true),
-              3 => AdminDemandsInquiriesTab(viewModel: viewModel, isMobile: true),
-              4 => AdminCommissionsTab(viewModel: viewModel, isMobile: true),
-              5 => AdminFinanceProposalsTab(viewModel: viewModel, isMobile: true),
-              6 => AdminSettingsTab(viewModel: viewModel, isMobile: true),
-              _ => AdminOverviewTab(viewModel: viewModel, isMobile: true),
-            },
+            AnimatedFadeSwitcher(
+              child: KeyedSubtree(
+                key: ValueKey(viewModel.selectedTab),
+                child: switch (viewModel.selectedTab) {
+                  1 => AdminUsersTab(viewModel: viewModel, isMobile: true),
+                  2 => AdminListingsTab(viewModel: viewModel, isMobile: true),
+                  3 => AdminDemandsInquiriesTab(viewModel: viewModel, isMobile: true),
+                  4 => AdminCommissionsTab(viewModel: viewModel, isMobile: true),
+                  5 => AdminFinanceProposalsTab(viewModel: viewModel, isMobile: true),
+                  6 => AdminSettingsTab(viewModel: viewModel, isMobile: true),
+                  _ => AdminOverviewTab(viewModel: viewModel, isMobile: true),
+                },
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 }
+
