@@ -159,4 +159,12 @@ class AdminViewModel extends ChangeNotifier {
     _dashboard = await _repo.fetchDashboard();
     notifyListeners();
   }
+
+  Future<void> sendNotificationToUser(int userId, String title, String message) async {
+    await _repo.sendNotificationToUser(userId, title, message);
+  }
+
+  Future<void> broadcastNotification(String title, String message, {String? role}) async {
+    await _repo.broadcastNotification(title, message, role: role);
+  }
 }

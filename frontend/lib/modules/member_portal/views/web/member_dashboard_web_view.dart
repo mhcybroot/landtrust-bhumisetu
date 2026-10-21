@@ -68,7 +68,13 @@ class MemberDashboardWebView extends StatelessWidget {
                 isMobile: false,
                 unreadCount: unreadCount,
                 onProfileClick: () => ProfileAndSecurityDialog.show(context, user: user, isMobile: false, districts: getDistricts(), getUpazilas: getUpazilas, onUpdateProfile: viewModel.updateProfile, onChangePassword: viewModel.changePassword),
-                onNotificationsClick: () => MemberNotificationsDialog.show(context, notificationsData: viewModel.notificationsData, isMobile: false, onMarkRead: viewModel.markNotificationRead),
+                onNotificationsClick: () => MemberNotificationsDialog.show(
+                  context,
+                  notificationsData: viewModel.notificationsData,
+                  isMobile: false,
+                  onMarkRead: viewModel.markNotificationRead,
+                  onMarkAllRead: viewModel.markAllNotificationsRead,
+                ),
                 onRefresh: () {
                   viewModel.loadData();
                   onRefreshParent();

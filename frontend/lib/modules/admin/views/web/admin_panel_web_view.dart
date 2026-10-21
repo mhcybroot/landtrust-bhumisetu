@@ -8,6 +8,7 @@ import '../admin_listings_tab.dart';
 import '../admin_overview_tab.dart';
 import '../admin_settings_tab.dart';
 import '../admin_users_tab.dart';
+import '../admin_chat_inbox_tab.dart';
 
 class AdminPanelWebView extends StatelessWidget {
   final AdminViewModel viewModel;
@@ -25,6 +26,7 @@ class AdminPanelWebView extends StatelessWidget {
       (Icons.military_tech, 'কমিশন (${viewModel.commissions.length})'),
       (Icons.account_balance, 'লেজার ও চুক্তি'),
       (Icons.settings, 'সেটিংস ও পলিসি'),
+      (Icons.mark_chat_unread, 'সাপোর্ট ইনবক্স'),
     ];
 
     return SingleChildScrollView(
@@ -82,6 +84,7 @@ class AdminPanelWebView extends StatelessWidget {
                 4 => AdminCommissionsTab(viewModel: viewModel, isMobile: false),
                 5 => AdminFinanceProposalsTab(viewModel: viewModel, isMobile: false),
                 6 => AdminSettingsTab(viewModel: viewModel, isMobile: false, onSettingsSaved: onRefreshParent),
+                7 => const AdminChatInboxTab(isMobile: false),
                 _ => AdminOverviewTab(viewModel: viewModel, isMobile: false),
               },
             ],

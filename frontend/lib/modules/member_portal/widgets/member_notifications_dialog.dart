@@ -6,25 +6,38 @@ class MemberNotificationsDialog {
     required Map<String, dynamic> notificationsData,
     required bool isMobile,
     required Future<void> Function(int) onMarkRead,
+    Future<void> Function()? onMarkAllRead,
   }) {
     final list = (notificationsData['notifications'] as List<dynamic>?) ?? [];
+    final unreadCount = (notificationsData['unreadCount'] as num?)?.toInt() ?? 0;
 
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         insetPadding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 24, vertical: 16),
-        title: Text('নোটিফিকেশনসমূহ (${list.length})', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('নোটিফিকেশনসমূহ (${list.length})', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            if (unreadCount > 0)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(color: Colors.red, borderRadius: BorderRadius.circular(10)),
+                child: Text('$unreadCount নতুন', style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+              ),
+          ],
+        ),
         content: SizedBox(
           width: isMobile ? double.infinity : 500,
           child: list.isEmpty
-              ? const Padding(padding: EdgeInsets.all(24), child: Center(child: Text('কোনো নতুন নোটিফিকেশন নেই।')))
+              ? const Padding(padding: EdgeInsets.all(24), child: Center(child: Text('কোনো নোটিফিকেশন নেই।')))
               : ListView.separated(
                   shrinkWrap: true,
                   itemCount: list.length,
                   separatorBuilder: (_, _) => const Divider(height: 1),
                   itemBuilder: (_, idx) {
                     final n = list[idx] as Map<String, dynamic>;
-                    final isRead = n['isRead'] == true;
+                    final isRead = n['readStatus'] == true || n['isRead'] == true;
                     return ListTile(
                       contentPadding: EdgeInsets.zero,
                       leading: Icon(
@@ -48,6 +61,15 @@ class MemberNotificationsDialog {
                 ),
         ),
         actions: [
+          if (unreadCount > 0 && onMarkAllRead != null)
+            TextButton.icon(
+              icon: const Icon(Icons.done_all, size: 16),
+              label: const Text('সব পঠিত করুন'),
+              onPressed: () async {
+                await onMarkAllRead();
+                if (context.mounted) Navigator.pop(ctx);
+              },
+            ),
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('বন্ধ করুন')),
         ],
       ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:landtrust_app/core/utils/communication_utils.dart';
 
 class AdminUserDialogs {
   static void showVerifyPaymentDialog(
@@ -27,7 +28,30 @@ class AdminUserDialogs {
                 Text('মাধ্যম: ${user['paymentMethod']} • প্রেরক: ${user['senderPhone']}'),
                 const SizedBox(height: 4),
                 Text('TrxID: ${user['transactionId']}', style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0B4F32))),
-                const SizedBox(height: 12),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 6,
+                  children: [
+                    TextButton.icon(
+                      style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
+                      icon: const Icon(Icons.chat, size: 14, color: Color(0xFF25D366)),
+                      label: const Text('WhatsApp প্রুফ', style: TextStyle(fontSize: 11, color: Color(0xFF075E54))),
+                      onPressed: () => CommunicationUtils.openPaymentVerificationChat(
+                        phone: user['phoneNumber']?.toString() ?? '',
+                        userName: user['fullName']?.toString() ?? '',
+                        trxId: user['transactionId']?.toString() ?? '',
+                        method: user['paymentMethod']?.toString(),
+                      ),
+                    ),
+                    TextButton.icon(
+                      style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
+                      icon: const Icon(Icons.phone, size: 14, color: Colors.blue),
+                      label: const Text('কল দিন', style: TextStyle(fontSize: 11, color: Colors.blue)),
+                      onPressed: () => CommunicationUtils.makePhoneCall(user['phoneNumber']?.toString() ?? ''),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
                 TextField(controller: noteCtrl, decoration: const InputDecoration(labelText: 'অ্যাডমিন নোট (ঐচ্ছিক)', isDense: true)),
               ],
             ),

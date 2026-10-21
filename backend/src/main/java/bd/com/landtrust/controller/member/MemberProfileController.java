@@ -16,6 +16,7 @@ import java.math.BigDecimal;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping({"/api/portal", "/api/member"})
@@ -109,6 +110,18 @@ public class MemberProfileController {
             }
         }
         return ResponseEntity.ok(Map.of("message", "সকল নোটিফিকেশন পঠিত হিসেবে চিহ্নিত হয়েছে।"));
+    }
+
+    @RequestMapping(value = "/notifications/{id}/read", method = {RequestMethod.PUT, RequestMethod.POST})
+    public ResponseEntity<?> markNotificationRead(Authentication auth, @PathVariable Long id) {
+        UserEntity user = currentUser(auth);
+        Optional<NotificationEntity> notifOpt = notificationRepository.findById(id);
+        if (notifOpt.isPresent() && notifOpt.get().getUserId().equals(user.getId())) {
+            NotificationEntity n = notifOpt.get();
+            n.setReadStatus(true);
+            notificationRepository.save(n);
+        }
+        return ResponseEntity.ok(Map.of("message", "নোটিফিকেশন পঠিত হিসেবে চিহ্নিত হয়েছে।"));
     }
 
     @PutMapping("/resubmit-payment")

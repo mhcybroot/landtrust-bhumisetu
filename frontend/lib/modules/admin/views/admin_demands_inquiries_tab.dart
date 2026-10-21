@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:landtrust_app/core/utils/communication_utils.dart';
 import 'package:landtrust_app/core/widgets/status_badge.dart';
 import '../view_models/admin_view_model.dart';
 
@@ -82,7 +83,32 @@ class _AdminDemandsInquiriesTabState extends State<AdminDemandsInquiriesTab> {
                   ],
                 ),
                 const SizedBox(height: 4),
-                Text('ক্রেতা: ${r['buyerName']} • মোবাইল: ${r['buyerPhone']}'),
+                Row(
+                  children: [
+                    Expanded(child: Text('ক্রেতা: ${r['buyerName']} • মোবাইল: ${r['buyerPhone']}')),
+                    IconButton(
+                      visualDensity: VisualDensity.compact,
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      icon: const Icon(Icons.chat, size: 16, color: Color(0xFF25D366)),
+                      tooltip: 'WhatsApp',
+                      onPressed: () => CommunicationUtils.openDemandInquiryChat(
+                        phone: r['buyerPhone']?.toString() ?? '',
+                        userName: r['buyerName']?.toString() ?? '',
+                        demandTitle: '${r['preferredUpazila']}, ${r['preferredDistrict']}',
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    IconButton(
+                      visualDensity: VisualDensity.compact,
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      icon: const Icon(Icons.phone, size: 16, color: Colors.blue),
+                      tooltip: 'কল দিন',
+                      onPressed: () => CommunicationUtils.makePhoneCall(r['buyerPhone']?.toString() ?? ''),
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 2),
                 Text('বাজেট: ৳${r['minBudgetBdt']}–৳${r['maxBudgetBdt']} • পরিমাণ: ${r['minAreaDecimal']}–${r['maxAreaDecimal']} শতাংশ', style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0B4F32))),
                 const SizedBox(height: 10),
@@ -140,6 +166,27 @@ class _AdminDemandsInquiriesTabState extends State<AdminDemandsInquiriesTab> {
                 Text('বিক্রেতা: ${inq['sellerName']} (${inq['sellerPhone']})'),
                 const SizedBox(height: 2),
                 Text('প্রস্তাবিত বাজেট: ৳${inq['offeredBudgetBdt']} • বার্তা: ${inq['message']}', style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0B4F32), fontSize: 12)),
+                const SizedBox(height: 6),
+                Wrap(
+                  spacing: 8,
+                  children: [
+                    TextButton.icon(
+                      style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
+                      icon: const Icon(Icons.chat, size: 14, color: Color(0xFF25D366)),
+                      label: Text('ক্রেতা (${inq['buyerName']}) WhatsApp', style: const TextStyle(fontSize: 10.5, color: Color(0xFF075E54))),
+                      onPressed: () => CommunicationUtils.launchWhatsApp(
+                        phone: inq['buyerPhone']?.toString() ?? '',
+                        message: 'আসসালামু আলাইকুম ${inq['buyerName']}, LandApp-এ আপনার ইনকোয়ারি সংক্রান্ত বিষয়ে যোগাযোগ করছি।',
+                      ),
+                    ),
+                    TextButton.icon(
+                      style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
+                      icon: const Icon(Icons.phone, size: 14, color: Colors.blue),
+                      label: const Text('কল দিন', style: TextStyle(fontSize: 10.5, color: Colors.blue)),
+                      onPressed: () => CommunicationUtils.makePhoneCall(inq['buyerPhone']?.toString() ?? ''),
+                    ),
+                  ],
+                ),
               ],
             ),
           ),

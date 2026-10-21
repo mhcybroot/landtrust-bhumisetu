@@ -9,6 +9,7 @@ import '../admin_listings_tab.dart';
 import '../admin_overview_tab.dart';
 import '../admin_settings_tab.dart';
 import '../admin_users_tab.dart';
+import '../admin_chat_inbox_tab.dart';
 
 class AdminPanelMobileView extends StatelessWidget {
   final AdminViewModel viewModel;
@@ -26,6 +27,7 @@ class AdminPanelMobileView extends StatelessWidget {
       (Icons.military_tech_outlined, 'কমিশন'),
       (Icons.account_balance_outlined, 'লেজার'),
       (Icons.settings_outlined, 'সেটিংস'),
+      (Icons.mark_chat_unread_outlined, 'সাপোর্ট'),
     ];
 
     return Scaffold(
@@ -78,6 +80,7 @@ class AdminPanelMobileView extends StatelessWidget {
                   4 => AdminCommissionsTab(viewModel: viewModel, isMobile: true),
                   5 => AdminFinanceProposalsTab(viewModel: viewModel, isMobile: true),
                   6 => AdminSettingsTab(viewModel: viewModel, isMobile: true, onSettingsSaved: onRefreshParent),
+                  7 => const AdminChatInboxTab(isMobile: true),
                   _ => AdminOverviewTab(viewModel: viewModel, isMobile: true),
                 },
               ),

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:landtrust_app/core/widgets/horizontal_scroll_fade_view.dart';
-import 'package:landtrust_app/core/widgets/status_badge.dart';
 import '../view_models/admin_view_model.dart';
-import '../widgets/admin_user_dialogs.dart';
+import '../widgets/admin_communication_dialogs.dart';
+import '../widgets/admin_user_card.dart';
 
 class AdminUsersTab extends StatefulWidget {
   final AdminViewModel viewModel;
@@ -54,7 +54,11 @@ class _AdminUsersTabState extends State<AdminUsersTab> {
         if (filtered.isEmpty)
           const Card(child: Padding(padding: EdgeInsets.all(32), child: Center(child: Text('এই ফিল্টারে কোনো সদস্য পাওয়া যায়নি।'))))
         else
-          ...filtered.map((u) => _userCard(u as Map<String, dynamic>)),
+          ...filtered.map((u) => AdminUserCard(
+                user: u as Map<String, dynamic>,
+                viewModel: widget.viewModel,
+                isMobile: widget.isMobile,
+              )),
       ],
     );
   }
@@ -66,10 +70,31 @@ class _AdminUsersTabState extends State<AdminUsersTab> {
         padding: EdgeInsets.all(widget.isMobile ? 10 : 14),
         child: Column(
           children: [
-            TextField(
-              controller: _searchCtrl,
-              decoration: const InputDecoration(hintText: 'নাম, মোবাইল নম্বর বা TrxID দিয়ে খুঁজুন...', prefixIcon: Icon(Icons.search), isDense: true),
-              onChanged: (_) => setState(() {}),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _searchCtrl,
+                    decoration: const InputDecoration(hintText: 'নাম, মোবাইল নম্বর বা TrxID দিয়ে খুঁজুন...', prefixIcon: Icon(Icons.search), isDense: true),
+                    onChanged: (_) => setState(() {}),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF0B4F32),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+                  ),
+                  onPressed: () => AdminCommunicationDialogs.showBroadcastNotificationDialog(
+                    context,
+                    isMobile: widget.isMobile,
+                    onSubmit: (t, m, r) => widget.viewModel.broadcastNotification(t, m, role: r),
+                  ),
+                  icon: const Icon(Icons.campaign, size: 16),
+                  label: const Text('ব্রডকাস্ট', style: TextStyle(fontSize: 11)),
+                ),
+              ],
             ),
             const SizedBox(height: 10),
             HorizontalScrollFadeView(
@@ -104,65 +129,6 @@ class _AdminUsersTabState extends State<AdminUsersTab> {
       selectedColor: const Color(0xFF0B4F32),
       labelStyle: TextStyle(color: sel ? Colors.white : Colors.black87, fontSize: 11.5, fontWeight: sel ? FontWeight.bold : FontWeight.normal),
       onSelected: (_) => onTap(),
-    );
-  }
-
-  Widget _userCard(Map<String, dynamic> u) {
-    final status = u['accountStatus'] as String? ?? 'PAYMENT_SUBMITTED';
-    final isPending = status == 'PAYMENT_SUBMITTED';
-
-    return Card(
-      margin: const EdgeInsets.only(bottom: 10),
-      child: Padding(
-        padding: EdgeInsets.all(widget.isMobile ? 12 : 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Text('${u['fullName']} (${u['role']})', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-                ),
-                StatusBadge(status: status),
-              ],
-            ),
-            const SizedBox(height: 4),
-            Text('মোবাইল: ${u['phoneNumber']} • এলাকা: ${u['upazila']}, ${u['district']}'),
-            const SizedBox(height: 2),
-            Text(
-              'পেমেন্ট: ${u['paymentMethod']} (প্রেরক: ${u['senderPhone'] ?? '-'}) • TrxID: ${u['transactionId'] ?? '-'}',
-              style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0B4F32), fontSize: 12),
-            ),
-            if (u['myReferralCode'] != null) Text('অফিসার কোড: ${u['myReferralCode']}', style: const TextStyle(fontSize: 11, color: Colors.blue)),
-            const SizedBox(height: 10),
-            Wrap(
-              spacing: 8,
-              runSpacing: 6,
-              children: [
-                if (isPending)
-                  ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
-                    onPressed: () => AdminUserDialogs.showVerifyPaymentDialog(context, user: u, isMobile: widget.isMobile, onSubmit: (app, note) => widget.viewModel.verifyUserPayment(u['id'] as int, app, note)),
-                    icon: const Icon(Icons.check_circle, size: 15),
-                    label: const Text('পেমেন্ট যাচাই করুন', style: TextStyle(fontSize: 11)),
-                  ),
-                OutlinedButton.icon(
-                  onPressed: () => AdminUserDialogs.showResetPasswordDialog(context, user: u, isMobile: widget.isMobile, onSubmit: (pass) => widget.viewModel.resetUserPassword(u['id'] as int, pass)),
-                  icon: const Icon(Icons.lock_reset, size: 15),
-                  label: const Text('পাসওয়ার্ড রিসেট', style: TextStyle(fontSize: 11)),
-                ),
-                OutlinedButton.icon(
-                  style: OutlinedButton.styleFrom(foregroundColor: Colors.red.shade800),
-                  onPressed: () => AdminUserDialogs.showRefundFeeDialog(context, user: u, isMobile: widget.isMobile, onSubmit: (reason, trx) => widget.viewModel.refundUserFee(u['id'] as int, reason, trx)),
-                  icon: const Icon(Icons.money_off, size: 15),
-                  label: const Text('ফি রিফান্ড', style: TextStyle(fontSize: 11)),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

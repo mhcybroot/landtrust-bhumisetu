@@ -179,4 +179,42 @@ public class AdminUserController {
 
         return ResponseEntity.ok(txn);
     }
+
+    @PostMapping("/users/{id}/notify")
+    public ResponseEntity<?> sendUserNotification(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> body) {
+        Optional<UserEntity> userOpt = userRepository.findById(id);
+        if (userOpt.isEmpty()) return ResponseEntity.notFound().build();
+
+        String title = body.getOrDefault("title", "LandApp নোটিফিকেশন").trim();
+        String message = body.getOrDefault("message", "").trim();
+        if (message.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "মেসেজ খালি হতে পারে না"));
+        }
+
+        CommonUtils.notifyUser(notificationRepository, id, title, message);
+        return ResponseEntity.ok(Map.of("message", "সদস্যের কাছে নোটিফিকেশন সফলভাবে পাঠানো হয়েছে!"));
+    }
+
+    @PostMapping("/notifications/broadcast")
+    public ResponseEntity<?> broadcastNotification(@RequestBody Map<String, String> body) {
+        String title = body.getOrDefault("title", "LandApp জরুরি ঘোষণা").trim();
+        String message = body.getOrDefault("message", "").trim();
+        String targetRole = body.getOrDefault("role", "").trim();
+
+        if (message.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "মেসেজ খালি হতে পারে না"));
+        }
+
+        List<UserEntity> targets = (targetRole.isBlank() || "ALL".equalsIgnoreCase(targetRole))
+                ? userRepository.findAll()
+                : userRepository.findByRoleOrderByCreatedAtDesc(targetRole.toUpperCase());
+
+        for (UserEntity u : targets) {
+            CommonUtils.notifyUser(notificationRepository, u.getId(), title, message);
+        }
+
+        return ResponseEntity.ok(Map.of("message", targets.size() + " জন ব্যবহারকারীকে সফলভাবে নোটিফিকেশন পাঠানো হয়েছে!"));
+    }
 }

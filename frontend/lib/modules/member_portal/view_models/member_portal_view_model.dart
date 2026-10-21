@@ -81,6 +81,14 @@ class MemberPortalViewModel extends ChangeNotifier {
     } catch (_) {}
   }
 
+  Future<void> markAllNotificationsRead() async {
+    try {
+      await _repo.markAllNotificationsRead();
+      _notificationsData = await _repo.fetchNotifications();
+      notifyListeners();
+    } catch (_) {}
+  }
+
   Future<void> createListing(Map<String, dynamic> payload) async {
     await _repo.createListing(payload);
     _myListings = await _repo.fetchSellerListings();

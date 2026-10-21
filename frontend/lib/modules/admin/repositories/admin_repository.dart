@@ -140,4 +140,21 @@ class AdminRepository {
     final res = await ApiClient.put('/admin/settings', body: payload);
     ApiClient.parseResponse(res);
   }
+
+  Future<void> sendNotificationToUser(int userId, String title, String message) async {
+    final res = await ApiClient.post('/admin/users/$userId/notify', body: {
+      'title': title,
+      'message': message,
+    });
+    ApiClient.parseResponse(res);
+  }
+
+  Future<void> broadcastNotification(String title, String message, {String? role}) async {
+    final res = await ApiClient.post('/admin/notifications/broadcast', body: {
+      'title': title,
+      'message': message,
+      if (role != null) 'role': role,
+    });
+    ApiClient.parseResponse(res);
+  }
 }

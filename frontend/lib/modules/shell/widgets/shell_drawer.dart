@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../../../core/localization/app_strings.dart';
 import '../../../../core/localization/language_toggle_button.dart';
-import '../../../../core/utils/whatsapp_helper.dart';
+import '../../chat/views/my_chat_threads_dialog.dart';
+import 'shell_helpline_dialog.dart';
 
 class ShellDrawer extends StatelessWidget {
   final int selectedIndex;
@@ -35,18 +36,19 @@ class ShellDrawer extends StatelessWidget {
               child: ListView(
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 children: [
-                  _drawerItem(0, Icons.home_rounded, 'জমি খুঁজুন (মার্কেটপ্লেস)', context),
-                  _drawerItem(1, Icons.assignment_rounded, 'জমি ক্রয়ের চাহিদা সমূহ', context),
-                  _drawerItem(2, Icons.verified_user_rounded, 'নিয়মাবলি ও প্ল্যাটফর্ম ফি', context),
-                  const Divider(height: 24, thickness: 1),
+                  _drawerItem(0, Icons.home_rounded, context.tr('nav_explore'), context),
+                  _drawerItem(1, Icons.assignment_rounded, context.tr('nav_demands'), context),
+                  _drawerItem(2, Icons.info_rounded, context.tr('nav_rules'), context),
+                  const Divider(height: 16, thickness: 1),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Row(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.language_rounded, color: Color(0xFF0B4F32), size: 20),
+                            const Icon(Icons.language_rounded, color: Color(0xFF0B4F32), size: 22),
                             const SizedBox(width: 12),
                             Text(context.isBangla ? 'ভাষা পরিবর্তন' : 'Language', style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13.5)),
                           ],
@@ -61,6 +63,16 @@ class ShellDrawer extends StatelessWidget {
                     isLoggedIn ? (isAdmin ? context.tr('nav_admin') : context.tr('nav_portal')) : context.tr('nav_login'),
                     context,
                   ),
+                  if (isLoggedIn)
+                    ListTile(
+                      leading: const Icon(Icons.mark_chat_unread_rounded, color: Color(0xFF0B4F32)),
+                      title: const Text('লাইভ সাপোর্ট চ্যাট', style: TextStyle(fontWeight: FontWeight.w600)),
+                      trailing: const Icon(Icons.chevron_right, size: 20),
+                      onTap: () {
+                        Navigator.pop(context);
+                        MyChatThreadsDialog.show(context, isMobile: true);
+                      },
+                    ),
                   ListTile(
                     leading: const Icon(Icons.support_agent_rounded, color: Color(0xFF0B4F32)),
                     title: const Text('জরুরি হেল্পলাইন', style: TextStyle(fontWeight: FontWeight.w600)),
@@ -68,7 +80,7 @@ class ShellDrawer extends StatelessWidget {
                     trailing: const Icon(Icons.chevron_right, size: 20),
                     onTap: () {
                       Navigator.pop(context);
-                      _showHelplineDialog(context);
+                      ShellHelplineDialog.show(context, config);
                     },
                   ),
                   if (isLoggedIn) ...[
@@ -98,35 +110,41 @@ class ShellDrawer extends StatelessWidget {
   Widget _buildDrawerHeader() {
     return Container(
       width: double.infinity,
+      padding: const EdgeInsets.all(16),
       color: const Color(0xFF0B4F32),
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
-                child: const Icon(Icons.terrain, color: Color(0xFF0B4F32), size: 22),
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10)),
+                child: const Icon(Icons.terrain, color: Color(0xFF0B4F32), size: 24),
               ),
-              const SizedBox(width: 10),
-              const Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('ভূমি সেতু', style: TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold)),
-                  Text('নোয়াখালী জেলা প্ল্যাটফর্ম', style: TextStyle(color: Colors.white70, fontSize: 11)),
-                ],
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('ভূমি সেতু', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                    Text(
+                      isLoggedIn ? (user?['fullName'] ?? 'সদস্য') : 'স্মার্ট ল্যান্ড ট্রাস্ট',
+                      style: TextStyle(color: Colors.green.shade100, fontSize: 12),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          Text(
-            isLoggedIn && user != null ? (user!['fullName']?.toString() ?? 'ইউজার') : 'নিরাপদ জমি কেনাবেচা',
-            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
-          ),
-          if (isLoggedIn && user != null)
-            Text('${user!['role'] ?? ''} • ${user!['phoneNumber'] ?? ''}', style: const TextStyle(color: Colors.white70, fontSize: 11)),
+          if (isLoggedIn && user != null) ...[
+            const SizedBox(height: 10),
+            Text(
+              'মোবাইল: ${user?['phoneNumber'] ?? ''} • ভূমিকা: ${user?['role'] ?? ''}',
+              style: const TextStyle(color: Colors.white70, fontSize: 11),
+            ),
+          ],
         ],
       ),
     );
@@ -145,50 +163,6 @@ class ShellDrawer extends StatelessWidget {
           Navigator.pop(context);
           onTabSelected(index);
         },
-      ),
-    );
-  }
-
-  void _showHelplineDialog(BuildContext context) {
-    final s = (config?['settings'] as Map<String, dynamic>?) ?? {};
-    final phone = (s['supportPhone']?.toString().isNotEmpty == true) ? s['supportPhone'].toString() : '01711-889900';
-    final wa = (s['supportWhatsapp']?.toString().isNotEmpty == true) ? s['supportWhatsapp'].toString() : phone;
-    final office = s['officeAddress']?.toString() ?? 'মাইজদী কোর্ট রোড, নোয়াখালী সদর';
-    final email = s['supportEmail']?.toString() ?? 'support@landtrust.com.bd';
-
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Row(children: [
-          Icon(Icons.support_agent, color: Color(0xFF0B4F32)),
-          SizedBox(width: 8),
-          Text('হেল্পলাইন ও সহায়তা', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-        ]),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('ভূমি সেতু নোয়াখালী অফিস:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5)),
-            const SizedBox(height: 8),
-            Text('📞 হটলাইন: $phone', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-            const SizedBox(height: 4),
-            Text('📍 অফিস: $office', style: const TextStyle(fontSize: 12.5)),
-            const SizedBox(height: 4),
-            Text('✉️ ইমেইল: $email', style: const TextStyle(fontSize: 12.5)),
-          ],
-        ),
-        actions: [
-          OutlinedButton.icon(
-            icon: const Icon(Icons.chat, size: 16, color: Color(0xFF25D366)),
-            label: const Text('WhatsApp চ্যাট', style: TextStyle(fontSize: 12.5, color: Color(0xFF075E54))),
-            onPressed: () {
-              Navigator.pop(ctx);
-              WhatsAppHelper.openChat(phone: wa, message: 'আসসালামু আলাইকুম। আমি ভূমি সেতু সম্পর্কিত বিষয়ে যোগাযোগ করতে চাই।');
-            },
-          ),
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('ঠিক আছে')),
-        ],
       ),
     );
   }

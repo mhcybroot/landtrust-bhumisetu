@@ -25,6 +25,11 @@ class MemberRepository {
     ApiClient.parseResponse(res);
   }
 
+  Future<void> markAllNotificationsRead() async {
+    final res = await ApiClient.put('/member/notifications/read-all');
+    ApiClient.parseResponse(res);
+  }
+
   Future<Map<String, dynamic>> fetchOfficerDashboard() async {
     final res = await ApiClient.get('/member/officer/dashboard');
     final data = ApiClient.parseResponse(res);
