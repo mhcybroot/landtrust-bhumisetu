@@ -9,11 +9,13 @@ import '../../widgets/shell_drawer.dart';
 class MobileShellView extends StatelessWidget {
   final ShellViewModel shellVm;
   final Widget activeView;
+  final Map<String, dynamic>? config;
 
   const MobileShellView({
     super.key,
     required this.shellVm,
     required this.activeView,
+    this.config,
   });
 
   @override
@@ -95,6 +97,7 @@ class MobileShellView extends StatelessWidget {
         isLoggedIn: isLoggedIn,
         isAdmin: isAdmin,
         user: shellVm.currentUser,
+        config: config,
         onTabSelected: shellVm.setTabIndex,
         onLogout: shellVm.logout,
       ),

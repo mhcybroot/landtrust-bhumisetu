@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:landtrust_app/core/session/session_manager.dart';
+import 'package:landtrust_app/core/widgets/account_status_lock_dialog.dart';
 import '../../view_models/marketplace_view_model.dart';
 import '../../widgets/contact_inquiry_dialog.dart';
 import '../../widgets/hero_banner_widget.dart';
@@ -30,10 +31,8 @@ class _HomeMarketplaceWebViewState extends State<HomeMarketplaceWebView> {
 
   @override
   void dispose() {
-    _searchCtrl.dispose();
-    _maxBudgetCtrl.dispose();
-    _minAreaCtrl.dispose();
-    _maxAreaCtrl.dispose();
+    _searchCtrl.dispose(); _maxBudgetCtrl.dispose();
+    _minAreaCtrl.dispose(); _maxAreaCtrl.dispose();
     super.dispose();
   }
 
@@ -47,19 +46,22 @@ class _HomeMarketplaceWebViewState extends State<HomeMarketplaceWebView> {
   }
 
   void _resetSearch() {
-    _searchCtrl.clear();
-    _maxBudgetCtrl.clear();
-    _minAreaCtrl.clear();
-    _maxAreaCtrl.clear();
+    _searchCtrl.clear(); _maxBudgetCtrl.clear();
+    _minAreaCtrl.clear(); _maxAreaCtrl.clear();
     widget.viewModel.resetFilters();
   }
 
   void _handleInquiry(Map<String, dynamic> listing) {
-    if (SessionManager.instance.currentUser == null) {
+    final user = SessionManager.instance.currentUser;
+    if (user == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('যোগাযোগের অনুরোধ পাঠাতে প্রথমে লগইন বা নিবন্ধন করুন।')),
       );
       widget.onNavigateToAuth();
+      return;
+    }
+    if ((user['accountStatus'] ?? 'PENDING') != 'ACTIVE') {
+      AccountStatusLockDialog.show(context, user: user);
       return;
     }
     ContactInquiryDialog.show(

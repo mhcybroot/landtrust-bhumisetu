@@ -16,7 +16,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/portal")
+@RequestMapping({"/api/portal", "/api/member"})
 public class MemberSellerController {
 
     private final UserRepository userRepository;
@@ -32,15 +32,21 @@ public class MemberSellerController {
         return userRepository.findById(u.getId()).orElse(u);
     }
 
-    @GetMapping("/my-listings")
+    @GetMapping({"/my-listings", "/seller/listings"})
     public ResponseEntity<List<LandListingEntity>> getMyListings(Authentication auth) {
         UserEntity user = currentUser(auth);
         return ResponseEntity.ok(listingRepository.findBySellerIdOrderByCreatedAtDesc(user.getId()));
     }
 
-    @PostMapping("/listings")
+    @PostMapping({"/listings", "/seller/listings"})
     public ResponseEntity<?> createListing(Authentication auth, @RequestBody Map<String, Object> body) {
         UserEntity user = currentUser(auth);
+        if (!"ACTIVE".equals(user.getAccountStatus())) {
+            return ResponseEntity.status(403).body(Map.of("message", "আপনার অ্যাকাউন্টটি এখনও সক্রিয় নয়। অ্যাডমিন পেমেন্ট যাচাই সম্পন্ন করলে আপনি জমি পোস্ট করতে পারবেন।"));
+        }
+        if (!"SELLER".equals(user.getRole()) && !"ADMIN".equals(user.getRole())) {
+            return ResponseEntity.status(403).body(Map.of("message", "শুধুমাত্র বিক্রেতা বা অ্যাডমিন জমি বিক্রয়ের বিজ্ঞাপন দিতে পারেন।"));
+        }
 
         String upazila = (String) body.getOrDefault("upazila", "নোয়াখালী সদর");
         String khatianNo = ((String) body.getOrDefault("khatianNo", "")).trim();
@@ -104,7 +110,7 @@ public class MemberSellerController {
         return ResponseEntity.ok(listing);
     }
 
-    @PutMapping("/listings/{id}")
+    @PutMapping({"/listings/{id}", "/seller/listings/{id}"})
     public ResponseEntity<?> updateMyListing(Authentication auth, @PathVariable Long id, @RequestBody Map<String, Object> body) {
         UserEntity user = currentUser(auth);
         Optional<LandListingEntity> opt = listingRepository.findById(id);
@@ -154,7 +160,7 @@ public class MemberSellerController {
         return ResponseEntity.ok(listingRepository.save(listing));
     }
 
-    @PutMapping("/listings/{id}/close")
+    @RequestMapping(value = {"/listings/{id}/close", "/listings/{id}/sold", "/seller/listings/{id}/sold"}, method = {RequestMethod.PUT, RequestMethod.POST})
     public ResponseEntity<?> closeMyListing(Authentication auth, @PathVariable Long id) {
         UserEntity user = currentUser(auth);
         Optional<LandListingEntity> opt = listingRepository.findById(id);

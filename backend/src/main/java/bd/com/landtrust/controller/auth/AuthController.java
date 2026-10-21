@@ -70,6 +70,12 @@ public class AuthController {
         if (fullName.isBlank() || phoneNumber.isBlank() || password.isBlank()) {
             return ResponseEntity.badRequest().body(Map.of("message", "নাম, মোবাইল নম্বর এবং পাসওয়ার্ড আবশ্যক।"));
         }
+        if (!phoneNumber.matches("^01[3-9]\\d{8}$")) {
+            return ResponseEntity.badRequest().body(Map.of("message", "সঠিক ১১ ডিজিটের বাংলাদেশী মোবাইল নম্বর দিন (যেমন: 017xxxxxxxx)"));
+        }
+        if (password.length() < 6) {
+            return ResponseEntity.badRequest().body(Map.of("message", "পাসওয়ার্ড ন্যূনতম ৬ অক্ষরের হতে হবে।"));
+        }
         if (!List.of("BUYER", "SELLER", "MARKETING_OFFICER").contains(role)) {
             return ResponseEntity.badRequest().body(Map.of("message", "সঠিক সদস্যের ধরন নির্বাচন করুন।"));
         }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:landtrust_app/core/session/session_manager.dart';
+import 'package:landtrust_app/core/widgets/account_status_lock_dialog.dart';
 import '../../view_models/marketplace_view_model.dart';
 import '../../widgets/seller_offer_dialog.dart';
 
@@ -14,11 +15,16 @@ class BuyerDemandsWebView extends StatelessWidget {
   });
 
   void _handleOffer(BuildContext context, Map<String, dynamic> req) {
-    if (SessionManager.instance.currentUser == null) {
+    final user = SessionManager.instance.currentUser;
+    if (user == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('জমির প্রস্তাব পাঠাতে প্রথমে লগইন বা নিবন্ধন করুন।')),
       );
       onNavigateToAuth();
+      return;
+    }
+    if ((user['accountStatus'] ?? 'PENDING') != 'ACTIVE') {
+      AccountStatusLockDialog.show(context, user: user);
       return;
     }
     SellerOfferDialog.show(
@@ -55,7 +61,14 @@ class BuyerDemandsWebView extends StatelessWidget {
                   ),
                   ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12)),
-                    onPressed: onNavigateToAuth,
+                    onPressed: () {
+                      final user = SessionManager.instance.currentUser;
+                      if (user != null && (user['accountStatus'] ?? 'PENDING') != 'ACTIVE') {
+                        AccountStatusLockDialog.show(context, user: user);
+                      } else {
+                        onNavigateToAuth();
+                      }
+                    },
                     icon: const Icon(Icons.add_circle_outline, size: 16),
                     label: const Text('চাহিদা নিবন্ধন করুন'),
                   ),

@@ -99,6 +99,12 @@ class MemberPortalViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> updateRequirement(int id, Map<String, dynamic> payload) async {
+    await _repo.updateRequirement(id, payload);
+    _myRequirements = await _repo.fetchBuyerRequirements();
+    notifyListeners();
+  }
+
   Future<void> respondProposal(int id, String action, {String? notes}) async {
     await _repo.respondProposal(id, action, notes: notes);
     _myProposals = await _repo.fetchProposals();

@@ -111,11 +111,13 @@ class AdminRepository {
   }
 
   Future<void> createPaymentMethod(Map<String, dynamic> payload) async {
-    await ApiClient.post('/admin/payment-methods', body: payload);
+    final res = await ApiClient.post('/admin/payment-methods', body: payload);
+    ApiClient.parseResponse(res);
   }
 
   Future<void> deletePaymentMethod(int id) async {
-    await ApiClient.delete('/admin/payment-methods/$id');
+    final res = await ApiClient.delete('/admin/payment-methods/$id');
+    ApiClient.parseResponse(res);
   }
 
   Future<List<dynamic>> fetchLocations() async {
@@ -125,14 +127,17 @@ class AdminRepository {
   }
 
   Future<void> createLocation(Map<String, dynamic> payload) async {
-    await ApiClient.post('/admin/locations', body: payload);
+    final res = await ApiClient.post('/admin/locations', body: payload);
+    ApiClient.parseResponse(res);
   }
 
   Future<void> deleteLocation(int id) async {
-    await ApiClient.delete('/admin/locations/$id');
+    final res = await ApiClient.delete('/admin/locations/$id');
+    ApiClient.parseResponse(res);
   }
 
   Future<void> updateSettings(Map<String, dynamic> payload) async {
-    await ApiClient.put('/admin/settings', body: payload);
+    final res = await ApiClient.put('/admin/settings', body: payload);
+    ApiClient.parseResponse(res);
   }
 }

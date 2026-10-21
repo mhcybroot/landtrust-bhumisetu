@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
 import '../view_models/admin_view_model.dart';
-import '../widgets/admin_settings_dialogs.dart';
+import '../widgets/admin_settings_extra_cards.dart';
 
 class AdminSettingsTab extends StatefulWidget {
   final AdminViewModel viewModel;
   final bool isMobile;
+  final VoidCallback? onSettingsSaved;
 
-  const AdminSettingsTab({super.key, required this.viewModel, required this.isMobile});
+  const AdminSettingsTab({
+    super.key,
+    required this.viewModel,
+    required this.isMobile,
+    this.onSettingsSaved,
+  });
 
   @override
   State<AdminSettingsTab> createState() => _AdminSettingsTabState();
@@ -24,14 +30,34 @@ class _AdminSettingsTabState extends State<AdminSettingsTab> {
     _buyerFeeCtrl = TextEditingController(text: '${s['buyerRegistrationFee'] ?? 500}');
     _sellerFeeCtrl = TextEditingController(text: '${s['sellerRegistrationFee'] ?? 500}');
     _officerFeeCtrl = TextEditingController(text: '${s['officerRegistrationFee'] ?? 300}');
-    _phoneCtrl = TextEditingController(text: s['supportPhone'] ?? '01800-000000');
-    _whatsappCtrl = TextEditingController(text: s['supportWhatsapp'] ?? s['supportPhone'] ?? '01700-000000');
+    _phoneCtrl = TextEditingController(text: s['supportPhone'] ?? '01711-889900');
+    _whatsappCtrl = TextEditingController(text: s['supportWhatsapp'] ?? s['supportPhone'] ?? '01711-889900');
     _emailCtrl = TextEditingController(text: s['supportEmail'] ?? 'support@landtrust.com.bd');
     _addrCtrl = TextEditingController(text: s['officeAddress'] ?? 'মাইজদী কোর্ট, নোয়াখালী');
+    widget.viewModel.addListener(_syncSettings);
+  }
+
+  void _syncSettings() {
+    if (_saving || !mounted) return;
+    final s = (widget.viewModel.dashboard['settings'] as Map<String, dynamic>?) ?? {};
+    if (s.isEmpty) return;
+    if (s['supportPhone'] != null && _phoneCtrl.text != s['supportPhone']) {
+      _phoneCtrl.text = s['supportPhone'].toString();
+    }
+    if (s['supportWhatsapp'] != null && _whatsappCtrl.text != s['supportWhatsapp']) {
+      _whatsappCtrl.text = s['supportWhatsapp'].toString();
+    }
+    if (s['supportEmail'] != null && _emailCtrl.text != s['supportEmail']) {
+      _emailCtrl.text = s['supportEmail'].toString();
+    }
+    if (s['officeAddress'] != null && _addrCtrl.text != s['officeAddress']) {
+      _addrCtrl.text = s['officeAddress'].toString();
+    }
   }
 
   @override
   void dispose() {
+    widget.viewModel.removeListener(_syncSettings);
     for (final c in [_buyerFeeCtrl, _sellerFeeCtrl, _officerFeeCtrl, _phoneCtrl, _whatsappCtrl, _emailCtrl, _addrCtrl]) {
       c.dispose();
     }
@@ -50,6 +76,7 @@ class _AdminSettingsTabState extends State<AdminSettingsTab> {
         'supportEmail': _emailCtrl.text.trim(),
         'officeAddress': _addrCtrl.text.trim(),
       });
+      widget.onSettingsSaved?.call();
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('সেটিংস সফলভাবে সংরক্ষিত হয়েছে!')));
     } catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
@@ -65,9 +92,9 @@ class _AdminSettingsTabState extends State<AdminSettingsTab> {
       children: [
         _buildFeesCard(),
         const SizedBox(height: 14),
-        _buildPaymentMethodsCard(widget.viewModel.paymentMethods),
+        AdminPaymentMethodsCard(viewModel: widget.viewModel, isMobile: widget.isMobile, onSaved: widget.onSettingsSaved),
         const SizedBox(height: 14),
-        _buildLocationsCard(widget.viewModel.locations),
+        AdminLocationsCard(viewModel: widget.viewModel, isMobile: widget.isMobile, onSaved: widget.onSettingsSaved),
       ],
     );
   }
@@ -101,82 +128,6 @@ class _AdminSettingsTabState extends State<AdminSettingsTab> {
               onPressed: _saving ? null : _saveSettings,
               icon: const Icon(Icons.save, size: 16),
               label: const Text('সংরক্ষণ করুন'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPaymentMethodsCard(List<dynamic> pms) {
-    return Card(
-      elevation: 2,
-      child: Padding(
-        padding: EdgeInsets.all(widget.isMobile ? 12 : 18),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Wrap(
-              alignment: WrapAlignment.spaceBetween,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                Text('নিবন্ধন ফি গ্রহণের পেমেন্ট মাধ্যম (${pms.length})', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-                ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
-                  onPressed: () => AdminSettingsDialogs.showAddPaymentMethodDialog(context, isMobile: widget.isMobile, onSubmit: widget.viewModel.createPaymentMethod),
-                  icon: const Icon(Icons.add, size: 16),
-                  label: const Text('নতুন মেথড যোগ'),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            ...pms.map((pm) => ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.account_balance_wallet, color: Color(0xFF0B4F32)),
-                  title: Text('${pm['providerName']} (${pm['accountType']})', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                  subtitle: Text('নম্বর: ${pm['accountNumber']}', style: const TextStyle(fontSize: 11)),
-                  trailing: IconButton(icon: const Icon(Icons.delete_outline, color: Colors.red, size: 20), onPressed: () => widget.viewModel.deletePaymentMethod(pm['id'] as int)),
-                )),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildLocationsCard(List<dynamic> locs) {
-    return Card(
-      elevation: 2,
-      child: Padding(
-        padding: EdgeInsets.all(widget.isMobile ? 12 : 18),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Wrap(
-              alignment: WrapAlignment.spaceBetween,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                Text('কভারেজ জেলা ও উপজেলাসমূহ (${locs.length})', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-                ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
-                  onPressed: () => AdminSettingsDialogs.showAddLocationDialog(context, isMobile: widget.isMobile, onSubmit: widget.viewModel.createLocation),
-                  icon: const Icon(Icons.add_location_alt, size: 16),
-                  label: const Text('নতুন এলাকা যোগ'),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: locs.map((l) => Chip(
-                    label: Text('${l['districtNameBn']} - ${l['upazilaNameBn']}', style: const TextStyle(fontSize: 11.5)),
-                    onDeleted: () => widget.viewModel.deleteLocation(l['id'] as int),
-                    deleteIconColor: Colors.red,
-                  )).toList(),
             ),
           ],
         ),

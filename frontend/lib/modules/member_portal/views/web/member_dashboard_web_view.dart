@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:landtrust_app/core/network/api_client.dart';
+import 'package:landtrust_app/core/widgets/account_status_lock_dialog.dart';
 import '../../view_models/member_portal_view_model.dart';
 import '../../widgets/add_custom_proposal_dialog.dart';
 import '../../widgets/agreement_certificate_dialog.dart';
@@ -36,6 +37,23 @@ class MemberDashboardWebView extends StatelessWidget {
     final role = user['role'] as String? ?? 'BUYER';
     final unreadCount = (viewModel.notificationsData['unreadCount'] as num?)?.toInt() ?? 0;
     final currentMode = viewModel.activePortalMode.isEmpty ? role : viewModel.activePortalMode;
+    final isLocked = (user['accountStatus'] ?? 'PENDING') != 'ACTIVE';
+    void guardAction(VoidCallback action) {
+      if (isLocked) {
+        AccountStatusLockDialog.show(
+          context,
+          user: user,
+          onResubmitRequested: () => ResubmitPaymentDialog.show(
+            context,
+            user: user,
+            isMobile: false,
+            onSubmit: viewModel.resubmitPayment,
+          ),
+        );
+      } else {
+        action();
+      }
+    }
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
@@ -70,8 +88,8 @@ class MemberDashboardWebView extends StatelessWidget {
                 SellerWorkspaceView(
                   myListings: viewModel.myListings,
                   isMobile: false,
-                  onAddListing: () => ListingFormDialog.show(context, isMobile: false, districts: getDistricts(), getUpazilas: getUpazilas, onSubmit: (p) async { await viewModel.createListing(p); onRefreshParent(); }),
-                  onAddProposal: () => AddCustomProposalDialog.show(context, isMobile: false, onSubmitted: viewModel.loadData),
+                  onAddListing: () => guardAction(() => ListingFormDialog.show(context, isMobile: false, districts: getDistricts(), getUpazilas: getUpazilas, onSubmit: (p) async { await viewModel.createListing(p); onRefreshParent(); })),
+                  onAddProposal: () => guardAction(() => AddCustomProposalDialog.show(context, isMobile: false, onSubmitted: viewModel.loadData)),
                   onEditListing: (item) => ListingFormDialog.show(context, existing: item, isMobile: false, districts: getDistricts(), getUpazilas: getUpazilas, onSubmit: (p) async { await viewModel.updateListing(item['id'] as int, p); onRefreshParent(); }),
                   onPreviewDoc: (item) => PrivateDocumentPreviewDialog.show(context, listing: item, isMobile: false),
                   onMarkSold: (id) async { await ApiClient.post('/member/seller/listings/$id/sold'); await viewModel.loadData(); onRefreshParent(); },
@@ -83,9 +101,9 @@ class MemberDashboardWebView extends StatelessWidget {
                   myRequirements: viewModel.myRequirements,
                   myInquiries: viewModel.myInquiries,
                   isMobile: false,
-                  onAddRequirement: () => RequirementFormDialog.show(context, isMobile: false, districts: getDistricts(), getUpazilas: getUpazilas, onSubmit: (p) async { await viewModel.createRequirement(p); onRefreshParent(); }),
-                  onAddProposal: () => AddCustomProposalDialog.show(context, isMobile: false, onSubmitted: viewModel.loadData),
-                  onEditRequirement: (item) => RequirementFormDialog.show(context, existing: item, isMobile: false, districts: getDistricts(), getUpazilas: getUpazilas, onSubmit: (p) async { await viewModel.createRequirement(p); onRefreshParent(); }),
+                  onAddRequirement: () => guardAction(() => RequirementFormDialog.show(context, isMobile: false, districts: getDistricts(), getUpazilas: getUpazilas, onSubmit: (p) async { await viewModel.createRequirement(p); onRefreshParent(); })),
+                  onAddProposal: () => guardAction(() => AddCustomProposalDialog.show(context, isMobile: false, onSubmitted: viewModel.loadData)),
+                  onEditRequirement: (item) => RequirementFormDialog.show(context, existing: item, isMobile: false, districts: getDistricts(), getUpazilas: getUpazilas, onSubmit: (p) async { await viewModel.updateRequirement(item['id'] as int, p); onRefreshParent(); }),
                   onFulfillRequirement: (id) async { await ApiClient.post('/member/buyer/requirements/$id/fulfill'); await viewModel.loadData(); onRefreshParent(); },
                 ),
                 const SizedBox(height: 20),

@@ -40,9 +40,9 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
         final isMobile = MediaQuery.of(context).size.width < 960;
 
         if (isMobile) {
-          return AdminPanelMobileView(viewModel: _viewModel);
+          return AdminPanelMobileView(viewModel: _viewModel, onRefreshParent: widget.onRefreshParent);
         }
-        return AdminPanelWebView(viewModel: _viewModel);
+        return AdminPanelWebView(viewModel: _viewModel, onRefreshParent: widget.onRefreshParent);
       },
     );
   }

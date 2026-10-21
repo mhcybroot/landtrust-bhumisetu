@@ -58,7 +58,7 @@ class _AdminListingsTabState extends State<AdminListingsTab> {
               style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
               onPressed: () async {
                 await widget.viewModel.verifyListing(listing['id'] as int, status, notesCtrl.text.trim());
-                if (mounted) Navigator.pop(ctx);
+                if (mounted && ctx.mounted) Navigator.pop(ctx);
               },
               child: const Text('সংরক্ষণ করুন'),
             ),

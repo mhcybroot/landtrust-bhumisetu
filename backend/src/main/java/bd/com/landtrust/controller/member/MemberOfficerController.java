@@ -18,7 +18,7 @@ import java.math.BigDecimal;
 import java.util.*;
 
 @RestController
-@RequestMapping("/api/portal")
+@RequestMapping({"/api/portal", "/api/member"})
 public class MemberOfficerController {
 
     private final UserRepository userRepository;
@@ -42,7 +42,7 @@ public class MemberOfficerController {
         return userRepository.findById(u.getId()).orElse(u);
     }
 
-    @GetMapping("/officer-dashboard")
+    @GetMapping({"/officer-dashboard", "/officer/dashboard"})
     public ResponseEntity<Map<String, Object>> getOfficerDashboard(Authentication auth) {
         UserEntity officer = currentUser(auth);
         List<UserEntity> referredUsers = userRepository.findByReferredByOfficerIdOrderByCreatedAtDesc(officer.getId());
@@ -97,9 +97,18 @@ public class MemberOfficerController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/officer-payout-request")
+    @PostMapping({"/officer-payout-request", "/officer/payout-request"})
     public ResponseEntity<?> requestOfficerPayout(Authentication auth, @RequestBody Map<String, String> body) {
         UserEntity officer = currentUser(auth);
+        if (!"ACTIVE".equals(officer.getAccountStatus())) {
+            return ResponseEntity.status(403).body(Map.of(
+                    "message", "আপনার অ্যাকাউন্টটি সক্রিয় (ACTIVE) নয়। পেআউট অনুরোধ করতে অ্যাকাউন্টটি সক্রিয় হওয়া আবশ্যক।",
+                    "accountStatus", officer.getAccountStatus()
+            ));
+        }
+        if (!"MARKETING_OFFICER".equals(officer.getRole()) && !"ADMIN".equals(officer.getRole())) {
+            return ResponseEntity.status(403).body(Map.of("message", "শুধুমাত্র মার্কেটিং অফিসার সদস্যগণ এই অনুরোধ করতে পারেন।"));
+        }
         String paymentMethod = body.getOrDefault("paymentMethod", "বিকাশ (bKash)");
         String accountNumber = body.getOrDefault("accountNumber", officer.getPhoneNumber()).trim();
         String note = body.getOrDefault("note", "").trim();
@@ -129,15 +138,21 @@ public class MemberOfficerController {
         return ResponseEntity.ok(Map.of("message", "আপনার সম্মানী উত্তোলনের অনুরোধ সফলভাবে অ্যাডমিনের কাছে পাঠানো হয়েছে!"));
     }
 
-    @GetMapping("/my-proposals")
+    @GetMapping({"/my-proposals", "/proposals"})
     public ResponseEntity<List<ServiceProposalEntity>> getMyProposals(Authentication auth) {
         UserEntity user = currentUser(auth);
         return ResponseEntity.ok(proposalRepository.findByUserIdOrderByCreatedAtDesc(user.getId()));
     }
 
     @PostMapping("/proposals")
-    public ResponseEntity<ServiceProposalEntity> createProposal(Authentication auth, @RequestBody Map<String, Object> body) {
+    public ResponseEntity<?> createProposal(Authentication auth, @RequestBody Map<String, Object> body) {
         UserEntity user = currentUser(auth);
+        if (!"ACTIVE".equals(user.getAccountStatus())) {
+            return ResponseEntity.status(403).body(Map.of(
+                    "message", "আপনার অ্যাকাউন্টটি সক্রিয় (ACTIVE) নয়। প্রস্তাব তৈরি করতে অ্যাকাউন্টটি সক্রিয় হওয়া আবশ্যক।",
+                    "accountStatus", user.getAccountStatus()
+            ));
+        }
         ServiceProposalEntity p = new ServiceProposalEntity();
         p.setUserId(user.getId());
         p.setUserName(user.getFullName());
@@ -152,7 +167,7 @@ public class MemberOfficerController {
         return ResponseEntity.ok(proposalRepository.save(p));
     }
 
-    @PutMapping("/proposals/{id}/accept-counter")
+    @RequestMapping(value = {"/proposals/{id}/accept-counter", "/proposals/{id}/respond"}, method = {RequestMethod.PUT, RequestMethod.POST})
     public ResponseEntity<?> acceptCounterOffer(Authentication auth, @PathVariable Long id) {
         UserEntity user = currentUser(auth);
         Optional<ServiceProposalEntity> opt = proposalRepository.findById(id);

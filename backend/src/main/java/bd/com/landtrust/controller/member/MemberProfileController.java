@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/portal")
+@RequestMapping({"/api/portal", "/api/member"})
 public class MemberProfileController {
 
     private final UserRepository userRepository;

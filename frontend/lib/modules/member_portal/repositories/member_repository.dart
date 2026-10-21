@@ -21,7 +21,8 @@ class MemberRepository {
   }
 
   Future<void> markNotificationRead(int id) async {
-    await ApiClient.post('/member/notifications/$id/read');
+    final res = await ApiClient.post('/member/notifications/$id/read');
+    ApiClient.parseResponse(res);
   }
 
   Future<Map<String, dynamic>> fetchOfficerDashboard() async {
@@ -57,6 +58,11 @@ class MemberRepository {
     return ApiClient.parseResponse(res) as Map<String, dynamic>;
   }
 
+  Future<Map<String, dynamic>> updateRequirement(int id, Map<String, dynamic> payload) async {
+    final res = await ApiClient.put('/member/buyer/requirements/$id', body: payload);
+    return ApiClient.parseResponse(res) as Map<String, dynamic>;
+  }
+
   Future<List<dynamic>> fetchBuyerInquiries() async {
     final res = await ApiClient.get('/member/buyer/inquiries');
     final data = ApiClient.parseResponse(res);
@@ -78,34 +84,38 @@ class MemberRepository {
   }
 
   Future<void> requestOfficerPayout(double amount, String method, String account) async {
-    await ApiClient.post('/member/officer/payout-request', body: {
+    final res = await ApiClient.post('/member/officer/payout-request', body: {
       'amountBdt': amount,
       'paymentMethod': method,
       'accountNumber': account,
     });
+    ApiClient.parseResponse(res);
   }
 
   Future<void> resubmitPayment(String method, String senderPhone, String trxId) async {
-    await ApiClient.post('/member/resubmit-payment', body: {
+    final res = await ApiClient.post('/member/resubmit-payment', body: {
       'paymentMethod': method,
       'senderPhone': senderPhone,
       'transactionId': trxId,
     });
+    ApiClient.parseResponse(res);
   }
 
   Future<void> updateProfile(String fullName, String district, String upazila, String address) async {
-    await ApiClient.put('/member/profile', body: {
+    final res = await ApiClient.put('/member/profile', body: {
       'fullName': fullName,
       'district': district,
       'upazila': upazila,
       'address': address,
     });
+    ApiClient.parseResponse(res);
   }
 
   Future<void> changePassword(String currentPassword, String newPassword) async {
-    await ApiClient.post('/member/change-password', body: {
+    final res = await ApiClient.put('/member/change-password', body: {
       'currentPassword': currentPassword,
       'newPassword': newPassword,
     });
+    ApiClient.parseResponse(res);
   }
 }

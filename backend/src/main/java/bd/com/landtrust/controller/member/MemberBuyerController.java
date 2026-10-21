@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/portal")
+@RequestMapping({"/api/portal", "/api/member"})
 public class MemberBuyerController {
 
     private final UserRepository userRepository;
@@ -48,15 +48,21 @@ public class MemberBuyerController {
         return userRepository.findById(u.getId()).orElse(u);
     }
 
-    @GetMapping("/my-requirements")
+    @GetMapping({"/my-requirements", "/buyer/requirements"})
     public ResponseEntity<List<BuyerRequirementEntity>> getMyRequirements(Authentication auth) {
         UserEntity user = currentUser(auth);
         return ResponseEntity.ok(requirementRepository.findByBuyerIdOrderByCreatedAtDesc(user.getId()));
     }
 
-    @PostMapping("/requirements")
+    @PostMapping({"/requirements", "/buyer/requirements"})
     public ResponseEntity<?> createRequirement(Authentication auth, @RequestBody Map<String, Object> body) {
         UserEntity user = currentUser(auth);
+        if (!"ACTIVE".equals(user.getAccountStatus())) {
+            return ResponseEntity.status(403).body(Map.of("message", "আপনার অ্যাকাউন্টটি এখনও সক্রিয় নয়। অ্যাডমিন পেমেন্ট যাচাই সম্পন্ন করলে আপনি জমি ক্রয়ের চাহিদা পোস্ট করতে পারবেন।"));
+        }
+        if (!"BUYER".equals(user.getRole()) && !"ADMIN".equals(user.getRole())) {
+            return ResponseEntity.status(403).body(Map.of("message", "শুধুমাত্র ক্রেতা বা অ্যাডমিন জমি ক্রয়ের চাহিদা জমা দিতে পারেন।"));
+        }
 
         BuyerRequirementEntity req = new BuyerRequirementEntity();
         req.setBuyerId(user.getId());
@@ -79,7 +85,7 @@ public class MemberBuyerController {
         return ResponseEntity.ok(requirementRepository.save(req));
     }
 
-    @PutMapping("/requirements/{id}")
+    @PutMapping({"/requirements/{id}", "/buyer/requirements/{id}"})
     public ResponseEntity<?> updateMyRequirement(Authentication auth, @PathVariable Long id, @RequestBody Map<String, Object> body) {
         UserEntity user = currentUser(auth);
         Optional<BuyerRequirementEntity> opt = requirementRepository.findById(id);
@@ -105,7 +111,7 @@ public class MemberBuyerController {
         return ResponseEntity.ok(requirementRepository.save(req));
     }
 
-    @PutMapping("/requirements/{id}/fulfill")
+    @RequestMapping(value = {"/requirements/{id}/fulfill", "/buyer/requirements/{id}/fulfill"}, method = {RequestMethod.PUT, RequestMethod.POST})
     public ResponseEntity<?> fulfillMyRequirement(Authentication auth, @PathVariable Long id) {
         UserEntity user = currentUser(auth);
         Optional<BuyerRequirementEntity> opt = requirementRepository.findById(id);
@@ -120,6 +126,15 @@ public class MemberBuyerController {
     @PostMapping("/requirements/{id}/seller-offer")
     public ResponseEntity<?> submitSellerOfferForRequirement(Authentication auth, @PathVariable Long id, @RequestBody Map<String, Object> body) {
         UserEntity seller = currentUser(auth);
+        if (!"ACTIVE".equals(seller.getAccountStatus())) {
+            return ResponseEntity.status(403).body(Map.of(
+                    "message", "আপনার অ্যাকাউন্টটি সক্রিয় (ACTIVE) নয়। অ্যাডমিন কর্তৃক যাচাই সম্পন্ন না হওয়া পর্যন্ত প্রস্তাব পাঠানো যাবে না।",
+                    "accountStatus", seller.getAccountStatus()
+            ));
+        }
+        if (!"SELLER".equals(seller.getRole()) && !"ADMIN".equals(seller.getRole())) {
+            return ResponseEntity.status(403).body(Map.of("message", "শুধুমাত্র বিক্রেতা সদস্যগণ চাহিদাপত্রের বিপরীতে প্রস্তাব দিতে পারেন।"));
+        }
         Optional<BuyerRequirementEntity> opt = requirementRepository.findById(id);
         if (opt.isEmpty()) {
             return ResponseEntity.badRequest().body(Map.of("message", "চাহিদাপত্র খুঁজে পাওয়া যায়নি।"));
@@ -151,9 +166,15 @@ public class MemberBuyerController {
         ));
     }
 
-    @PostMapping("/inquiries")
+    @PostMapping({"/inquiries", "/buyer/inquiries"})
     public ResponseEntity<?> createInquiry(Authentication auth, @RequestBody Map<String, Object> body) {
         UserEntity user = currentUser(auth);
+        if (!"ACTIVE".equals(user.getAccountStatus())) {
+            return ResponseEntity.status(403).body(Map.of(
+                    "message", "আপনার অ্যাকাউন্টটি সক্রিয় (ACTIVE) নয়। অনুসন্ধান পাঠাতে অ্যাকাউন্টটি সক্রিয় হওয়া আবশ্যক।",
+                    "accountStatus", user.getAccountStatus()
+            ));
+        }
         Long listingId = Long.valueOf(String.valueOf(body.get("listingId")));
         Optional<LandListingEntity> listingOpt = listingRepository.findById(listingId);
         if (listingOpt.isEmpty()) {
@@ -180,7 +201,7 @@ public class MemberBuyerController {
         return ResponseEntity.ok(inquiry);
     }
 
-    @GetMapping("/my-inquiries")
+    @GetMapping({"/my-inquiries", "/buyer/inquiries"})
     public ResponseEntity<List<LandInquiryEntity>> getMyInquiries(Authentication auth) {
         UserEntity user = currentUser(auth);
         return ResponseEntity.ok(inquiryRepository.findByBuyerIdOrderByCreatedAtDesc(user.getId()));

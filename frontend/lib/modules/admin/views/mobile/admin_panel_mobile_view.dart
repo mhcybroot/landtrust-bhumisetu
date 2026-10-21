@@ -12,8 +12,9 @@ import '../admin_users_tab.dart';
 
 class AdminPanelMobileView extends StatelessWidget {
   final AdminViewModel viewModel;
+  final VoidCallback? onRefreshParent;
 
-  const AdminPanelMobileView({super.key, required this.viewModel});
+  const AdminPanelMobileView({super.key, required this.viewModel, this.onRefreshParent});
 
   @override
   Widget build(BuildContext context) {
@@ -76,7 +77,7 @@ class AdminPanelMobileView extends StatelessWidget {
                   3 => AdminDemandsInquiriesTab(viewModel: viewModel, isMobile: true),
                   4 => AdminCommissionsTab(viewModel: viewModel, isMobile: true),
                   5 => AdminFinanceProposalsTab(viewModel: viewModel, isMobile: true),
-                  6 => AdminSettingsTab(viewModel: viewModel, isMobile: true),
+                  6 => AdminSettingsTab(viewModel: viewModel, isMobile: true, onSettingsSaved: onRefreshParent),
                   _ => AdminOverviewTab(viewModel: viewModel, isMobile: true),
                 },
               ),

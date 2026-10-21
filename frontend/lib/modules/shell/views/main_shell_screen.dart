@@ -50,7 +50,7 @@ class _MainShellScreenState extends State<MainShellScreen> {
         final activeView = _buildActiveView(isMobile, selectedTab, isLoggedIn, isAdmin);
 
         return isMobile
-            ? MobileShellView(shellVm: _shellVm, activeView: activeView)
+            ? MobileShellView(shellVm: _shellVm, activeView: activeView, config: _marketplaceVm.config)
             : WebShellView(shellVm: _shellVm, activeView: activeView);
       },
     );
