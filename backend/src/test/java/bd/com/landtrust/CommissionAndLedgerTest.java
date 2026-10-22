@@ -1,11 +1,11 @@
 package bd.com.landtrust;
 
+import bd.com.landtrust.controller.publicapi.PublicListingController;
 import bd.com.landtrust.entity.CommissionEntryEntity;
+import bd.com.landtrust.entity.LandListingEntity;
 import bd.com.landtrust.entity.SystemSettingEntity;
 import bd.com.landtrust.entity.UserEntity;
-import bd.com.landtrust.repository.CommissionEntryRepository;
-import bd.com.landtrust.repository.SystemSettingRepository;
-import bd.com.landtrust.repository.UserRepository;
+import bd.com.landtrust.repository.*;
 import bd.com.landtrust.service.SystemSettingService;
 import bd.com.landtrust.util.CommissionHelper;
 import org.junit.jupiter.api.DisplayName;
@@ -15,9 +15,10 @@ import org.mockito.Mockito;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class CommissionAndLedgerTest {
@@ -87,5 +88,53 @@ class CommissionAndLedgerTest {
 
         BigDecimal commission = dealAmount.multiply(rate).divide(new BigDecimal("100"), 0, RoundingMode.HALF_UP);
         assertEquals(new BigDecimal("37500"), commission);
+    }
+
+    @Test
+    @DisplayName("Active listing status filtering includes APPROVED_PUBLISHED and RESERVED while excluding PENDING_REVIEW and REJECTED")
+    void testActiveListingStatusFiltering() {
+        LandListingRepository listingRepo = Mockito.mock(LandListingRepository.class);
+        SystemSettingRepository settingRepo = Mockito.mock(SystemSettingRepository.class);
+        SystemSettingService settingService = new SystemSettingService(settingRepo);
+
+        PublicListingController controller = new PublicListingController(
+                Mockito.mock(UserRepository.class),
+                settingService,
+                Mockito.mock(PaymentMethodRepository.class),
+                Mockito.mock(LocationRepository.class),
+                listingRepo,
+                Mockito.mock(BuyerRequirementRepository.class)
+        );
+
+        LandListingEntity l1 = new LandListingEntity();
+        l1.setId(101L);
+        l1.setTitle("Dhaka Prime Plot");
+        l1.setListingStatus("APPROVED_PUBLISHED");
+
+        LandListingEntity l2 = new LandListingEntity();
+        l2.setId(102L);
+        l2.setTitle("Chittagong Hill Plot");
+        l2.setListingStatus("RESERVED");
+
+        List<String> targetStatuses = List.of("APPROVED_PUBLISHED", "RESERVED");
+        when(listingRepo.findByListingStatusInOrderByCreatedAtDesc(targetStatuses))
+                .thenReturn(List.of(l1, l2));
+
+        var response = controller.getPublishedListings(null, null, null, null, null, null, null, null, null);
+        List<Map<String, Object>> listings = response.getBody();
+
+        assertNotNull(listings);
+        assertEquals(2, listings.size());
+        assertEquals("APPROVED_PUBLISHED", listings.get(0).get("listingStatus"));
+        assertEquals("RESERVED", listings.get(1).get("listingStatus"));
+
+        // Verify repository query was invoked with exact active statuses
+        verify(listingRepo).findByListingStatusInOrderByCreatedAtDesc(targetStatuses);
+
+        // Verify inclusion and exclusion semantics
+        assertTrue(targetStatuses.contains("APPROVED_PUBLISHED"), "Active query must include APPROVED_PUBLISHED");
+        assertTrue(targetStatuses.contains("RESERVED"), "Active query must include RESERVED");
+        assertFalse(targetStatuses.contains("PENDING_REVIEW"), "Active query must exclude PENDING_REVIEW");
+        assertFalse(targetStatuses.contains("REJECTED"), "Active query must exclude REJECTED");
     }
 }
