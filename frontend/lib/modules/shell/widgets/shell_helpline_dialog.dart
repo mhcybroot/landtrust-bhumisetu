@@ -22,11 +22,11 @@ class ShellHelplineDialog {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('ভূমি সেতু নোয়াখালী অফিস:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5)),
+            const Text('bdHousing সাপোর্ট ও হেল্পলাইন:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5)),
             const SizedBox(height: 8),
             Text('📞 হটলাইন: $phone', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
             const SizedBox(height: 4),
-            Text('📍 অফিস: $office', style: const TextStyle(fontSize: 12.5)),
+            Text('📍 সেন্ট্রাল অফিস: $office', style: const TextStyle(fontSize: 12.5)),
             const SizedBox(height: 4),
             Text('✉️ ইমেইল: $email', style: const TextStyle(fontSize: 12.5)),
           ],
@@ -37,7 +37,7 @@ class ShellHelplineDialog {
             label: const Text('WhatsApp চ্যাট', style: TextStyle(fontSize: 12.5, color: Color(0xFF075E54))),
             onPressed: () {
               Navigator.pop(ctx);
-              WhatsAppHelper.openChat(phone: wa, message: 'আসসালামু আলাইকুম। আমি ভূমি সেতু সম্পর্কিত বিষয়ে যোগাযোগ করতে চাই।');
+              WhatsAppHelper.openChat(phone: wa, message: 'আসসালামু আলাইকুম। আমি bdHousing সম্পর্কিত বিষয়ে যোগাযোগ করতে চাই।');
             },
           ),
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('ঠিক আছে')),

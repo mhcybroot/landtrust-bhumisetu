@@ -47,7 +47,7 @@ class AdminPanelWebView extends StatelessWidget {
                     const Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('কেন্দ্রীয় অ্যাডমিন প্যানেল — ভূমি সেতু', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+                        Text('কেন্দ্রীয় অ্যাডমিন প্যানেল — bdHousing', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
                         SizedBox(height: 4),
                         Text('সদস্য অনুমোদন, নথি যাচাই, ইনকোয়ারি ও ৩-খাত আর্থিক ব্যবস্থাপনা', style: TextStyle(color: Colors.white70, fontSize: 13)),
                       ],

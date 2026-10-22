@@ -26,7 +26,7 @@ class ContactInquiryDialog {
               mainAxisSize: MainAxisSize.min,
               children: [
                 const Text(
-                  'ভূমি সেতু অ্যাডমিন আপনার অনুরোধটি যাচাই করে বিক্রেতার সাথে যোগাযোগ ও পরিদর্শনের ব্যবস্থা করবেন।',
+                  'bdHousing অ্যাডমিন আপনার অনুরোধটি যাচাই করে বিক্রেতার সাথে যোগাযোগ ও পরিদর্শনের ব্যবস্থা করবেন।',
                   style: TextStyle(fontSize: 12, color: Colors.black54),
                 ),
                 const SizedBox(height: 12),

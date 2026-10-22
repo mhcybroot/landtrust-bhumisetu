@@ -135,7 +135,7 @@ class AdminListingCard extends StatelessWidget {
                   OutlinedButton.icon(
                     onPressed: () => WhatsAppHelper.openChat(
                       phone: l['sellerPhone'].toString(),
-                      message: 'আসসালামু আলাইকুম, ভূমি সেতু থেকে আপনার লিস্টিং "${l['title']}" এর TrxID ও তথ্য যাচাই সংক্রান্ত যোগাযোগ করছি।',
+                      message: 'আসসালামু আলাইকুম, bdHousing থেকে আপনার লিস্টিং "${l['title']}" এর TrxID ও তথ্য যাচাই সংক্রান্ত যোগাযোগ করছি।',
                     ),
                     icon: const Icon(Icons.chat, size: 14, color: Colors.green),
                     label: const Text('WhatsApp', style: TextStyle(fontSize: 11, color: Colors.green)),

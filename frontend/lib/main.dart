@@ -21,7 +21,7 @@ class LandTrustApp extends StatelessWidget {
       listenable: LocaleNotifier.instance,
       builder: (context, _) {
         return MaterialApp(
-          title: 'ভূমি সেতু (Bhumi Setu)',
+          title: 'bdHousing (বিডি হাউজিং)',
           debugShowCheckedModeBanner: false,
           scrollBehavior: const AppScrollBehavior(),
           theme: AppTheme.theme,

@@ -1,8 +1,9 @@
 /// English language dictionary mapping.
 const Map<String, String> stringsEn = {
   // Common & Navigation
-  'app_title': 'Bhumi Setu',
-  'app_subtitle': 'Noakhali Digital Network',
+  'app_title': 'bdHousing',
+  'app_subtitle': 'Housing Marketplace',
+  'app_slogan': 'Secure Housing & Property, Trusted Solution',
   'nav_explore': 'Explore Lands',
   'nav_demands': 'Demands',
   'nav_rules': 'Rules & Fees',
@@ -47,7 +48,7 @@ const Map<String, String> stringsEn = {
   'whatsapp_chat': 'WhatsApp Chat',
   'whatsapp_inquiry': 'Chat on WhatsApp Directly',
   'contact_request': 'Send Inquiry Request',
-  'inquiry_notice': 'Bhumi Setu admin will verify your request and connect you directly with the seller.',
+  'inquiry_notice': 'bdHousing admin will verify your request and connect you directly with the seller.',
   'proposed_budget': 'Your Proposed Budget (BDT)',
   'your_message': 'Your Message or Questions',
 

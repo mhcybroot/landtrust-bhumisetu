@@ -49,7 +49,7 @@ class AccountStatusLockDialog extends StatelessWidget {
             : 'অ্যাকাউন্ট ভেরিফিকেশন অপেক্ষমাণ');
 
     final String message = isSuspended
-        ? 'আপনার অ্যাকাউন্টটি স্থগিত অবস্থায় আছে। বিস্তারিত জানতে ভূমি সেতু সাপোর্টে যোগাযোগ করুন।'
+        ? 'আপনার অ্যাকাউন্টটি স্থগিত অবস্থায় আছে। বিস্তারিত জানতে bdHousing সাপোর্টে যোগাযোগ করুন।'
         : (isRejected
             ? 'আপনার সদস্য ফি TrxID ($trxId) যাচাই ব্যর্থ হয়েছে। অনুগ্রহ করে সঠিক TrxID ও প্রেরক নম্বর পুনরায় জমা দিন।'
             : 'আপনার সদস্য ফি বাবদ জমা দেওয়া TrxID ($trxId) অ্যাডমিন যাচাই করছেন। অনুমোদন সম্পন্ন হলেই আপনি বিজ্ঞাপন বা চাহিদা প্রকাশ করতে পারবেন।');
@@ -112,7 +112,7 @@ class AccountStatusLockDialog extends StatelessWidget {
             Navigator.pop(context);
             WhatsAppHelper.openChat(
               phone: '01886178306',
-              message: 'আসসালামু আলাইকুম। আমার ভূমি সেতু অ্যাকাউন্টের স্ট্যাটাস ($status) ও পেমেন্ট TrxID ($trxId) সংক্রান্ত তথ্য জানতে চাই।',
+              message: 'আসসালামু আলাইকুম। আমার bdHousing অ্যাকাউন্টের স্ট্যাটাস ($status) ও পেমেন্ট TrxID ($trxId) সংক্রান্ত তথ্য জানতে চাই।',
             );
           },
         ),

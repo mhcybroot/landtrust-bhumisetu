@@ -51,7 +51,7 @@ class ShellHeaderBar extends StatelessWidget {
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Icon(Icons.terrain, color: Color(0xFF0B4F32), size: 22),
+                        child: const Icon(Icons.home_work_rounded, color: Color(0xFF0B4F32), size: 22),
                       ),
                       const SizedBox(width: 8),
                       Flexible(

@@ -46,7 +46,7 @@ class HeroBannerWidget extends StatelessWidget {
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                    'নোয়াখালী থেকে শুরু • সারাদেশে বিশ্বস্ত নেটওয়ার্ক',
+                    'আবাসন খাতের বিশেষায়িত অনলাইন মার্কেটপ্লেস',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: isMobile ? 11 : 12,
@@ -56,7 +56,7 @@ class HeroBannerWidget extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  'ভূমি সেতু (Bhumi Setu)',
+                  'bdHousing (বিডি হাউজিং)',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: isMobile ? 22 : 28,
@@ -65,7 +65,7 @@ class HeroBannerWidget extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'নিরাপদ জমি কেনাবেচা, সরাসরি চাহিদা সংগ্রহ ও মার্কেটিং অফিসার রেফারেল নেটওয়ার্ক।',
+                  'নিরাপদ জমি ও আবাসন, বিশ্বস্ত সমাধান • কুমিল্লা, নোয়াখালী, ফেনী ও লক্ষ্মীপুর।',
                   style: TextStyle(
                     color: Colors.white70,
                     fontSize: isMobile ? 13 : 15,

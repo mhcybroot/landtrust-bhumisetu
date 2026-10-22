@@ -9,7 +9,7 @@ class AgreementCertificateDialog {
   }) {
     final certText = '''
 =============================================================
-         ভূমি সেতু (BHUMI SETU) — বিশেষ সেবা চুক্তিপত্র সনদ
+         bdHousing — বিশেষ সেবা চুক্তিপত্র সনদ
 =============================================================
 সনদ নম্বর: LT-AGR-${proposal['id']}
 তারিখ: ${proposal['agreedAt'] ?? proposal['updatedAt'] ?? '২০২৬'}

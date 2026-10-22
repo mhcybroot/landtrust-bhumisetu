@@ -20,7 +20,7 @@ class ShellFooter extends StatelessWidget {
           child: Column(
             children: [
               Text(
-                '© ২০২৬ ভূমি সেতু (Bhumi Setu) — নোয়াখালী জেলা নেটওয়ার্ক',
+                '© ২০২৬ bdHousing — আবাসন খাতের বিশেষায়িত অনলাইন মার্কেটপ্লেস',
                 style: TextStyle(
                   color: Colors.green.shade100,
                   fontSize: 12,
@@ -30,7 +30,7 @@ class ShellFooter extends StatelessWidget {
               ),
               const SizedBox(height: 6),
               const Text(
-                'নিরাপদ জমি কেনাবেচা, দলিল যাচাই ও মধ্যস্থতা প্ল্যাটফর্ম। অনুমোদন ব্যতীত দলিল প্রকাশ নিষিদ্ধ।',
+                'নিরাপদ জমি ও আবাসন, বিশ্বস্ত সমাধান • কুমিল্লা • নোয়াখালী • ফেনী • লক্ষ্মীপুর',
                 style: TextStyle(color: Colors.white54, fontSize: 11),
                 textAlign: TextAlign.center,
               ),

@@ -202,7 +202,7 @@ public class AuthController {
 
         NotificationEntity n = new NotificationEntity();
         n.setUserId(user.getId());
-        n.setTitle("ভূমি সেতুতে স্বাগতম!");
+        n.setTitle("bdHousing-এ স্বাগতম!");
         n.setMessage("আপনার নিবন্ধন ও TrxID (" + user.getTransactionId() + ") জমা হয়েছে। অ্যাডমিন যাচাই করে আপনার অ্যাকাউন্ট সক্রিয় করবেন।");
         notificationRepository.save(n);
 

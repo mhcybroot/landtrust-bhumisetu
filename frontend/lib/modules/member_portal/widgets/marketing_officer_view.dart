@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:landtrust_app/core/network/api_client.dart';
 import 'package:landtrust_app/core/widgets/status_badge.dart';
+import 'package:landtrust_app/modules/member_portal/widgets/digital_id_card_dialog.dart';
 
 class MarketingOfficerView extends StatelessWidget {
   final Map<String, dynamic> officerData;
@@ -80,6 +81,20 @@ class MarketingOfficerView extends StatelessWidget {
                 ],
               ),
             ),
+            const SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFF0B4F32),
+                  side: const BorderSide(color: Color(0xFF0B4F32)),
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                ),
+                icon: const Icon(Icons.badge_outlined, size: 16),
+                label: const Text('অফিসিয়াল ডিজিটাল আইডি কার্ড দেখুন', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                onPressed: () => DigitalIdCardDialog.show(context, officerData: officerData, isMobile: isMobile),
+              ),
+            ),
           ],
         ),
       ),
@@ -143,15 +158,8 @@ class MarketingOfficerView extends StatelessWidget {
         else
           ...commissions.map((c) {
             final isPaid = c['status'] == 'PAID';
-            final typeLabel = switch (c['commissionType']?.toString()) {
-              'REGISTRATION_COMMISSION' => 'নিবন্ধন কমিশন',
-              'LISTING_REGISTRATION_COMMISSION' => 'লিস্টিং কমিশন',
-              'UPAZILA_OVERRIDE' => 'উপজেলা ওভাররাইড',
-              'DISTRICT_OVERRIDE' => 'জেলা ওভাররাইড',
-              'DEAL_CLOSURE_FIXED' => 'ডিল লভ্যাংশ',
-              'DEAL_CLOSURE_PERCENT' => 'ডিল লভ্যাংশ',
-              _ => c['commissionType']?.toString() ?? '',
-            };
+            final type = c['commissionType']?.toString() ?? '';
+            final typeLabel = type.contains('LISTING') ? 'লিস্টিং কমিশন' : (type.contains('DEAL') ? 'ডিল লভ্যাংশ' : (type.contains('OVERRIDE') ? 'ওভাররাইড' : 'নিবন্ধন কমিশন'));
             return Card(
               margin: const EdgeInsets.only(bottom: 8),
               child: Padding(

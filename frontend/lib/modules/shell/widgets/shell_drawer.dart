@@ -99,7 +99,7 @@ class ShellDrawer extends StatelessWidget {
             ),
             const Padding(
               padding: EdgeInsets.all(12),
-              child: Text('ভূমি সেতু v1.0.1 • নোয়াখালী', style: TextStyle(fontSize: 11, color: Colors.grey)),
+              child: Text('bdHousing v1.2.0 • আবাসন প্ল্যাটফর্ম', style: TextStyle(fontSize: 11, color: Colors.grey)),
             ),
           ],
         ),
@@ -120,16 +120,16 @@ class ShellDrawer extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10)),
-                child: const Icon(Icons.terrain, color: Color(0xFF0B4F32), size: 24),
+                child: const Icon(Icons.home_work_rounded, color: Color(0xFF0B4F32), size: 24),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('ভূমি সেতু', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                    const Text('bdHousing', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
                     Text(
-                      isLoggedIn ? (user?['fullName'] ?? 'সদস্য') : 'স্মার্ট ল্যান্ড ট্রাস্ট',
+                      isLoggedIn ? (user?['fullName'] ?? 'সদস্য') : 'আবাসন মার্কেটপ্লেস',
                       style: TextStyle(color: Colors.green.shade100, fontSize: 12),
                       overflow: TextOverflow.ellipsis,
                     ),

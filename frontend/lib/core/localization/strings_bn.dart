@@ -1,8 +1,9 @@
 /// বাংলা ভাষার সমস্ত অনুবাদ ডিকশনারি।
 const Map<String, String> stringsBn = {
   // Common & Navigation
-  'app_title': 'ভূমি সেতু',
-  'app_subtitle': 'নোয়াখালী ডিজিটাল নেটওয়ার্ক',
+  'app_title': 'bdHousing',
+  'app_subtitle': 'আবাসন খাতের মার্কেটপ্লেস',
+  'app_slogan': 'নিরাপদ জমি ও আবাসন, বিশ্বস্ত সমাধান',
   'nav_explore': 'জমি খুঁজুন',
   'nav_demands': 'চাহিদা',
   'nav_rules': 'নিয়ম ও ফি',
@@ -47,7 +48,7 @@ const Map<String, String> stringsBn = {
   'whatsapp_chat': 'হোয়াটসঅ্যাপ চ্যাট',
   'whatsapp_inquiry': 'হোয়াটসঅ্যাপে সরাসরি চ্যাট করুন',
   'contact_request': 'যোগাযোগের অনুরোধ পাঠান',
-  'inquiry_notice': 'ভূমি সেতু অ্যাডমিন আপনার অনুরোধটি যাচাই করে বিক্রেতার সাথে যোগাযোগ করিয়ে দেবেন।',
+  'inquiry_notice': 'bdHousing অ্যাডমিন আপনার অনুরোধটি যাচাই করে বিক্রেতার সাথে যোগাযোগ করিয়ে দেবেন।',
   'proposed_budget': 'আপনার প্রস্তাবিত বাজেট (৳)',
   'your_message': 'আপনার বার্তা বা প্রশ্ন',
 

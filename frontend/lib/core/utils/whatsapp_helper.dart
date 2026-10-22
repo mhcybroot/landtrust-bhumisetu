@@ -25,14 +25,14 @@ class WhatsAppHelper {
 
     final String message;
     if (isEnglish) {
-      message = 'Hello! I am interested in this land listed on Bhumi Setu:\n'
+      message = 'Hello! I am interested in this property listed on bdHousing:\n'
           '📌 Title: $title\n'
           '📍 Location: $upazila, $district\n'
           '💰 Price: ৳$price\n'
           '🔗 Listing ID: #$id\n'
           'Please provide more details.';
     } else {
-      message = 'আসসালামু আলাইকুম। আমি ভূমি সেতু অ্যাপে এই জমিটি সম্পর্কে জানতে আগ্রহী:\n'
+      message = 'আসসালামু আলাইকুম। আমি bdHousing অ্যাপে এই সম্পত্তি সম্পর্কে জানতে আগ্রহী:\n'
           '📌 শিরোনাম: $title\n'
           '📍 এলাকা: $upazila, $district\n'
           '💰 মূল্য: ৳$price\n'

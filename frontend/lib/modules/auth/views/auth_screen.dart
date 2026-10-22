@@ -51,7 +51,7 @@ class _AuthScreenState extends State<AuthScreen> {
     if (!mounted) return;
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('নিবন্ধন সফল হয়েছে! স্বাগতম ভূমি সেতুতে।')),
+        const SnackBar(content: Text('নিবন্ধন সফল হয়েছে! স্বাগতম bdHousing-এ।')),
       );
       widget.onAuthSuccess();
     } else if (_viewModel.errorMessage != null) {

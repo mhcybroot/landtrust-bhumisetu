@@ -182,7 +182,7 @@ public class DataSeeder implements CommandLineRunner {
         if (userRepository.count() == 0) {
             // 1. Super Admin
             UserEntity admin = new UserEntity();
-            admin.setFullName("কেন্দ্রীয় অ্যাডমিন (ভূমি সেতু)");
+            admin.setFullName("কেন্দ্রীয় অ্যাডমিন (bdHousing)");
             admin.setPhoneNumber("01700000000");
             admin.setPasswordHash(passwordEncoder.encode("admin123"));
             admin.setRole("ADMIN");

@@ -159,7 +159,7 @@ public class MemberBuyerController {
 
         CommonUtils.notifyUser(notificationRepository, req.getBuyerId(),
                 "আপনার জমির চাহিদার বিপরীতে একটি জমির প্রস্তাব এসেছে!",
-                req.getPreferredUpazila() + " এলাকায় আপনার " + req.getLandType() + " জমির চাহিদার বিপরীতে একজন বিক্রেতা ৳" + askingPrice + " মূল্যে জমির প্রস্তাব পাঠিয়েছেন। ভূমি সেতু অ্যাডমিন যাচাই করে আপনার সাথে যোগাযোগ করবেন।");
+                req.getPreferredUpazila() + " এলাকায় আপনার " + req.getLandType() + " জমির চাহিদার বিপরীতে একজন বিক্রেতা ৳" + askingPrice + " মূল্যে জমির প্রস্তাব পাঠিয়েছেন। bdHousing অ্যাডমিন যাচাই করে আপনার সাথে যোগাযোগ করবেন।");
 
         return ResponseEntity.ok(Map.of(
                 "message", "আপনার জমির প্রস্তাবটি সফলভাবে অ্যাডমিন মধ্যস্থতা প্যানেলে জমা হয়েছে এবং ক্রেতাকে নোটিফিকেশন পাঠানো হয়েছে!"
