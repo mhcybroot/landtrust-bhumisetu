@@ -1,4 +1,4 @@
-package bd.com.landtrust.landtrust_app
+package com.bdhousing.app
 
 import io.flutter.embedding.android.FlutterActivity
 
