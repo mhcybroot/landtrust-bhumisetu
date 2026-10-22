@@ -12,6 +12,7 @@ import bd.com.landtrust.util.CommonUtils;
 import bd.com.landtrust.util.UserMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -97,6 +98,7 @@ public class MemberOfficerController {
         return ResponseEntity.ok(response);
     }
 
+    @Transactional
     @PostMapping({"/officer-payout-request", "/officer/payout-request"})
     public ResponseEntity<?> requestOfficerPayout(Authentication auth, @RequestBody Map<String, String> body) {
         UserEntity officer = currentUser(auth);

@@ -10,6 +10,7 @@ import bd.com.landtrust.util.UserMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -130,6 +131,7 @@ public class MemberProfileController {
         return ResponseEntity.ok(Map.of("message", "নোটিফিকেশন পঠিত হিসেবে চিহ্নিত হয়েছে।"));
     }
 
+    @Transactional
     @RequestMapping(value = "/resubmit-payment", method = {RequestMethod.PUT, RequestMethod.POST})
     public ResponseEntity<?> resubmitPayment(Authentication auth, @RequestBody Map<String, String> body) {
         UserEntity user = currentUser(auth);

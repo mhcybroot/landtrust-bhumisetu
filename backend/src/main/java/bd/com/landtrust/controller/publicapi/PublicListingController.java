@@ -83,7 +83,7 @@ public class PublicListingController {
                 .filter(l -> district == null || district.isBlank() || district.equalsIgnoreCase(l.getDistrict()))
                 .filter(l -> upazila == null || upazila.isBlank() || upazila.equalsIgnoreCase(l.getUpazila()))
                 .filter(l -> landType == null || landType.isBlank() || landType.equalsIgnoreCase(l.getLandType()))
-                .filter(l -> maxBudget == null || l.getExpectedPriceBdt().compareTo(maxBudget) <= 0)
+                .filter(l -> maxBudget == null || (l.getExpectedPriceBdt() != null && l.getExpectedPriceBdt().compareTo(maxBudget) <= 0))
                 .filter(l -> targetVerification == null || targetVerification.isBlank() || targetVerification.equalsIgnoreCase(l.getVerificationStatus()))
                 .filter(l -> minArea == null || (l.getAreaDecimal() != null && l.getAreaDecimal().compareTo(minArea) >= 0))
                 .filter(l -> maxArea == null || (l.getAreaDecimal() != null && l.getAreaDecimal().compareTo(maxArea) <= 0))

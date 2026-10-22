@@ -25,14 +25,17 @@ public class SystemSettingService {
             return cached;
         }
 
-        SystemSettingEntity fresh = settingRepository.findAll().stream().findFirst().orElseGet(() -> {
-            SystemSettingEntity def = new SystemSettingEntity();
-            return settingRepository.save(def);
-        });
-
+        SystemSettingEntity fresh = getFreshSettings();
         cachedSettings.set(fresh);
         lastFetchTime = now;
         return fresh;
+    }
+
+    public SystemSettingEntity getFreshSettings() {
+        return settingRepository.findAll().stream().findFirst().orElseGet(() -> {
+            SystemSettingEntity def = new SystemSettingEntity();
+            return settingRepository.save(def);
+        });
     }
 
     public SystemSettingEntity saveSettings(SystemSettingEntity updated) {

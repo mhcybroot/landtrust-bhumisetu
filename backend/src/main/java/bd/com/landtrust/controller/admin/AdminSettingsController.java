@@ -5,7 +5,6 @@ import bd.com.landtrust.entity.PaymentMethodEntity;
 import bd.com.landtrust.entity.SystemSettingEntity;
 import bd.com.landtrust.repository.LocationRepository;
 import bd.com.landtrust.repository.PaymentMethodRepository;
-import bd.com.landtrust.repository.SystemSettingRepository;
 import bd.com.landtrust.service.SystemSettingService;
 import bd.com.landtrust.util.CommonUtils;
 import org.springframework.http.ResponseEntity;
@@ -44,7 +43,7 @@ public class AdminSettingsController {
 
     @PutMapping("/settings")
     public ResponseEntity<SystemSettingEntity> updateSettings(@RequestBody Map<String, Object> body) {
-        SystemSettingEntity s = getSettings();
+        SystemSettingEntity s = settingService.getFreshSettings();
         if (body.containsKey("buyerRegistrationFee")) s.setBuyerRegistrationFee(CommonUtils.parseDecimal(body.get("buyerRegistrationFee"), s.getBuyerRegistrationFee()));
         if (body.containsKey("sellerRegistrationFee")) s.setSellerRegistrationFee(CommonUtils.parseDecimal(body.get("sellerRegistrationFee"), s.getSellerRegistrationFee()));
         if (body.containsKey("sellerRegistrationFeePourashava")) s.setSellerRegistrationFeePourashava(CommonUtils.parseDecimal(body.get("sellerRegistrationFeePourashava"), s.getSellerRegistrationFeePourashava()));

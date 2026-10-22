@@ -9,6 +9,7 @@ import bd.com.landtrust.repository.LandListingRepository;
 import bd.com.landtrust.repository.NotificationRepository;
 import bd.com.landtrust.util.CommonUtils;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -39,6 +40,7 @@ public class AdminDemandsController {
         return ResponseEntity.ok(requirementRepository.findAllByOrderByCreatedAtDesc());
     }
 
+    @Transactional
     @RequestMapping(value = {"/requirements/{id}/status", "/requirements/{id}/verify"}, method = {RequestMethod.PUT, RequestMethod.POST})
     public ResponseEntity<?> updateRequirementStatus(@PathVariable Long id, @RequestBody Map<String, Object> body) {
         Optional<BuyerRequirementEntity> opt = requirementRepository.findById(id);
@@ -100,6 +102,7 @@ public class AdminDemandsController {
         return ResponseEntity.ok(result);
     }
 
+    @Transactional
     @PutMapping("/inquiries/{id}/status")
     public ResponseEntity<?> updateInquiryStatus(@PathVariable Long id, @RequestBody Map<String, String> body) {
         Optional<LandInquiryEntity> opt = inquiryRepository.findById(id);

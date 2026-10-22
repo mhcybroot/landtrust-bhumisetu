@@ -7,6 +7,7 @@ import bd.com.landtrust.repository.UserRepository;
 import bd.com.landtrust.util.CommonUtils;
 import bd.com.landtrust.util.UserMapper;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -57,6 +58,7 @@ public class AdminRepresentativeController {
         return ResponseEntity.ok(result);
     }
 
+    @Transactional
     @RequestMapping(value = "/{id}/jurisdiction", method = {RequestMethod.PUT, RequestMethod.POST})
     public ResponseEntity<?> updateJurisdiction(
             @PathVariable Long id,
@@ -98,6 +100,7 @@ public class AdminRepresentativeController {
         return ResponseEntity.ok(UserMapper.sanitizeUser(rep));
     }
 
+    @Transactional
     @RequestMapping(value = "/{id}/approve", method = {RequestMethod.PUT, RequestMethod.POST})
     public ResponseEntity<?> approveRepresentative(@PathVariable Long id) {
         Optional<UserEntity> opt = userRepository.findById(id);
