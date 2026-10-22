@@ -127,13 +127,14 @@ class SwipeActionReveal extends StatelessWidget {
   final Widget child;
   final String actionText;
   final VoidCallback? onDismissed;
+  final Key? itemKey;
 
-  const SwipeActionReveal({super.key, required this.child, required this.actionText, this.onDismissed});
+  const SwipeActionReveal({super.key, required this.child, required this.actionText, this.onDismissed, this.itemKey});
 
   @override
   Widget build(BuildContext context) {
     return Dismissible(
-      key: UniqueKey(),
+      key: itemKey ?? key ?? ValueKey(actionText),
       direction: DismissDirection.endToStart,
       onDismissed: (_) => onDismissed?.call(),
       background: Container(

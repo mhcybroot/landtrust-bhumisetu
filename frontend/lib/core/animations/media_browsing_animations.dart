@@ -51,12 +51,14 @@ class SmartInteractiveZoom extends StatefulWidget {
 class _SmartInteractiveZoomState extends State<SmartInteractiveZoom> with SingleTickerProviderStateMixin {
   late final AnimationController _ctrl;
   late Animation<double> _scaleAnimation;
-  double _currentScale = 1.0;
+  double _fromScale = 1.0;
+  double _targetScale = 1.0;
 
   @override
   void initState() {
     super.initState();
     _ctrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 220));
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 1.0).animate(_ctrl);
   }
 
   @override
@@ -66,10 +68,9 @@ class _SmartInteractiveZoomState extends State<SmartInteractiveZoom> with Single
   }
 
   void _handleDoubleTap() {
-    final target = _currentScale > 1.0 ? 1.0 : widget.maxScale;
-    _scaleAnimation = Tween<double>(begin: _currentScale, end: target).animate(
-      CurvedAnimation(parent: _ctrl, curve: Curves.easeOutCubic),
-    )..addListener(() => setState(() => _currentScale = _scaleAnimation.value));
+    _fromScale = _scaleAnimation.value;
+    _targetScale = _fromScale > 1.0 ? 1.0 : widget.maxScale;
+    _scaleAnimation = Tween<double>(begin: _fromScale, end: _targetScale).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeOutCubic));
     _ctrl.forward(from: 0.0);
   }
 
@@ -77,7 +78,7 @@ class _SmartInteractiveZoomState extends State<SmartInteractiveZoom> with Single
   Widget build(BuildContext context) {
     return GestureDetector(
       onDoubleTap: _handleDoubleTap,
-      child: Transform.scale(scale: _currentScale, child: widget.child),
+      child: AnimatedBuilder(animation: _ctrl, builder: (_, child) => Transform.scale(scale: _scaleAnimation.value, child: child), child: widget.child),
     );
   }
 }

@@ -87,28 +87,29 @@ class StepPulseIndicator extends StatefulWidget {
 }
 
 class _StepPulseIndicatorState extends State<StepPulseIndicator> with SingleTickerProviderStateMixin {
-  AnimationController? _ctrl;
+  late final AnimationController _ctrl;
 
   @override
   void initState() {
     super.initState();
-    if (widget.isCurrent) _ctrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 1200))..repeat(reverse: true);
+    _ctrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 1200));
+    if (widget.isCurrent) _ctrl.repeat(reverse: true);
   }
 
   @override
   void didUpdateWidget(StepPulseIndicator old) {
     super.didUpdateWidget(old);
-    if (widget.isCurrent && _ctrl == null) {
-      _ctrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 1200))..repeat(reverse: true);
-    } else if (!widget.isCurrent && _ctrl != null) {
-      _ctrl?.dispose();
-      _ctrl = null;
+    if (widget.isCurrent && !_ctrl.isAnimating) {
+      _ctrl.repeat(reverse: true);
+    } else if (!widget.isCurrent && _ctrl.isAnimating) {
+      _ctrl.stop();
+      _ctrl.reset();
     }
   }
 
   @override
   void dispose() {
-    _ctrl?.dispose();
+    _ctrl.dispose();
     super.dispose();
   }
 
@@ -133,16 +134,16 @@ class _StepPulseIndicatorState extends State<StepPulseIndicator> with SingleTick
       ),
     );
 
-    if (!widget.isCurrent || _ctrl == null) return circle;
+    if (!widget.isCurrent) return circle;
 
     return AnimatedBuilder(
-      animation: _ctrl!,
+      animation: _ctrl,
       builder: (context, child) => Stack(
         alignment: Alignment.center,
         children: [
           Transform.scale(
-            scale: 1.0 + (_ctrl!.value * 0.2),
-            child: Container(width: 28, height: 28, decoration: BoxDecoration(shape: BoxShape.circle, color: activeColor.withValues(alpha: (1.0 - _ctrl!.value) * 0.35))),
+            scale: 1.0 + (_ctrl.value * 0.2),
+            child: Container(width: 28, height: 28, decoration: BoxDecoration(shape: BoxShape.circle, color: activeColor.withValues(alpha: (1.0 - _ctrl.value) * 0.35))),
           ),
           child!,
         ],

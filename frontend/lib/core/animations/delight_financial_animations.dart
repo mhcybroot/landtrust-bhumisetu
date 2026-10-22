@@ -103,9 +103,9 @@ class CommissionSplitBar extends StatelessWidget {
       child: SizedBox(
         height: 10,
         child: Row(children: [
-          Flexible(flex: fieldShare, child: Container(color: const Color(0xFF0B4F32))),
-          Flexible(flex: upazilaShare, child: Container(color: const Color(0xFF1E88E5))),
-          Flexible(flex: districtShare, child: Container(color: const Color(0xFFE65100))),
+          Flexible(flex: fieldShare <= 0 ? 1 : fieldShare, child: Container(color: const Color(0xFF0B4F32))),
+          Flexible(flex: upazilaShare <= 0 ? 1 : upazilaShare, child: Container(color: const Color(0xFF1E88E5))),
+          Flexible(flex: districtShare <= 0 ? 1 : districtShare, child: Container(color: const Color(0xFFE65100))),
         ]),
       ),
     );
@@ -122,17 +122,15 @@ class CoinDropVisual extends StatefulWidget {
 
 class _CoinDropVisualState extends State<CoinDropVisual> with SingleTickerProviderStateMixin {
   late final AnimationController _ctrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 550))..forward();
+  late final Animation<double> _dropAnim = CurvedAnimation(parent: _ctrl, curve: Curves.bounceOut);
   @override
   void dispose() { _ctrl.dispose(); super.dispose(); }
 
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
-      animation: _ctrl,
-      builder: (_, child) {
-        final val = CurvedAnimation(parent: _ctrl, curve: Curves.bounceOut).value;
-        return Transform.translate(offset: Offset(0, (1.0 - val) * -24), child: child);
-      },
+      animation: _dropAnim,
+      builder: (_, child) => Transform.translate(offset: Offset(0, (1.0 - _dropAnim.value) * -24), child: child),
       child: Container(
         width: widget.size, height: widget.size,
         decoration: const BoxDecoration(color: Color(0xFFF59E0B), shape: BoxShape.circle, boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 4)]),
