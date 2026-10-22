@@ -94,7 +94,17 @@ public class AdminUserController {
                     transactionRepository.save(t);
                 }
             }
+        } else if ("REJECTED".equals(newStatus)) {
+            List<FinancialTransactionEntity> userTxns = transactionRepository.findByUserIdOrderByCreatedAtDesc(user.getId());
+            for (FinancialTransactionEntity t : userTxns) {
+                if ("REG_FEE_FUND".equals(t.getFundBucket()) && "PENDING_VERIFICATION".equals(t.getStatus())) {
+                    t.setStatus("REJECTED");
+                    transactionRepository.save(t);
+                }
+            }
+        }
 
+        if ("ACTIVE".equals(newStatus)) {
             if (user.getReferredByOfficerId() != null) {
                 boolean alreadyAwarded = commissionRepository.findByReferredUserIdOrderByCreatedAtDesc(user.getId())
                         .stream()

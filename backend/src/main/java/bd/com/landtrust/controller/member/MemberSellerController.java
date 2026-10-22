@@ -1,8 +1,10 @@
 package bd.com.landtrust.controller.member;
 
 import bd.com.landtrust.entity.LandListingEntity;
+import bd.com.landtrust.entity.SystemSettingEntity;
 import bd.com.landtrust.entity.UserEntity;
 import bd.com.landtrust.repository.LandListingRepository;
+import bd.com.landtrust.repository.SystemSettingRepository;
 import bd.com.landtrust.repository.UserRepository;
 import bd.com.landtrust.util.CommonUtils;
 import org.springframework.http.ResponseEntity;
@@ -21,10 +23,19 @@ public class MemberSellerController {
 
     private final UserRepository userRepository;
     private final LandListingRepository listingRepository;
+    private final SystemSettingRepository settingRepository;
 
-    public MemberSellerController(UserRepository userRepository, LandListingRepository listingRepository) {
+    public MemberSellerController(UserRepository userRepository, LandListingRepository listingRepository, SystemSettingRepository settingRepository) {
         this.userRepository = userRepository;
         this.listingRepository = listingRepository;
+        this.settingRepository = settingRepository;
+    }
+
+    private SystemSettingEntity getSettings() {
+        return settingRepository.findAll().stream().findFirst().orElseGet(() -> {
+            SystemSettingEntity def = new SystemSettingEntity();
+            return settingRepository.save(def);
+        });
     }
 
     private UserEntity currentUser(Authentication auth) {
@@ -105,8 +116,23 @@ public class MemberSellerController {
         listing.setPrivateDocumentName((String) body.getOrDefault("privateDocumentName", ""));
         listing.setProposedServiceFeeBdt(proposedFee);
 
-        // Multi-level listing fee tracking
-        BigDecimal feeCharged = CommonUtils.parseDecimal(body.get("listingFeeChargedBdt"), BigDecimal.ZERO);
+        // Multi-level listing fee tracking (server-validated against SystemSettingEntity)
+        SystemSettingEntity settings = getSettings();
+        String lType = listing.getLandType() != null ? listing.getLandType() : "";
+        BigDecimal feeCharged;
+        if (lType.contains("কৃষি")) {
+            feeCharged = settings.getListingFeeAgri() != null ? settings.getListingFeeAgri() : new BigDecimal("500");
+        } else if (lType.contains("ফ্ল্যাট")) {
+            feeCharged = settings.getListingFeeFlat() != null ? settings.getListingFeeFlat() : new BigDecimal("1500");
+        } else if (lType.contains("বাণিজ্যিক")) {
+            feeCharged = settings.getListingFeeCommercial() != null ? settings.getListingFeeCommercial() : new BigDecimal("2000");
+        } else {
+            feeCharged = settings.getListingFeeResidential() != null ? settings.getListingFeeResidential() : new BigDecimal("1000");
+        }
+        if (Boolean.TRUE.equals(body.get("isFeatured"))) {
+            BigDecimal extra = settings.getListingFeeFeaturedExtra() != null ? settings.getListingFeeFeaturedExtra() : new BigDecimal("1000");
+            feeCharged = feeCharged.add(extra);
+        }
         String distPrefix = "NOA";
         String d = (String) body.getOrDefault("district", "নোয়াখালী");
         if (d != null) {
@@ -183,6 +209,13 @@ public class MemberSellerController {
         }
         if (body.containsKey("privateDocumentName") && !String.valueOf(body.get("privateDocumentName")).isBlank()) {
             listing.setPrivateDocumentName(String.valueOf(body.get("privateDocumentName")));
+        }
+
+        if (!"ADMIN".equals(user.getRole())) {
+            if ("APPROVED_PUBLISHED".equals(listing.getListingStatus()) || "FIELD_VERIFIED".equals(listing.getVerificationStatus())) {
+                listing.setVerificationStatus("SUBMITTED");
+                listing.setListingStatus("UNDER_REVIEW");
+            }
         }
 
         return ResponseEntity.ok(listingRepository.save(listing));

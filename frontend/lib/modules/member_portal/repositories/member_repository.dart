@@ -103,7 +103,13 @@ class MemberRepository {
       'senderPhone': senderPhone,
       'transactionId': trxId,
     });
-    ApiClient.parseResponse(res);
+    final data = ApiClient.parseResponse(res);
+    if (data is Map<String, dynamic> && data['user'] != null) {
+      await SessionManager.instance.saveSession(
+        SessionManager.instance.token ?? '',
+        data['user'] as Map<String, dynamic>,
+      );
+    }
   }
 
   Future<void> updateProfile(String fullName, String district, String upazila, String address) async {

@@ -233,6 +233,11 @@ public class AuthController {
         }
 
         UserEntity user = userOpt.get();
+        if ("DELETED".equals(user.getAccountStatus())) {
+            return ResponseEntity.status(403).body(Map.of(
+                    "message", "এই অ্যাকাউন্টটি মুছে ফেলা হয়েছে।"
+            ));
+        }
         if ("SUSPENDED".equals(user.getAccountStatus())) {
             return ResponseEntity.status(403).body(Map.of(
                     "message", "আপনার অ্যাকাউন্টটি বর্তমানে স্থগিত (Suspended) অবস্থায় রয়েছে। অ্যাডমিনের সাথে যোগাযোগ করুন।"

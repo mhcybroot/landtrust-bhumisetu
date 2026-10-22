@@ -41,10 +41,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 Optional<UserEntity> userOpt = userRepository.findById(userId);
                 if (userOpt.isPresent()) {
                     UserEntity user = userOpt.get();
-                    if ("SUSPENDED".equals(user.getAccountStatus())) {
+                    if ("SUSPENDED".equals(user.getAccountStatus()) || "DELETED".equals(user.getAccountStatus())) {
                         response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                         response.setContentType("application/json;charset=UTF-8");
-                        response.getWriter().write("{\"message\":\"আপনার অ্যাকাউন্টটি বর্তমানে স্থগিত (Suspended) অবস্থায় রয়েছে।\"}");
+                        response.getWriter().write("{\"message\":\"আপনার অ্যাকাউন্টটি সক্রিয় নয় (স্থগিত বা মুছে ফেলা হয়েছে)।\"}");
                         return;
                     }
                     UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(

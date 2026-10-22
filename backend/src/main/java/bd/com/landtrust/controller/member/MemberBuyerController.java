@@ -106,7 +106,7 @@ public class MemberBuyerController {
         if (body.containsKey("purchaseTimeline")) req.setPurchaseTimeline(String.valueOf(body.get("purchaseTimeline")));
         if (body.containsKey("proposedServiceFeeBdt")) req.setProposedServiceFeeBdt(CommonUtils.parseDecimal(body.get("proposedServiceFeeBdt"), req.getProposedServiceFeeBdt()));
         if (body.containsKey("specialRequirements")) req.setSpecialRequirements(String.valueOf(body.get("specialRequirements")));
-        if (body.containsKey("status")) req.setStatus(String.valueOf(body.get("status")));
+        // Note: status cannot be self-modified by regular buyer (must be verified by admin)
 
         return ResponseEntity.ok(requirementRepository.save(req));
     }
@@ -175,7 +175,16 @@ public class MemberBuyerController {
                     "accountStatus", user.getAccountStatus()
             ));
         }
-        Long listingId = Long.valueOf(String.valueOf(body.get("listingId")));
+        Object lidObj = body.get("listingId");
+        if (lidObj == null || lidObj.toString().isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "বিজ্ঞাপন আইডি আবশ্যক।"));
+        }
+        Long listingId;
+        try {
+            listingId = Long.valueOf(lidObj.toString().trim());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", "সঠিক বিজ্ঞাপন আইডি প্রদান করুন।"));
+        }
         Optional<LandListingEntity> listingOpt = listingRepository.findById(listingId);
         if (listingOpt.isEmpty()) {
             return ResponseEntity.badRequest().body(Map.of("message", "জমির বিজ্ঞাপন পাওয়া যায়নি।"));

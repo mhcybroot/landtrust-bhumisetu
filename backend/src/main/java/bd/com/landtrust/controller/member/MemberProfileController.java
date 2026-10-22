@@ -130,7 +130,7 @@ public class MemberProfileController {
         return ResponseEntity.ok(Map.of("message", "নোটিফিকেশন পঠিত হিসেবে চিহ্নিত হয়েছে।"));
     }
 
-    @PutMapping("/resubmit-payment")
+    @RequestMapping(value = "/resubmit-payment", method = {RequestMethod.PUT, RequestMethod.POST})
     public ResponseEntity<?> resubmitPayment(Authentication auth, @RequestBody Map<String, String> body) {
         UserEntity user = currentUser(auth);
         String paymentMethod = body.getOrDefault("paymentMethod", user.getPaymentMethod());
