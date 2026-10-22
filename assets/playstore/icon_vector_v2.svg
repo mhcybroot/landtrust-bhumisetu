@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <!-- Deep Emerald Gradient -->
+    <linearGradient id="bgGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#021E12"/>
+      <stop offset="50%" stop-color="#083D27"/>
+      <stop offset="100%" stop-color="#0F5C3B"/>
+    </linearGradient>
+
+    <!-- Glass Rim Glow -->
+    <linearGradient id="rimGlow" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.02"/>
+    </linearGradient>
+
+    <!-- Vibrant Gold Gradient -->
+    <linearGradient id="gold2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDE047"/>
+      <stop offset="60%" stop-color="#F59E0B"/>
+      <stop offset="100%" stop-color="#B45309"/>
+    </linearGradient>
+
+    <!-- Pure Emerald Accent -->
+    <linearGradient id="emeraldLight" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6EE7B7"/>
+      <stop offset="100%" stop-color="#10B981"/>
+    </linearGradient>
+
+    <!-- Shadow -->
+    <filter id="elevatedShadow" x="-15%" y="-15%" width="130%" height="135%">
+      <feDropShadow dx="0" dy="16" stdDeviation="18" flood-color="#000000" flood-opacity="0.5"/>
+    </filter>
+
+    <filter id="softGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="6" stdDeviation="12" flood-color="#10B981" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+
+  <!-- 32-bit Alpha Rounded Squircle Background -->
+  <rect width="512" height="512" rx="115" fill="url(#bgGrad2)"/>
+  <rect x="2" y="2" width="508" height="508" rx="113" fill="none" stroke="url(#rimGlow)" stroke-width="3"/>
+
+  <!-- Centered Ambient Radial Light -->
+  <circle cx="256" cy="230" r="180" fill="#047857" opacity="0.35" filter="blur(35px)"/>
+
+  <!-- Large Stylized Monogram Shield / Location Pin / Architectural Structure -->
+  <g filter="url(#elevatedShadow)">
+    <!-- Shield / Location Polygon Silhouette -->
+    <path d="M256 70 L390 144 V260 C390 340 330 405 256 435 C182 405 122 340 122 260 V144 Z" fill="#032617" stroke="url(#gold2)" stroke-width="6"/>
+
+    <!-- Inner Shield Rim -->
+    <path d="M256 86 L374 152 V254 C374 324 322 384 256 412 C190 384 138 324 138 254 V152 Z" fill="#083E28" opacity="0.95"/>
+
+    <!-- Geometric Modern House inside the Shield -->
+    <!-- Back Roof / Tower Wing -->
+    <path d="M256 125 L334 185 V295 H256 Z" fill="#0E583A"/>
+    
+    <!-- Front Roof / Villa Wing in Gold -->
+    <path d="M256 125 L178 185 V295 H256 Z" fill="url(#gold2)"/>
+
+    <!-- Modern Architecture Cutouts & Glass Windows -->
+    <polygon points="256,138 320,188 320,285 256,285" fill="#E2E8F0" opacity="0.95"/>
+    <polygon points="256,138 192,188 192,285 256,285" fill="#FFFFFF"/>
+
+    <!-- Central Vertical Glass Split -->
+    <line x1="256" y1="140" x2="256" y2="285" stroke="#0B4F32" stroke-width="4"/>
+
+    <!-- Window Grids in Dark Emerald -->
+    <rect x="206" y="200" width="36" height="24" rx="4" fill="#0B4F32"/>
+    <rect x="270" y="200" width="36" height="24" rx="4" fill="#0B4F32"/>
+    
+    <rect x="206" y="235" width="36" height="36" rx="4" fill="#0B4F32"/>
+    <rect x="270" y="235" width="36" height="36" rx="4" fill="#0B4F32"/>
+
+    <!-- Warm Glowing Lights in Windows -->
+    <circle cx="224" cy="212" r="4" fill="#FDE047"/>
+    <circle cx="288" cy="212" r="4" fill="#FDE047"/>
+    <circle cx="224" cy="253" r="5" fill="#FDE047"/>
+    <circle cx="288" cy="253" r="5" fill="#FDE047"/>
+
+    <!-- Architectural Entrance Door in Gold -->
+    <path d="M236 285 V250 Q256 242 276 250 V285 Z" fill="url(#gold2)"/>
+
+    <!-- Verification Checkmark Ribbon on Bottom Apex of Shield -->
+    <g filter="url(#softGlow)">
+      <circle cx="256" cy="340" r="32" fill="url(#gold2)"/>
+      <circle cx="256" cy="340" r="27" fill="#0B4F32"/>
+      <path d="M243 340 L252 349 L270 331" fill="none" stroke="#FDE047" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+  </g>
+
+  <!-- Top Sheen Arc -->
+  <path d="M0 115 C0 51 51 0 115 0 L397 0 C461 0 512 51 512 115 L512 160 C320 120 160 160 0 210 Z" fill="url(#rimGlow)" opacity="0.45"/>
+</svg>
