@@ -93,6 +93,22 @@ class ListingFilterBar extends StatelessWidget {
                 ),
               ],
             ),
+            if (districts.length > 1) ...[
+              const SizedBox(height: 10),
+              HorizontalScrollFadeView(
+                child: Row(
+                  children: [
+                    const Icon(Icons.location_on, size: 16, color: Color(0xFF0B4F32)),
+                    const SizedBox(width: 6),
+                    _chip('সকল জেলা', selectedDistrict.isEmpty, () => onDistrictChanged('')),
+                    ...districts.map((d) => Padding(
+                          padding: const EdgeInsets.only(left: 6),
+                          child: _chip(d, selectedDistrict == d, () => onDistrictChanged(d)),
+                        )),
+                  ],
+                ),
+              ),
+            ],
             const SizedBox(height: 10),
             HorizontalScrollFadeView(
               child: Row(

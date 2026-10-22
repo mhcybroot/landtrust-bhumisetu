@@ -98,6 +98,7 @@ class _HomeMarketplaceMobileViewState extends State<HomeMarketplaceMobileView> {
   Widget build(BuildContext context) {
     final vm = widget.viewModel;
     final locations = (vm.config['locations'] as List<dynamic>?) ?? [];
+    final districts = locations.map((l) => l['districtNameBn'].toString()).toSet().toList();
     final upazilas = locations
         .where((l) => vm.filterDistrict.isEmpty || l['districtNameBn'] == vm.filterDistrict)
         .map((l) => l['upazilaNameBn'].toString())
@@ -114,6 +115,12 @@ class _HomeMarketplaceMobileViewState extends State<HomeMarketplaceMobileView> {
               searchCtrl: _searchCtrl,
               onSearch: _triggerSearch,
               onFilterClick: () => _openFilterSheet(upazilas),
+              districts: districts,
+              selectedDistrict: vm.filterDistrict,
+              onDistrictSelected: (d) {
+                vm.setFilterDistrict(d);
+                _triggerSearch();
+              },
               upazilas: upazilas,
               selectedUpazila: vm.filterUpazila,
               onUpazilaSelected: (u) {

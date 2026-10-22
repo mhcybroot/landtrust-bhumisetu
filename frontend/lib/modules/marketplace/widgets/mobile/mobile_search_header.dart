@@ -7,6 +7,9 @@ class MobileSearchHeader extends StatelessWidget {
   final TextEditingController searchCtrl;
   final VoidCallback onSearch;
   final VoidCallback onFilterClick;
+  final List<String> districts;
+  final String selectedDistrict;
+  final ValueChanged<String> onDistrictSelected;
   final List<String> upazilas;
   final String selectedUpazila;
   final ValueChanged<String> onUpazilaSelected;
@@ -16,6 +19,9 @@ class MobileSearchHeader extends StatelessWidget {
     required this.searchCtrl,
     required this.onSearch,
     required this.onFilterClick,
+    this.districts = const [],
+    this.selectedDistrict = '',
+    required this.onDistrictSelected,
     required this.upazilas,
     required this.selectedUpazila,
     required this.onUpazilaSelected,
@@ -76,7 +82,20 @@ class MobileSearchHeader extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          if (districts.isNotEmpty && districts.length > 1) ...[
+            const SizedBox(height: 8),
+            HorizontalScrollFadeView(
+              child: Row(
+                children: [
+                  const Icon(Icons.location_on, size: 14, color: Color(0xFF0B4F32)),
+                  const SizedBox(width: 4),
+                  _chip('সকল জেলা', selectedDistrict.isEmpty, () => onDistrictSelected('')),
+                  ...districts.map((d) => _chip(d, selectedDistrict == d, () => onDistrictSelected(d))),
+                ],
+              ),
+            ),
+          ],
+          const SizedBox(height: 8),
           HorizontalScrollFadeView(
             child: Row(
               children: [

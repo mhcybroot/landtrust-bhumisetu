@@ -58,7 +58,7 @@ class AdminPaymentMethodsCard extends StatelessWidget {
   }
 }
 
-class AdminLocationsCard extends StatelessWidget {
+class AdminLocationsCard extends StatefulWidget {
   final AdminViewModel viewModel;
   final bool isMobile;
   final VoidCallback? onSaved;
@@ -66,15 +66,24 @@ class AdminLocationsCard extends StatelessWidget {
   const AdminLocationsCard({super.key, required this.viewModel, required this.isMobile, this.onSaved});
 
   @override
+  State<AdminLocationsCard> createState() => _AdminLocationsCardState();
+}
+
+class _AdminLocationsCardState extends State<AdminLocationsCard> {
+  String _selectedDistrict = '';
+
+  @override
   Widget build(BuildContext context) {
-    final locs = viewModel.locations;
+    final allLocs = widget.viewModel.locations;
+    final districts = allLocs.map((l) => l['districtNameBn'].toString()).toSet().toList();
+    final locs = allLocs.where((l) => _selectedDistrict.isEmpty || l['districtNameBn'] == _selectedDistrict).toList();
     final pourashavas = locs.where((l) => l['areaType'] == 'POURASHAVA').toList();
     final upazilas = locs.where((l) => l['areaType'] != 'POURASHAVA').toList();
 
     return Card(
       elevation: 2,
       child: Padding(
-        padding: EdgeInsets.all(isMobile ? 12 : 18),
+        padding: EdgeInsets.all(widget.isMobile ? 12 : 18),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -84,25 +93,51 @@ class AdminLocationsCard extends StatelessWidget {
               spacing: 8,
               runSpacing: 8,
               children: [
-                Text('কভারেজ উপজেলা ও পৌরসভাসমূহ (${locs.length})', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                Text('কভারেজ এলাকা ব্যবস্থাপনা (${allLocs.length} এলাকা, ${districts.length} জেলা)', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
                 ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
-                  onPressed: () => AdminSettingsDialogs.showAddLocationDialog(context, isMobile: isMobile, onSubmit: (loc) async {
-                    await viewModel.createLocation(loc);
-                    onSaved?.call();
+                  onPressed: () => AdminSettingsDialogs.showAddLocationDialog(context, isMobile: widget.isMobile, onSubmit: (loc) async {
+                    await widget.viewModel.createLocation(loc);
+                    widget.onSaved?.call();
                   }),
                   icon: const Icon(Icons.add_location_alt, size: 16),
                   label: const Text('নতুন এলাকা যোগ'),
                 ),
               ],
             ),
+            if (districts.length > 1) ...[
+              const SizedBox(height: 10),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    ChoiceChip(
+                      label: Text('সকল জেলা (${allLocs.length})'),
+                      selected: _selectedDistrict.isEmpty,
+                      onSelected: (_) => setState(() => _selectedDistrict = ''),
+                    ),
+                    ...districts.map((d) {
+                      final count = allLocs.where((l) => l['districtNameBn'] == d).length;
+                      return Padding(
+                        padding: const EdgeInsets.only(left: 6),
+                        child: ChoiceChip(
+                          label: Text('$d ($count)'),
+                          selected: _selectedDistrict == d,
+                          onSelected: (_) => setState(() => _selectedDistrict = d),
+                        ),
+                      );
+                    }),
+                  ],
+                ),
+              ),
+            ],
             if (pourashavas.isNotEmpty) ...[
               const SizedBox(height: 10),
-              const Row(
+              Row(
                 children: [
-                  Icon(Icons.apartment, size: 16, color: Colors.purple),
-                  SizedBox(width: 4),
-                  Text('পৌরসভাসমূহ (ওয়ার্ডসহ):', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.purple)),
+                  const Icon(Icons.apartment, size: 16, color: Colors.purple),
+                  const SizedBox(width: 4),
+                  Text('${_selectedDistrict.isNotEmpty ? "$_selectedDistrict-র " : ""}পৌরসভাসমূহ (${pourashavas.length}):', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.purple)),
                 ],
               ),
               const SizedBox(height: 6),
@@ -114,11 +149,11 @@ class AdminLocationsCard extends StatelessWidget {
             ],
             if (upazilas.isNotEmpty) ...[
               const SizedBox(height: 10),
-              const Row(
+              Row(
                 children: [
-                  Icon(Icons.nature_people, size: 16, color: Color(0xFF0B4F32)),
-                  SizedBox(width: 4),
-                  Text('উপজেলাসমূহ (ইউনিয়নসহ):', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF0B4F32))),
+                  const Icon(Icons.nature_people, size: 16, color: Color(0xFF0B4F32)),
+                  const SizedBox(width: 4),
+                  Text('${_selectedDistrict.isNotEmpty ? "$_selectedDistrict-র " : ""}উপজেলাসমূহ (${upazilas.length}):', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF0B4F32))),
                 ],
               ),
               const SizedBox(height: 6),
@@ -143,12 +178,12 @@ class AdminLocationsCard extends StatelessWidget {
         child: Icon(isPourashava ? Icons.apartment : Icons.location_city, size: 13, color: isPourashava ? Colors.purple : const Color(0xFF0B4F32)),
       ),
       label: Text(
-        '${l['upazilaNameBn']}${subCount > 0 ? " ($subCount ${isPourashava ? 'ওয়ার্ড' : 'ইউনিয়ন'})" : ''}',
+        '${l['upazilaNameBn']}${_selectedDistrict.isEmpty ? " (${l['districtNameBn']})" : ""}${subCount > 0 ? " - $subCount ${isPourashava ? 'ওয়ার্ড' : 'ইউনিয়ন'}" : ''}',
         style: const TextStyle(fontSize: 11.5),
       ),
       onDeleted: () async {
-        await viewModel.deleteLocation(l['id'] as int);
-        onSaved?.call();
+        await widget.viewModel.deleteLocation(l['id'] as int);
+        widget.onSaved?.call();
       },
       deleteIconColor: Colors.red,
     );

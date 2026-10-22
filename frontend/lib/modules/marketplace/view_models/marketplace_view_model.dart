@@ -51,11 +51,13 @@ class MarketplaceViewModel extends ChangeNotifier {
     _filterDistrict = val;
     _filterUpazila = '';
     notifyListeners();
+    loadListings();
   }
 
   void setFilterUpazila(String val) {
     _filterUpazila = val;
     notifyListeners();
+    loadListings();
   }
 
   void setFilterLandType(String val) {
