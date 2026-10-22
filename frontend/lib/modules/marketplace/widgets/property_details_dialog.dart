@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import '../../../../core/localization/app_strings.dart';
 import '../../../../core/utils/whatsapp_helper.dart';
 import '../../../../core/widgets/smart_image_viewer.dart';
+import 'safety_warning_card.dart';
 
 class PropertyDetailsDialog {
   static void show(
@@ -85,6 +86,8 @@ class PropertyDetailsDialog {
                     const SizedBox(height: 12),
                   ],
                   _buildDetailsBox(listing),
+                  const SizedBox(height: 12),
+                  SafetyWarningCard(isMobile: isMobile),
                   const SizedBox(height: 12),
                   const Text('বিস্তারিত বিবরণ:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                   const SizedBox(height: 4),

@@ -29,6 +29,16 @@ class ContactInquiryDialog {
                   'bdHousing অ্যাডমিন আপনার অনুরোধটি যাচাই করে বিক্রেতার সাথে যোগাযোগ ও পরিদর্শনের ব্যবস্থা করবেন।',
                   style: TextStyle(fontSize: 12, color: Colors.black54),
                 ),
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                  decoration: BoxDecoration(color: const Color(0xFFFFF8E1), borderRadius: BorderRadius.circular(6), border: Border.all(color: Colors.amber.shade400)),
+                  child: const Row(children: [
+                    Icon(Icons.shield_outlined, size: 14, color: Color(0xFFE65100)),
+                    SizedBox(width: 5),
+                    Expanded(child: Text('সতর্কতা: জমি সরজমিন পরিদর্শন ও ই-পর্চা যাচাই ব্যতীত কোনো বায়না বা অগ্রিম টাকা পাঠাবেন না। লেনদেন সরাসরি ক্রেতা ও বিক্রেতার হাতে সম্পন্ন হবে।', style: TextStyle(fontSize: 10, color: Color(0xFF5D4037), height: 1.25))),
+                  ]),
+                ),
                 const SizedBox(height: 12),
                 TextField(
                   controller: budgetCtrl,

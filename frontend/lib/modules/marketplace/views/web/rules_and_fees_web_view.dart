@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../widgets/safety_warning_card.dart';
 
 class RulesAndFeesWebView extends StatelessWidget {
   final Map<String, dynamic> config;
@@ -23,6 +24,8 @@ class RulesAndFeesWebView extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text('নিয়মাবলি, নিবন্ধন ফি ও যোগাযোগ', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF0B4F32))),
+              const SizedBox(height: 14),
+              const SafetyWarningCard(isMobile: false),
               const SizedBox(height: 14),
               Card(
                 child: Padding(

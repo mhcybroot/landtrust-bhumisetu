@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../widgets/safety_warning_card.dart';
 
 class RulesAndFeesMobileView extends StatelessWidget {
   final Map<String, dynamic> config;
@@ -17,6 +18,8 @@ class RulesAndFeesMobileView extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(14),
       children: [
+        const SafetyWarningCard(isMobile: true),
+        const SizedBox(height: 14),
         _buildSectionCard(
           title: 'নিবন্ধন ফি ও কমিশন',
           icon: Icons.payments_outlined,

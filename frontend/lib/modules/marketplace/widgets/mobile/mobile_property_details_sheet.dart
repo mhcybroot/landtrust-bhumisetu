@@ -3,6 +3,7 @@ import '../../../../core/animations/bouncing_pressable.dart';
 import '../../../../core/localization/app_strings.dart';
 import '../../../../core/utils/whatsapp_helper.dart';
 import '../../../../core/widgets/smart_image_viewer.dart';
+import '../safety_warning_card.dart';
 
 class MobilePropertyDetailsSheet extends StatelessWidget {
   final Map<String, dynamic> listing;
@@ -99,6 +100,8 @@ class MobilePropertyDetailsSheet extends StatelessWidget {
                   if (mouza != null && mouza.isNotEmpty) _infoRow('মৌজা', mouza),
                   if (dag != null && dag.isNotEmpty) _infoRow('দাগ নম্বর', dag),
                   if (khatian != null && khatian.isNotEmpty) _infoRow('খতিয়ান নম্বর', khatian),
+                  const SizedBox(height: 12),
+                  const SafetyWarningCard(isMobile: true),
                   const SizedBox(height: 20),
                 ],
               ),

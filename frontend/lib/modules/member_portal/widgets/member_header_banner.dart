@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:landtrust_app/core/widgets/status_badge.dart';
 import '../../chat/views/my_chat_threads_dialog.dart';
+import '../../nrb/widgets/my_nrb_requests_dialog.dart';
 import 'member_payment_warning_card.dart';
 
 class MemberHeaderBanner extends StatelessWidget {
@@ -125,6 +126,16 @@ class MemberHeaderBanner extends StatelessWidget {
                     onPressed: () => MyChatThreadsDialog.show(context, isMobile: isMobile),
                     icon: const Icon(Icons.chat_bubble_outline_rounded, size: 16),
                     label: const Text('লাইভ চ্যাট', style: TextStyle(fontSize: 12)),
+                  ),
+                  ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFE8F5E9),
+                      foregroundColor: const Color(0xFF0B4F32),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    ),
+                    onPressed: () => MyNrbRequestsDialog.show(context, isMobile: isMobile),
+                    icon: const Icon(Icons.flight_takeoff, size: 16, color: Color(0xFF0B4F32)),
+                    label: const Text('প্রবাসী সেবা ও PoA', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
                   ),
                   ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(

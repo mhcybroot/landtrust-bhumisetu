@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:landtrust_app/core/widgets/status_badge.dart';
 import '../view_models/admin_view_model.dart';
+import 'admin_nrb_dialog.dart';
 
 class AdminOverviewTab extends StatelessWidget {
   final AdminViewModel viewModel;
@@ -23,6 +24,19 @@ class AdminOverviewTab extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text('কেন্দ্রীয় রিয়েল-টাইম ওভারভিউ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
+              onPressed: () => AdminNrbDialog.show(context, isMobile: isMobile),
+              icon: const Icon(Icons.flight_takeoff, size: 16),
+              label: const Text('প্রবাসী সেবা ও PoA আবেদন', style: TextStyle(fontSize: 12)),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
         _buildFundBuckets(totalFunds, revFund, fieldFund, reserveFund),
         const SizedBox(height: 20),
         _buildMetricsGrid(dash),
