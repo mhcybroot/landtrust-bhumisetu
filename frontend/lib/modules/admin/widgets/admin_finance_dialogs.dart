@@ -25,7 +25,8 @@ class AdminFinanceDialogs {
               mainAxisSize: MainAxisSize.min,
               children: [
                 DropdownButtonFormField<String>(
-                  value: bucket,
+                  key: ValueKey('bucket_$bucket'),
+                  initialValue: bucket,
                   decoration: const InputDecoration(labelText: 'ব্যয়ের ফান্ড নির্বাচন', isDense: true),
                   items: [
                     const DropdownMenuItem(value: 'PLATFORM_REVENUE', child: Text('১. প্ল্যাটফর্ম পরিচালনা আয় (৬০%)')),

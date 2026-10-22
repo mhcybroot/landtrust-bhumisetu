@@ -6,6 +6,7 @@ import bd.com.landtrust.entity.SystemSettingEntity;
 import bd.com.landtrust.repository.LocationRepository;
 import bd.com.landtrust.repository.PaymentMethodRepository;
 import bd.com.landtrust.repository.SystemSettingRepository;
+import bd.com.landtrust.service.SystemSettingService;
 import bd.com.landtrust.util.CommonUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,24 +20,21 @@ import java.util.Optional;
 @RequestMapping("/api/admin")
 public class AdminSettingsController {
 
-    private final SystemSettingRepository settingRepository;
+    private final SystemSettingService settingService;
     private final PaymentMethodRepository paymentMethodRepository;
     private final LocationRepository locationRepository;
 
     public AdminSettingsController(
-            SystemSettingRepository settingRepository,
+            SystemSettingService settingService,
             PaymentMethodRepository paymentMethodRepository,
             LocationRepository locationRepository) {
-        this.settingRepository = settingRepository;
+        this.settingService = settingService;
         this.paymentMethodRepository = paymentMethodRepository;
         this.locationRepository = locationRepository;
     }
 
     private SystemSettingEntity getSettings() {
-        return settingRepository.findAll().stream().findFirst().orElseGet(() -> {
-            SystemSettingEntity def = new SystemSettingEntity();
-            return settingRepository.save(def);
-        });
+        return settingService.getSettings();
     }
 
     @GetMapping("/settings")
@@ -77,7 +75,7 @@ public class AdminSettingsController {
         if (body.containsKey("supportEmail")) s.setSupportEmail(String.valueOf(body.get("supportEmail")));
         if (body.containsKey("officeAddress")) s.setOfficeAddress(String.valueOf(body.get("officeAddress")));
         s.setUpdatedAt(LocalDateTime.now());
-        return ResponseEntity.ok(settingRepository.save(s));
+        return ResponseEntity.ok(settingService.saveSettings(s));
     }
 
     @GetMapping("/payment-methods")

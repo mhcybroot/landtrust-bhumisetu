@@ -27,7 +27,8 @@ class AdminSettingsDialogs {
                 TextField(controller: accCtrl, decoration: const InputDecoration(labelText: 'একাউন্ট নম্বর *', isDense: true)),
                 const SizedBox(height: 10),
                 DropdownButtonFormField<String>(
-                  value: type,
+                  key: ValueKey('type_$type'),
+                  initialValue: type,
                   decoration: const InputDecoration(labelText: 'একাউন্টের ধরন', isDense: true),
                   items: ['মার্চেন্ট / পেমেন্ট', 'ব্যক্তিগত (Personal)', 'এজেন্ট (Agent)', 'ব্যাংক হিসাব'].map((t) => DropdownMenuItem(value: t, child: Text(t))).toList(),
                   onChanged: (v) => setDialogState(() => type = v!),
@@ -90,7 +91,8 @@ class AdminSettingsDialogs {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   DropdownButtonFormField<String>(
-                    value: areaType,
+                    key: ValueKey('areaType_$areaType'),
+                    initialValue: areaType,
                     decoration: const InputDecoration(labelText: 'এলাকার ধরন *', isDense: true),
                     items: const [
                       DropdownMenuItem(value: 'UPAZILA', child: Text('🌾 উপজেলা (Upazila)')),
@@ -115,7 +117,8 @@ class AdminSettingsDialogs {
                   ),
                   const SizedBox(height: 10),
                   DropdownButtonFormField<String>(
-                    value: subAreaType,
+                    key: ValueKey('subAreaType_$subAreaType'),
+                    initialValue: subAreaType,
                     decoration: const InputDecoration(labelText: 'উপ-এলাকার ধরন *', isDense: true),
                     items: const [
                       DropdownMenuItem(value: 'UNION', child: Text('ইউনিয়নসমূহ (Unions)')),

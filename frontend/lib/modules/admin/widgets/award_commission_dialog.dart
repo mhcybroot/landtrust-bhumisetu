@@ -37,7 +37,8 @@ class AwardCommissionDialog {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   DropdownButtonFormField<int>(
-                    value: officerId,
+                    key: ValueKey('officer_$officerId'),
+                    initialValue: officerId,
                     decoration: const InputDecoration(labelText: 'মার্কেটিং অফিসার নির্বাচন', isDense: true),
                     items: officers.map((o) => DropdownMenuItem<int>(value: o['id'] as int, child: Text('${o['fullName']} (${o['myReferralCode'] ?? ''})'))).toList(),
                     onChanged: (v) => setDialogState(() => officerId = v!),

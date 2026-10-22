@@ -7,4 +7,5 @@ import java.util.List;
 public interface FinancialTransactionRepository extends JpaRepository<FinancialTransactionEntity, Long> {
     List<FinancialTransactionEntity> findByUserIdOrderByCreatedAtDesc(Long userId);
     List<FinancialTransactionEntity> findAllByOrderByCreatedAtDesc();
+    boolean existsByTransactionId(String transactionId);
 }

@@ -35,7 +35,8 @@ class _AdminListingsTabState extends State<AdminListingsTab> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 DropdownButtonFormField<String>(
-                  value: status,
+                  key: ValueKey('status_$status'),
+                  initialValue: status,
                   decoration: const InputDecoration(labelText: 'যাচাইকরণ স্ট্যাটাস', isDense: true),
                   items: const [
                     DropdownMenuItem(value: 'FIELD_VERIFIED', child: Text('🟢 সরেজমিনে যাচাইকৃত (Field Verified)')),

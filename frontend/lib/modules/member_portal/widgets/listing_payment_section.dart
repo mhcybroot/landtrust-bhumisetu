@@ -70,7 +70,8 @@ class ListingPaymentSection extends StatelessWidget {
           const SizedBox(height: 6),
           if (paymentMethods.isNotEmpty)
             DropdownButtonFormField<String>(
-              value: paymentMethods.any((m) => m['providerName'] == selectedMethod)
+              key: ValueKey('method_$selectedMethod'),
+              initialValue: paymentMethods.any((m) => m['providerName'] == selectedMethod)
                   ? selectedMethod
                   : paymentMethods.first['providerName'].toString(),
               decoration: const InputDecoration(labelText: 'পেমেন্ট মাধ্যম *', isDense: true),

@@ -94,7 +94,8 @@ class AdminCommunicationDialogs {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 DropdownButtonFormField<String>(
-                  value: targetRole,
+                  key: ValueKey('role_$targetRole'),
+                  initialValue: targetRole,
                   decoration: const InputDecoration(labelText: 'প্রাপক গ্রুপ (Target Users)', isDense: true),
                   items: const [
                     DropdownMenuItem(value: 'ALL', child: Text('সকল সদস্য (All Users)')),

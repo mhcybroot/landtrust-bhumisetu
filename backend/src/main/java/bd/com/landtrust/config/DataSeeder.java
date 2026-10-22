@@ -73,9 +73,7 @@ public class DataSeeder implements CommandLineRunner {
             paymentMethodRepository.saveAll(List.of(bkash, nagad, bank));
         }
 
-        if (locationRepository.count() < 40) {
-            locationRepository.deleteAll();
-
+        if (locationRepository.count() == 0) {
             // ================= 1. নোয়াখালী (NOAKHALI) =================
             String[][] noakhaliPourashavas = {
                 {"চৌমুহনী পৌরসভা", "Choumuhani Pourashava"},

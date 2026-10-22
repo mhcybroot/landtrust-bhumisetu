@@ -5,11 +5,13 @@ import bd.com.landtrust.entity.FinancialTransactionEntity;
 import bd.com.landtrust.entity.SystemSettingEntity;
 import bd.com.landtrust.entity.UserEntity;
 import bd.com.landtrust.repository.*;
+import bd.com.landtrust.service.SystemSettingService;
 import bd.com.landtrust.util.CommissionHelper;
 import bd.com.landtrust.util.CommonUtils;
 import bd.com.landtrust.util.UserMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -23,7 +25,7 @@ import java.util.stream.Collectors;
 public class AdminUserController {
 
     private final UserRepository userRepository;
-    private final SystemSettingRepository settingRepository;
+    private final SystemSettingService settingService;
     private final CommissionEntryRepository commissionRepository;
     private final FinancialTransactionRepository transactionRepository;
     private final NotificationRepository notificationRepository;
@@ -31,13 +33,13 @@ public class AdminUserController {
 
     public AdminUserController(
             UserRepository userRepository,
-            SystemSettingRepository settingRepository,
+            SystemSettingService settingService,
             CommissionEntryRepository commissionRepository,
             FinancialTransactionRepository transactionRepository,
             NotificationRepository notificationRepository,
             PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
-        this.settingRepository = settingRepository;
+        this.settingService = settingService;
         this.commissionRepository = commissionRepository;
         this.transactionRepository = transactionRepository;
         this.notificationRepository = notificationRepository;
@@ -45,10 +47,7 @@ public class AdminUserController {
     }
 
     private SystemSettingEntity getSettings() {
-        return settingRepository.findAll().stream().findFirst().orElseGet(() -> {
-            SystemSettingEntity def = new SystemSettingEntity();
-            return settingRepository.save(def);
-        });
+        return settingService.getSettings();
     }
 
     @GetMapping("/users")
@@ -62,6 +61,7 @@ public class AdminUserController {
                 .collect(Collectors.toList()));
     }
 
+    @Transactional
     @RequestMapping(value = {"/users/{id}/status", "/users/{id}/verify-payment"}, method = {RequestMethod.PUT, RequestMethod.POST})
     public ResponseEntity<?> updateUserStatus(@PathVariable Long id, @RequestBody Map<String, Object> body) {
         Optional<UserEntity> userOpt = userRepository.findById(id);
@@ -170,6 +170,7 @@ public class AdminUserController {
         return ResponseEntity.ok(UserMapper.sanitizeUser(user));
     }
 
+    @Transactional
     @RequestMapping(value = "/users/{id}/reset-password", method = {RequestMethod.PUT, RequestMethod.POST})
     public ResponseEntity<?> resetUserPassword(@PathVariable Long id, @RequestBody Map<String, String> body) {
         Optional<UserEntity> userOpt = userRepository.findById(id);
@@ -188,6 +189,7 @@ public class AdminUserController {
         return ResponseEntity.ok(Map.of("message", user.getFullName() + " এর পাসওয়ার্ড সফলভাবে রিসেট করা হয়েছে।"));
     }
 
+    @Transactional
     @PostMapping("/users/{id}/refund")
     public ResponseEntity<?> refundUserRegistrationFee(@PathVariable Long id, @RequestBody Map<String, String> body) {
         Optional<UserEntity> userOpt = userRepository.findById(id);

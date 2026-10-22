@@ -2,9 +2,11 @@ package bd.com.landtrust.controller.admin;
 
 import bd.com.landtrust.entity.*;
 import bd.com.landtrust.repository.*;
+import bd.com.landtrust.service.SystemSettingService;
 import bd.com.landtrust.util.CommissionHelper;
 import bd.com.landtrust.util.CommonUtils;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -21,25 +23,22 @@ public class AdminFinanceController {
     private final CommissionEntryRepository commissionRepository;
     private final FinancialTransactionRepository transactionRepository;
     private final NotificationRepository notificationRepository;
-    private final SystemSettingRepository settingRepository;
+    private final SystemSettingService settingService;
 
     public AdminFinanceController(
             UserRepository userRepository, ServiceProposalRepository proposalRepository,
             CommissionEntryRepository commissionRepository, FinancialTransactionRepository transactionRepository,
-            NotificationRepository notificationRepository, SystemSettingRepository settingRepository) {
+            NotificationRepository notificationRepository, SystemSettingService settingService) {
         this.userRepository = userRepository;
         this.proposalRepository = proposalRepository;
         this.commissionRepository = commissionRepository;
         this.transactionRepository = transactionRepository;
         this.notificationRepository = notificationRepository;
-        this.settingRepository = settingRepository;
+        this.settingService = settingService;
     }
 
     private SystemSettingEntity getSettings() {
-        return settingRepository.findAll().stream().findFirst().orElseGet(() -> {
-            SystemSettingEntity def = new SystemSettingEntity();
-            return settingRepository.save(def);
-        });
+        return settingService.getSettings();
     }
 
     @GetMapping("/proposals")
@@ -47,6 +46,7 @@ public class AdminFinanceController {
         return ResponseEntity.ok(proposalRepository.findAllByOrderByCreatedAtDesc());
     }
 
+    @Transactional
     @RequestMapping(value = {"/proposals/{id}", "/proposals/{id}/respond"}, method = {RequestMethod.PUT, RequestMethod.POST})
     public ResponseEntity<?> updateProposalByAdmin(@PathVariable Long id, @RequestBody Map<String, Object> body) {
         Optional<ServiceProposalEntity> opt = proposalRepository.findById(id);
@@ -88,7 +88,7 @@ public class AdminFinanceController {
             BigDecimal revenue = p.getFinalAgreedFeeBdt() != null ? p.getFinalAgreedFeeBdt() : p.getCustomerProposedFeeBdt();
             if (revenue != null && revenue.compareTo(BigDecimal.ZERO) > 0) {
                 String dealTrxId = "DEAL-" + p.getId();
-                boolean alreadyRecorded = transactionRepository.findAll().stream().anyMatch(t -> dealTrxId.equals(t.getTransactionId()));
+                boolean alreadyRecorded = transactionRepository.existsByTransactionId(dealTrxId);
                 if (!alreadyRecorded) {
                     recordTxn(p.getUserId(), p.getUserName(), p.getUserRole(), "SERVICE_REVENUE", "CREDIT", revenue, "AGREED_CONTRACT", dealTrxId, "বিশেষ সেবার পারিশ্রমিক: " + p.getProposalTitle());
                 }
@@ -102,6 +102,7 @@ public class AdminFinanceController {
         return ResponseEntity.ok(commissionRepository.findAllByOrderByCreatedAtDesc());
     }
 
+    @Transactional
     @PostMapping("/commissions/award")
     public ResponseEntity<?> awardCommissionByAdmin(@RequestBody Map<String, Object> body) {
         Object refIdObj = body.get("referredUserId");
@@ -238,6 +239,7 @@ public class AdminFinanceController {
         return ResponseEntity.ok(entry);
     }
 
+    @Transactional
     @RequestMapping(value = "/commissions/{id}/pay", method = {RequestMethod.PUT, RequestMethod.POST})
     public ResponseEntity<?> payCommission(@PathVariable Long id, @RequestBody Map<String, String> body) {
         Optional<CommissionEntryEntity> opt = commissionRepository.findById(id);
@@ -267,6 +269,7 @@ public class AdminFinanceController {
         return ResponseEntity.ok(transactionRepository.findAllByOrderByCreatedAtDesc());
     }
 
+    @Transactional
     @PostMapping({"/transactions", "/finance/expenses"})
     public ResponseEntity<FinancialTransactionEntity> createManualTransaction(@RequestBody Map<String, Object> body) {
         FinancialTransactionEntity t = new FinancialTransactionEntity();
@@ -284,6 +287,7 @@ public class AdminFinanceController {
         return ResponseEntity.ok(transactionRepository.save(t));
     }
 
+    @Transactional
     @RequestMapping(value = "/transactions/{id}/status", method = {RequestMethod.PUT, RequestMethod.POST})
     public ResponseEntity<?> updateTransactionStatus(@PathVariable Long id, @RequestBody Map<String, String> body) {
         Optional<FinancialTransactionEntity> opt = transactionRepository.findById(id);

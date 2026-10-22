@@ -9,8 +9,8 @@ import bd.com.landtrust.repository.BuyerRequirementRepository;
 import bd.com.landtrust.repository.LandListingRepository;
 import bd.com.landtrust.repository.LocationRepository;
 import bd.com.landtrust.repository.PaymentMethodRepository;
-import bd.com.landtrust.repository.SystemSettingRepository;
 import bd.com.landtrust.repository.UserRepository;
+import bd.com.landtrust.service.SystemSettingService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 public class PublicListingController {
 
     private final UserRepository userRepository;
-    private final SystemSettingRepository settingRepository;
+    private final SystemSettingService settingService;
     private final PaymentMethodRepository paymentMethodRepository;
     private final LocationRepository locationRepository;
     private final LandListingRepository listingRepository;
@@ -31,13 +31,13 @@ public class PublicListingController {
 
     public PublicListingController(
             UserRepository userRepository,
-            SystemSettingRepository settingRepository,
+            SystemSettingService settingService,
             PaymentMethodRepository paymentMethodRepository,
             LocationRepository locationRepository,
             LandListingRepository listingRepository,
             BuyerRequirementRepository requirementRepository) {
         this.userRepository = userRepository;
-        this.settingRepository = settingRepository;
+        this.settingService = settingService;
         this.paymentMethodRepository = paymentMethodRepository;
         this.locationRepository = locationRepository;
         this.listingRepository = listingRepository;
@@ -45,10 +45,7 @@ public class PublicListingController {
     }
 
     private SystemSettingEntity getSettings() {
-        return settingRepository.findAll().stream().findFirst().orElseGet(() -> {
-            SystemSettingEntity def = new SystemSettingEntity();
-            return settingRepository.save(def);
-        });
+        return settingService.getSettings();
     }
 
     @GetMapping("/config")
@@ -80,9 +77,9 @@ public class PublicListingController {
                 ? verificationStatus
                 : verification;
 
-        List<LandListingEntity> all = listingRepository.findAllByOrderByCreatedAtDesc();
+        List<LandListingEntity> all = listingRepository.findByListingStatusInOrderByCreatedAtDesc(
+                List.of("APPROVED_PUBLISHED", "RESERVED"));
         List<Map<String, Object>> result = all.stream()
-                .filter(l -> "APPROVED_PUBLISHED".equals(l.getListingStatus()) || "RESERVED".equals(l.getListingStatus()))
                 .filter(l -> district == null || district.isBlank() || district.equalsIgnoreCase(l.getDistrict()))
                 .filter(l -> upazila == null || upazila.isBlank() || upazila.equalsIgnoreCase(l.getUpazila()))
                 .filter(l -> landType == null || landType.isBlank() || landType.equalsIgnoreCase(l.getLandType()))

@@ -4,11 +4,12 @@ import bd.com.landtrust.entity.LandListingEntity;
 import bd.com.landtrust.entity.SystemSettingEntity;
 import bd.com.landtrust.entity.UserEntity;
 import bd.com.landtrust.repository.LandListingRepository;
-import bd.com.landtrust.repository.SystemSettingRepository;
 import bd.com.landtrust.repository.UserRepository;
+import bd.com.landtrust.service.SystemSettingService;
 import bd.com.landtrust.util.CommonUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -23,19 +24,16 @@ public class MemberSellerController {
 
     private final UserRepository userRepository;
     private final LandListingRepository listingRepository;
-    private final SystemSettingRepository settingRepository;
+    private final SystemSettingService settingService;
 
-    public MemberSellerController(UserRepository userRepository, LandListingRepository listingRepository, SystemSettingRepository settingRepository) {
+    public MemberSellerController(UserRepository userRepository, LandListingRepository listingRepository, SystemSettingService settingService) {
         this.userRepository = userRepository;
         this.listingRepository = listingRepository;
-        this.settingRepository = settingRepository;
+        this.settingService = settingService;
     }
 
     private SystemSettingEntity getSettings() {
-        return settingRepository.findAll().stream().findFirst().orElseGet(() -> {
-            SystemSettingEntity def = new SystemSettingEntity();
-            return settingRepository.save(def);
-        });
+        return settingService.getSettings();
     }
 
     private UserEntity currentUser(Authentication auth) {
@@ -49,6 +47,7 @@ public class MemberSellerController {
         return ResponseEntity.ok(listingRepository.findBySellerIdOrderByCreatedAtDesc(user.getId()));
     }
 
+    @Transactional
     @PostMapping({"/listings", "/seller/listings"})
     public ResponseEntity<?> createListing(Authentication auth, @RequestBody Map<String, Object> body) {
         UserEntity user = currentUser(auth);
@@ -79,18 +78,17 @@ public class MemberSellerController {
         listing.setLandType((String) body.getOrDefault("landType", "আবাসিক"));
 
         if (!khatianNo.isBlank() || !dagNo.isBlank()) {
-            List<LandListingEntity> existingAll = listingRepository.findAll();
-            for (LandListingEntity ex : existingAll) {
-                if ("REJECTED".equals(ex.getListingStatus())) continue;
-                if (upazila.equalsIgnoreCase(ex.getUpazila())) {
-                    boolean khatianMatch = !khatianNo.isBlank() && ex.getKhatianNo() != null && khatianNo.equalsIgnoreCase(ex.getKhatianNo().trim());
-                    boolean dagMatch = !dagNo.isBlank() && ex.getDagNo() != null && dagNo.equalsIgnoreCase(ex.getDagNo().trim());
-                    if (khatianMatch || dagMatch) {
-                        listing.setDuplicateSuspected(true);
-                        listing.setDuplicateNote("সম্ভাব্য ডুপ্লিকেট: বিজ্ঞাপন #" + ex.getId() + " (" + ex.getTitle() + " - বিক্রেতা: " + ex.getSellerName() + ") এর খতিয়ান/দাগ নম্বরের সাথে মিল পাওয়া গেছে।");
-                        break;
-                    }
-                }
+            Optional<LandListingEntity> dup = Optional.empty();
+            if (!khatianNo.isBlank()) {
+                dup = listingRepository.findFirstByUpazilaIgnoreCaseAndListingStatusNotAndKhatianNoIgnoreCase(upazila, "REJECTED", khatianNo);
+            }
+            if (dup.isEmpty() && !dagNo.isBlank()) {
+                dup = listingRepository.findFirstByUpazilaIgnoreCaseAndListingStatusNotAndDagNoIgnoreCase(upazila, "REJECTED", dagNo);
+            }
+            if (dup.isPresent()) {
+                LandListingEntity ex = dup.get();
+                listing.setDuplicateSuspected(true);
+                listing.setDuplicateNote("সম্ভাব্য ডুপ্লিকেট: বিজ্ঞাপন #" + ex.getId() + " (" + ex.getTitle() + " - বিক্রেতা: " + ex.getSellerName() + ") এর খতিয়ান/দাগ নম্বরের সাথে মিল পাওয়া গেছে।");
             }
         }
 
@@ -163,6 +161,7 @@ public class MemberSellerController {
         return ResponseEntity.ok(listing);
     }
 
+    @Transactional
     @PutMapping({"/listings/{id}", "/seller/listings/{id}"})
     public ResponseEntity<?> updateMyListing(Authentication auth, @PathVariable Long id, @RequestBody Map<String, Object> body) {
         UserEntity user = currentUser(auth);
@@ -221,6 +220,7 @@ public class MemberSellerController {
         return ResponseEntity.ok(listingRepository.save(listing));
     }
 
+    @Transactional
     @RequestMapping(value = {"/listings/{id}/close", "/listings/{id}/sold", "/seller/listings/{id}/sold"}, method = {RequestMethod.PUT, RequestMethod.POST})
     public ResponseEntity<?> closeMyListing(Authentication auth, @PathVariable Long id) {
         UserEntity user = currentUser(auth);

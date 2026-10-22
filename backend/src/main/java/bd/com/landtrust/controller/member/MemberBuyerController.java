@@ -10,6 +10,7 @@ import bd.com.landtrust.repository.UserRepository;
 import bd.com.landtrust.util.CommonUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -54,6 +55,7 @@ public class MemberBuyerController {
         return ResponseEntity.ok(requirementRepository.findByBuyerIdOrderByCreatedAtDesc(user.getId()));
     }
 
+    @Transactional
     @PostMapping({"/requirements", "/buyer/requirements"})
     public ResponseEntity<?> createRequirement(Authentication auth, @RequestBody Map<String, Object> body) {
         UserEntity user = currentUser(auth);
@@ -85,6 +87,7 @@ public class MemberBuyerController {
         return ResponseEntity.ok(requirementRepository.save(req));
     }
 
+    @Transactional
     @PutMapping({"/requirements/{id}", "/buyer/requirements/{id}"})
     public ResponseEntity<?> updateMyRequirement(Authentication auth, @PathVariable Long id, @RequestBody Map<String, Object> body) {
         UserEntity user = currentUser(auth);
@@ -115,6 +118,7 @@ public class MemberBuyerController {
         return ResponseEntity.ok(requirementRepository.save(req));
     }
 
+    @Transactional
     @RequestMapping(value = {"/requirements/{id}/fulfill", "/buyer/requirements/{id}/fulfill"}, method = {RequestMethod.PUT, RequestMethod.POST})
     public ResponseEntity<?> fulfillMyRequirement(Authentication auth, @PathVariable Long id) {
         UserEntity user = currentUser(auth);
@@ -127,6 +131,7 @@ public class MemberBuyerController {
         return ResponseEntity.ok(requirementRepository.save(req));
     }
 
+    @Transactional
     @PostMapping({"/requirements/{id}/seller-offer", "/seller/proposals", "/requirements/seller-offer"})
     public ResponseEntity<?> submitSellerOfferForRequirement(Authentication auth, @PathVariable(required = false) Long id, @RequestBody Map<String, Object> body) {
         UserEntity seller = currentUser(auth);
@@ -182,6 +187,7 @@ public class MemberBuyerController {
         ));
     }
 
+    @Transactional
     @PostMapping({"/inquiries", "/buyer/inquiries"})
     public ResponseEntity<?> createInquiry(Authentication auth, @RequestBody Map<String, Object> body) {
         UserEntity user = currentUser(auth);

@@ -8,13 +8,14 @@ import bd.com.landtrust.entity.UserEntity;
 import bd.com.landtrust.repository.FinancialTransactionRepository;
 import bd.com.landtrust.repository.LocationRepository;
 import bd.com.landtrust.repository.NotificationRepository;
-import bd.com.landtrust.repository.SystemSettingRepository;
 import bd.com.landtrust.repository.UserRepository;
 import bd.com.landtrust.security.JwtService;
+import bd.com.landtrust.service.SystemSettingService;
 import bd.com.landtrust.util.UserMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -28,7 +29,7 @@ public class AuthController {
 
     private final UserRepository userRepository;
     private final LocationRepository locationRepository;
-    private final SystemSettingRepository settingRepository;
+    private final SystemSettingService settingService;
     private final FinancialTransactionRepository transactionRepository;
     private final NotificationRepository notificationRepository;
     private final PasswordEncoder passwordEncoder;
@@ -37,14 +38,14 @@ public class AuthController {
     public AuthController(
             UserRepository userRepository,
             LocationRepository locationRepository,
-            SystemSettingRepository settingRepository,
+            SystemSettingService settingService,
             FinancialTransactionRepository transactionRepository,
             NotificationRepository notificationRepository,
             PasswordEncoder passwordEncoder,
             JwtService jwtService) {
         this.userRepository = userRepository;
         this.locationRepository = locationRepository;
-        this.settingRepository = settingRepository;
+        this.settingService = settingService;
         this.transactionRepository = transactionRepository;
         this.notificationRepository = notificationRepository;
         this.passwordEncoder = passwordEncoder;
@@ -52,12 +53,10 @@ public class AuthController {
     }
 
     private SystemSettingEntity getSettings() {
-        return settingRepository.findAll().stream().findFirst().orElseGet(() -> {
-            SystemSettingEntity def = new SystemSettingEntity();
-            return settingRepository.save(def);
-        });
+        return settingService.getSettings();
     }
 
+    @Transactional
     @PostMapping("/auth/register")
     public ResponseEntity<?> register(@RequestBody Map<String, Object> body) {
         String fullName = (String) body.getOrDefault("fullName", "");

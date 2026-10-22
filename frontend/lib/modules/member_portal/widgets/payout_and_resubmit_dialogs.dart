@@ -29,7 +29,8 @@ class OfficerPayoutDialog {
                 TextField(controller: amountCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'উইথড্রর পরিমাণ (৳) *', isDense: true)),
                 const SizedBox(height: 10),
                 DropdownButtonFormField<String>(
-                  value: method,
+                  key: ValueKey('payout_method_$method'),
+                  initialValue: method,
                   decoration: const InputDecoration(labelText: 'পেমেন্ট গ্রহণের মাধ্যম', isDense: true),
                   items: ['বিকাশ (bKash)', 'নগদ (Nagad)', 'রকেট (Rocket)', 'ব্যাংক একাউন্ট'].map((m) => DropdownMenuItem(value: m, child: Text(m))).toList(),
                   onChanged: (v) => setDialogState(() => method = v!),
@@ -97,7 +98,8 @@ class ResubmitPaymentDialog {
               mainAxisSize: MainAxisSize.min,
               children: [
                 DropdownButtonFormField<String>(
-                  value: method,
+                  key: ValueKey('resubmit_method_$method'),
+                  initialValue: method,
                   decoration: const InputDecoration(labelText: 'পেমেন্টের মাধ্যম', isDense: true),
                   items: ['বিকাশ (bKash)', 'নগদ (Nagad)', 'ইসলামী ব্যাংক পিএলসি'].map((m) => DropdownMenuItem(value: m, child: Text(m))).toList(),
                   onChanged: (v) => setDialogState(() => method = v!),

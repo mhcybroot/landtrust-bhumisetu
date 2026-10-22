@@ -2,9 +2,11 @@ package bd.com.landtrust.controller.admin;
 
 import bd.com.landtrust.entity.*;
 import bd.com.landtrust.repository.*;
+import bd.com.landtrust.service.SystemSettingService;
 import bd.com.landtrust.util.CommissionHelper;
 import bd.com.landtrust.util.CommonUtils;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -21,7 +23,7 @@ public class AdminListingController {
     private final FinancialTransactionRepository transactionRepository;
     private final UserRepository userRepository;
     private final CommissionEntryRepository commissionRepository;
-    private final SystemSettingRepository settingRepository;
+    private final SystemSettingService settingService;
 
     public AdminListingController(
             LandListingRepository listingRepository,
@@ -29,20 +31,17 @@ public class AdminListingController {
             FinancialTransactionRepository transactionRepository,
             UserRepository userRepository,
             CommissionEntryRepository commissionRepository,
-            SystemSettingRepository settingRepository) {
+            SystemSettingService settingService) {
         this.listingRepository = listingRepository;
         this.notificationRepository = notificationRepository;
         this.transactionRepository = transactionRepository;
         this.userRepository = userRepository;
         this.commissionRepository = commissionRepository;
-        this.settingRepository = settingRepository;
+        this.settingService = settingService;
     }
 
     private SystemSettingEntity getSettings() {
-        return settingRepository.findAll().stream().findFirst().orElseGet(() -> {
-            SystemSettingEntity def = new SystemSettingEntity();
-            return settingRepository.save(def);
-        });
+        return settingService.getSettings();
     }
 
     @GetMapping("/listings")
@@ -50,6 +49,7 @@ public class AdminListingController {
         return ResponseEntity.ok(listingRepository.findAllByOrderByCreatedAtDesc());
     }
 
+    @Transactional
     @RequestMapping(value = {"/listings/{id}/status", "/listings/{id}/verify", "/listings/{id}/approve"}, method = {RequestMethod.PUT, RequestMethod.POST})
     public ResponseEntity<?> updateListingStatus(@PathVariable Long id, @RequestBody(required = false) Map<String, String> body, jakarta.servlet.http.HttpServletRequest request) {
         Optional<LandListingEntity> opt = listingRepository.findById(id);

@@ -68,13 +68,13 @@ class ListingFormDialog {
                     const SizedBox(height: 10),
                     Wrap(spacing: 10, runSpacing: 10, children: [
                       _w(isMobile, DropdownButtonFormField<String>(
-                        isExpanded: true, value: landType,
+                        key: ValueKey('lt_$landType'), initialValue: landType, isExpanded: true,
                         decoration: const InputDecoration(labelText: 'প্রোপার্টির ধরন *', isDense: true),
                         items: ['আবাসিক', 'কৃষি', 'ফ্ল্যাট / অ্যাপার্টমেন্ট', 'বাণিজ্যিক', 'ভিটা জমি', 'বাগান বাড়ি'].map((t) => DropdownMenuItem(value: t, child: Text(t, overflow: TextOverflow.ellipsis))).toList(),
                         onChanged: (v) => setDialogState(() => landType = v!),
                       )),
                       _w(isMobile, DropdownButtonFormField<String>(
-                        isExpanded: true, value: district,
+                        key: ValueKey('dist_$district'), initialValue: district, isExpanded: true,
                         decoration: const InputDecoration(labelText: 'জেলা', isDense: true),
                         items: districts.map((d) => DropdownMenuItem(value: d, child: Text(d, overflow: TextOverflow.ellipsis))).toList(),
                         onChanged: (v) => setDialogState(() {
@@ -86,7 +86,7 @@ class ListingFormDialog {
                         }),
                       )),
                       _w(isMobile, DropdownButtonFormField<String>(
-                        isExpanded: true, value: upazila,
+                        key: ValueKey('upz_${district}_$upazila'), initialValue: upazila, isExpanded: true,
                         decoration: const InputDecoration(labelText: 'উপজেলা / পৌরসভা *', isDense: true),
                         items: areas.map((u) => DropdownMenuItem(value: u, child: Text(u, overflow: TextOverflow.ellipsis))).toList(),
                         onChanged: (v) => setDialogState(() {
@@ -97,7 +97,7 @@ class ListingFormDialog {
                       )),
                       if (subAreas.isNotEmpty)
                         _w(isMobile, DropdownButtonFormField<String>(
-                          isExpanded: true, value: subArea.isNotEmpty ? subArea : subAreas.first,
+                          key: ValueKey('sub_${upazila}_$subArea'), initialValue: subArea.isNotEmpty ? subArea : subAreas.first, isExpanded: true,
                           decoration: InputDecoration(labelText: '$subAreaLabel *', isDense: true),
                           items: subAreas.map((s) => DropdownMenuItem(value: s, child: Text(s, overflow: TextOverflow.ellipsis))).toList(),
                           onChanged: (v) => setDialogState(() => subArea = v!),

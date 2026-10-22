@@ -44,7 +44,8 @@ class ProfileAndSecurityDialog {
                   const SizedBox(height: 8),
                   Wrap(spacing: 8, runSpacing: 8, children: [
                     _w(isMobile, DropdownButtonFormField<String>(
-                      value: district,
+                      key: ValueKey('prof_dist_$district'),
+                      initialValue: district,
                       decoration: const InputDecoration(labelText: 'জেলা', isDense: true),
                       items: districts.map((d) => DropdownMenuItem(value: d, child: Text(d))).toList(),
                       onChanged: (v) {
@@ -56,7 +57,8 @@ class ProfileAndSecurityDialog {
                       },
                     )),
                     _w(isMobile, DropdownButtonFormField<String>(
-                      value: upazila,
+                      key: ValueKey('prof_upz_${district}_$upazila'),
+                      initialValue: upazila,
                       decoration: const InputDecoration(labelText: 'উপজেলা', isDense: true),
                       items: upazilas.map((u) => DropdownMenuItem(value: u, child: Text(u))).toList(),
                       onChanged: (v) => setDialogState(() => upazila = v!),

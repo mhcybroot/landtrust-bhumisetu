@@ -41,8 +41,9 @@ class AdvancedFiltersPanel extends StatelessWidget {
           SizedBox(
             width: colWidth,
             child: DropdownButtonFormField<String>(
+              key: ValueKey('filter_dist_$selectedDistrict'),
+              initialValue: selectedDistrict.isEmpty ? null : selectedDistrict,
               isExpanded: true,
-              value: selectedDistrict.isEmpty ? null : selectedDistrict,
               decoration: const InputDecoration(labelText: 'জেলা', isDense: true),
               items: [
                 const DropdownMenuItem(value: '', child: Text('সকল জেলা', overflow: TextOverflow.ellipsis)),
@@ -54,8 +55,9 @@ class AdvancedFiltersPanel extends StatelessWidget {
           SizedBox(
             width: colWidth,
             child: DropdownButtonFormField<String>(
+              key: ValueKey('filter_upz_${selectedDistrict}_$selectedUpazila'),
+              initialValue: upazilas.contains(selectedUpazila) && selectedUpazila.isNotEmpty ? selectedUpazila : null,
               isExpanded: true,
-              value: upazilas.contains(selectedUpazila) && selectedUpazila.isNotEmpty ? selectedUpazila : null,
               decoration: const InputDecoration(labelText: 'উপজেলা / পৌরসভা', isDense: true),
               items: [
                 const DropdownMenuItem(value: '', child: Text('সকল এলাকা', overflow: TextOverflow.ellipsis)),

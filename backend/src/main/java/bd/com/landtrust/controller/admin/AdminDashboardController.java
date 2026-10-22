@@ -2,6 +2,7 @@ package bd.com.landtrust.controller.admin;
 
 import bd.com.landtrust.entity.*;
 import bd.com.landtrust.repository.*;
+import bd.com.landtrust.service.SystemSettingService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,7 +17,7 @@ import java.util.*;
 public class AdminDashboardController {
 
     private final UserRepository userRepository;
-    private final SystemSettingRepository settingRepository;
+    private final SystemSettingService settingService;
     private final LandListingRepository listingRepository;
     private final BuyerRequirementRepository requirementRepository;
     private final LandInquiryRepository inquiryRepository;
@@ -26,7 +27,7 @@ public class AdminDashboardController {
 
     public AdminDashboardController(
             UserRepository userRepository,
-            SystemSettingRepository settingRepository,
+            SystemSettingService settingService,
             LandListingRepository listingRepository,
             BuyerRequirementRepository requirementRepository,
             LandInquiryRepository inquiryRepository,
@@ -34,7 +35,7 @@ public class AdminDashboardController {
             CommissionEntryRepository commissionRepository,
             FinancialTransactionRepository transactionRepository) {
         this.userRepository = userRepository;
-        this.settingRepository = settingRepository;
+        this.settingService = settingService;
         this.listingRepository = listingRepository;
         this.requirementRepository = requirementRepository;
         this.inquiryRepository = inquiryRepository;
@@ -44,10 +45,7 @@ public class AdminDashboardController {
     }
 
     private SystemSettingEntity getSettings() {
-        return settingRepository.findAll().stream().findFirst().orElseGet(() -> {
-            SystemSettingEntity def = new SystemSettingEntity();
-            return settingRepository.save(def);
-        });
+        return settingService.getSettings();
     }
 
     @GetMapping("/dashboard")
@@ -134,13 +132,19 @@ public class AdminDashboardController {
     }
 
     private List<Map<String, Object>> computeAutoMatches(List<LandListingEntity> listings, List<BuyerRequirementEntity> reqs) {
+        List<BuyerRequirementEntity> activeReqs = reqs.stream()
+                .filter(r -> "ACTIVE".equals(r.getStatus()) || "MATCHED".equals(r.getStatus()) || "SUBMITTED".equals(r.getStatus()))
+                .limit(50)
+                .toList();
+
+        List<LandListingEntity> activeListings = listings.stream()
+                .filter(l -> "APPROVED_PUBLISHED".equals(l.getListingStatus()) || "RESERVED".equals(l.getListingStatus()))
+                .limit(100)
+                .toList();
+
         List<Map<String, Object>> matches = new ArrayList<>();
-        for (BuyerRequirementEntity req : reqs) {
-            if ("REJECTED".equals(req.getStatus()) || "SUSPENDED".equals(req.getStatus())) continue;
-            for (LandListingEntity land : listings) {
-                if ("REJECTED".equals(land.getListingStatus()) || "SUSPENDED".equals(land.getListingStatus()) || "SOLD".equals(land.getListingStatus())) {
-                    continue;
-                }
+        for (BuyerRequirementEntity req : activeReqs) {
+            for (LandListingEntity land : activeListings) {
                 int score = 0;
                 List<String> reasons = new ArrayList<>();
                 if (req.getPreferredDistrict() != null && req.getPreferredDistrict().equalsIgnoreCase(land.getDistrict())) score += 20;
@@ -178,6 +182,6 @@ public class AdminDashboardController {
             }
         }
         matches.sort((a, b) -> Integer.compare((int) b.get("matchScore"), (int) a.get("matchScore")));
-        return matches;
+        return matches.stream().limit(50).toList();
     }
 }
