@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:landtrust_app/core/animations/animated_count_text.dart';
 import 'package:landtrust_app/core/animations/hover_lift_card.dart';
+import 'package:landtrust_app/core/animations/shimmer_effect.dart';
 import 'package:landtrust_app/core/widgets/frosted_glass_container.dart';
+import 'package:landtrust_app/core/widgets/smart_image_viewer.dart';
 
 void main() {
   group('AnimatedCountText Widget Tests', () {
@@ -137,6 +139,56 @@ void main() {
 
       final filterWidget = tester.widget<BackdropFilter>(find.byType(BackdropFilter));
       expect(filterWidget.filter.toString(), contains('blur'));
+    });
+  });
+
+  group('SmartImageViewer Widget Tests', () {
+    testWidgets('renders fallback when url is null', (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(home: Scaffold(body: SmartImageViewer(url: null))),
+      );
+      expect(find.byIcon(Icons.landscape_rounded), findsOneWidget);
+    });
+
+    testWidgets('renders memory image when url is base64 data URI', (tester) async {
+      const base64Png =
+          'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
+      await tester.pumpWidget(
+        const MaterialApp(home: Scaffold(body: SmartImageViewer(url: base64Png))),
+      );
+      expect(find.byType(Image), findsOneWidget);
+      expect(find.byIcon(Icons.landscape_rounded), findsNothing);
+    });
+
+    testWidgets('configures network shimmer placeholder and fade entrance', (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: SmartImageViewer(url: 'https://example.com/land.jpg', height: 100, width: 100),
+          ),
+        ),
+      );
+
+      final imageFinder = find.byType(Image);
+      expect(imageFinder, findsOneWidget);
+      final image = tester.widget<Image>(imageFinder);
+      expect(image.loadingBuilder, isNotNull);
+      expect(image.frameBuilder, isNotNull);
+
+      final context = tester.element(imageFinder);
+      final loadingWidget = image.loadingBuilder!(
+        context,
+        const SizedBox(),
+        const ImageChunkEvent(cumulativeBytesLoaded: 10, expectedTotalBytes: 100),
+      );
+      expect(loadingWidget, isA<ShimmerEffect>());
+
+      const dummy = SizedBox(key: ValueKey('child'));
+      expect(image.loadingBuilder!(context, dummy, null), equals(dummy));
+
+      final frameWidget = image.frameBuilder!(context, dummy, 1, false) as AnimatedOpacity;
+      expect(frameWidget.opacity, 1.0);
+      expect(frameWidget.duration, const Duration(milliseconds: 280));
     });
   });
 }
