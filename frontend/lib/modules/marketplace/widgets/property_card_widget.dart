@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/animations/hover_lift_card.dart';
+import '../../../../core/animations/pulse_beacon_indicator.dart';
 import '../../../../core/localization/app_strings.dart';
 import '../../../../core/utils/whatsapp_helper.dart';
 import '../../../../core/widgets/smart_image_viewer.dart';
@@ -63,7 +64,7 @@ class PropertyCardWidget extends StatelessWidget {
                       child: Wrap(
                         spacing: 4,
                         children: [
-                          if (hasVideo) _mediaIndicator(Icons.play_circle_fill, 'ভিডিও', Colors.red.shade700),
+                          if (hasVideo) _mediaIndicator(Icons.play_circle_fill, 'ভিডিও', Colors.red.shade700, showPulse: true),
                           if (hasMap) _mediaIndicator(Icons.map, 'ম্যাপ', Colors.blue.shade800),
                         ],
                       ),
@@ -172,13 +173,17 @@ class PropertyCardWidget extends StatelessWidget {
     );
   }
 
-  Widget _mediaIndicator(IconData icon, String label, Color color) {
+  Widget _mediaIndicator(IconData icon, String label, Color color, {bool showPulse = false}) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
       decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(10)),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
+          if (showPulse) ...[
+            const PulseBeaconIndicator(color: Colors.white, size: 5),
+            const SizedBox(width: 4),
+          ],
           Icon(icon, size: 12, color: Colors.white),
           const SizedBox(width: 3),
           Text(label, style: const TextStyle(fontSize: 9.5, color: Colors.white, fontWeight: FontWeight.bold)),

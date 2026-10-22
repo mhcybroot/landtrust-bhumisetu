@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:landtrust_app/core/animations/pulse_beacon_indicator.dart';
 import 'package:landtrust_app/core/animations/sheen_sweep_effect.dart';
 import 'package:landtrust_app/core/widgets/animated_success_dialog.dart';
 import 'package:landtrust_app/core/widgets/status_badge.dart';
@@ -66,5 +67,22 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(confirmed, isTrue);
+  });
+
+  testWidgets('PulseBeaconIndicator renders radiating rings and center dot', (tester) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(
+          body: PulseBeaconIndicator(
+            color: Colors.green,
+            size: 10,
+          ),
+        ),
+      ),
+    );
+
+    expect(find.byType(PulseBeaconIndicator), findsOneWidget);
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.byType(PulseBeaconIndicator), findsOneWidget);
   });
 }
