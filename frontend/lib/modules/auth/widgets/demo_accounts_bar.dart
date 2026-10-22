@@ -24,8 +24,8 @@ class DemoAccountsBar extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            '⚡ ডেমো অ্যাকাউন্ট পরীক্ষা (১-ক্লিক লগইন):',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5, color: Color(0xFF0B4F32)),
+            '⚡ ডেমো অ্যাকাউন্ট পরীক্ষা / Reviewer Quick Access (1-Click):',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFF0B4F32)),
           ),
           const SizedBox(height: 8),
           Wrap(

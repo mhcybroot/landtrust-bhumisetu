@@ -123,4 +123,10 @@ class MemberRepository {
     });
     ApiClient.parseResponse(res);
   }
+
+  Future<void> deleteAccount() async {
+    final res = await ApiClient.delete('/member/account');
+    ApiClient.parseResponse(res);
+    await SessionManager.instance.clearSession();
+  }
 }

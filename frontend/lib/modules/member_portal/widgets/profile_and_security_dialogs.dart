@@ -9,6 +9,7 @@ class ProfileAndSecurityDialog {
     required List<String> Function(String) getUpazilas,
     required Future<void> Function(String name, String district, String upazila, String address) onUpdateProfile,
     required Future<void> Function(String oldPass, String newPass) onChangePassword,
+    Future<void> Function()? onDeleteAccount,
   }) {
     final nameCtrl = TextEditingController(text: user['fullName'] ?? '');
     String district = user['district']?.toString() ?? (districts.isNotEmpty ? districts.first : 'নোয়াখালী');
@@ -119,6 +120,19 @@ class ProfileAndSecurityDialog {
                       child: changingPass ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) : const Text('পাসওয়ার্ড পরিবর্তন'),
                     ),
                   ),
+                  if (onDeleteAccount != null) ...[
+                    const Divider(height: 24),
+                    const Text('অ্যাকাউন্ট ও ডেটা ডিলিট (Danger Zone)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.red)),
+                    const SizedBox(height: 4),
+                    const Text('প্লে স্টোর নীতি অনুযায়ী আপনি যেকোনো সময় আপনার অ্যাকাউন্ট ও যাবতীয় ডেটা মুছে ফেলতে পারেন।', style: TextStyle(fontSize: 11, color: Colors.grey)),
+                    const SizedBox(height: 8),
+                    OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(foregroundColor: Colors.red, side: const BorderSide(color: Colors.red)),
+                      icon: const Icon(Icons.delete_forever_rounded, size: 16),
+                      label: const Text('অ্যাকাউন্ট ডিলিট করুন', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                      onPressed: () => _confirmAccountDeletion(context, ctx, onDeleteAccount),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -127,6 +141,35 @@ class ProfileAndSecurityDialog {
             TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('বন্ধ করুন')),
           ],
         ),
+      ),
+    );
+  }
+
+  static void _confirmAccountDeletion(BuildContext context, BuildContext dialogCtx, Future<void> Function() onDelete) {
+    showDialog(
+      context: context,
+      builder: (c) => AlertDialog(
+        title: const Text('অ্যাকাউন্ট মুছে ফেলতে চান?', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+        content: const Text('আপনার প্রোফাইল, ফোন নম্বর ও সমস্ত ডেটা সার্ভার থেকে স্থায়ীভাবে অপসারিত হবে। এই প্রক্রিয়াটি অপরিবর্তনীয়।'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(c), child: const Text('বাতিল')),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
+            onPressed: () async {
+              Navigator.pop(c);
+              Navigator.pop(dialogCtx);
+              try {
+                await onDelete();
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('অ্যাকাউন্ট সফলভাবে মুছে ফেলা হয়েছে।')));
+                }
+              } catch (e) {
+                if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+              }
+            },
+            child: const Text('হ্যাঁ, মুছে ফেলুন'),
+          ),
+        ],
       ),
     );
   }

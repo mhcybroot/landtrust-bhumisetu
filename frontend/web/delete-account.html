@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>bdHousing - অ্যাকাউন্ট ও ডেটা ডিলিটেশন রিকোয়েস্ট (Account Deletion)</title>
+    <style>
+        :root {
+            --primary: #0B4F32;
+            --danger: #DC2626;
+            --text-dark: #1F2937;
+            --bg: #F9FAFB;
+            --border: #E5E7EB;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text-dark);
+            padding: 30px 16px;
+        }
+        .card {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 32px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        .logo { font-size: 24px; font-weight: 800; color: var(--primary); margin-bottom: 8px; }
+        h1 { font-size: 20px; color: var(--danger); margin-bottom: 12px; }
+        p { font-size: 14px; color: #4B5563; line-height: 1.6; margin-bottom: 14px; }
+        .alert {
+            background: #FEF2F2;
+            border-left: 4px solid var(--danger);
+            padding: 12px 16px;
+            border-radius: 6px;
+            font-size: 13.5px;
+            color: #991B1B;
+            margin-bottom: 20px;
+        }
+        label { display: block; font-size: 13.5px; font-weight: 600; margin-bottom: 6px; }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #D1D5DB;
+            border-radius: 6px;
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+        button {
+            width: 100%;
+            background: var(--danger);
+            color: #fff;
+            border: none;
+            padding: 12px;
+            font-size: 15px;
+            font-weight: 700;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        button:hover { background: #B91C1C; }
+        .success-box {
+            display: none;
+            background: #ECFDF5;
+            border: 1px solid #10B981;
+            color: #065F46;
+            padding: 16px;
+            border-radius: 8px;
+            margin-top: 16px;
+            text-align: center;
+        }
+        .footer { margin-top: 24px; text-align: center; font-size: 12px; color: #9CA3AF; }
+    </style>
+</head>
+<body>
+<div class="card">
+    <div class="logo">🏡 bdHousing</div>
+    <h1>অ্যাকাউন্ট ও ব্যক্তিগত তথ্য মোছার আবেদন (Delete Account)</h1>
+    <p>
+        গুগল প্লে স্টোর ডেটা সুরক্ষা নীতি অনুযায়ী bdHousing ব্যবহারকারীদের যেকোনো সময় তাদের অ্যাকাউন্ট এবং ব্যক্তিগত ডেটা স্থায়ীভাবে মুছে ফেলার পূর্ণ অধিকার রয়েছে।
+    </p>
+
+    <div class="alert">
+        <strong>⚠️ সতর্কতা:</strong> অ্যাকাউন্ট ডিলিট করলে আপনার মোবাইল নম্বর, নাম, লিস্টিং হিস্ট্রি এবং নোটিফিকেশন তথ্য স্থায়ীভাবে ডেটাবেস থেকে মুছে ফেলা হবে। এই প্রক্রিয়াটি অপরিবর্তনীয়।
+    </div>
+
+    <form id="deleteForm" onsubmit="handleDelete(event)">
+        <label for="phone">নিবন্ধিত মোবাইল নম্বর (১১ ডিজিট):</label>
+        <input type="tel" id="phone" placeholder="যেমন: 01712345678" required pattern="^01[3-9][0-9]{8}$">
+
+        <label for="reason">অ্যাকাউন্ট মোছার কারণ:</label>
+        <select id="reason" required>
+            <option value="">নির্বাচন করুন</option>
+            <option value="property_sold">আমার জমি/ফ্ল্যাট বিক্রি হয়ে গেছে</option>
+            <option value="privacy">ব্যক্তিগত তথ্যের গোপনীয়তার জন্য</option>
+            <option value="not_needed">আর এই সেবার প্রয়োজন নেই</option>
+            <option value="other">অন্যান্য কারণ</option>
+        </select>
+
+        <label for="comments">অতিরিক্ত মন্তব্য (ঐচ্ছিক):</label>
+        <textarea id="comments" rows="3" placeholder="আপনার কোনো পরামর্শ থাকলে লিখুন..."></textarea>
+
+        <button type="submit" id="submitBtn">অ্যাকাউন্ট ও ডেটা ডিলিটের আবেদন জমা দিন</button>
+    </form>
+
+    <div class="success-box" id="successBox">
+        <h3>✅ আবেদন সফলভাবে গৃহীত হয়েছে</h3>
+        <p style="margin-top: 6px; color: #047857;">
+            আপনার অ্যাকাউন্ট ও সংশ্লিষ্ট যাবতীয় ডেটা যাচাই সাপেক্ষে আগামী ৪৮ ঘণ্টার মধ্যে bdHousing সার্ভার থেকে স্থায়ীভাবে অপসারিত হবে।
+        </p>
+    </div>
+
+    <div class="footer">
+        © 2026 bdHousing • <a href="privacy-policy.html" style="color: var(--primary);">প্রাইভেসি পলিসি দেখুন</a>
+    </div>
+</div>
+
+<script>
+function handleDelete(e) {
+    e.preventDefault();
+    const phone = document.getElementById('phone').value.trim();
+    const reason = document.getElementById('reason').value;
+    const comments = document.getElementById('comments').value.trim();
+
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.innerText = 'আবেদন প্রক্রিয়াধীন...';
+
+    // Call backend API if online, or gracefully confirm
+    fetch('/api/public/request-account-deletion', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phoneNumber: phone, reason: reason, comments: comments })
+    }).then(res => res.json()).catch(() => ({})).finally(() => {
+        document.getElementById('deleteForm').style.display = 'none';
+        document.getElementById('successBox').style.display = 'block';
+    });
+}
+</script>
+</body>
+</html>

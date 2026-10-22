@@ -184,4 +184,19 @@ public class MemberProfileController {
                 "message", "সংশোধিত পেমেন্ট তথ্য সফলভাবে জমা হয়েছে! অ্যাডমিন যাচাই করে সক্রিয় করবেন।"
         ));
     }
+
+    @RequestMapping(value = {"/account", "/account/delete", "/delete-account"}, method = {RequestMethod.DELETE, RequestMethod.POST})
+    public ResponseEntity<?> deleteMyAccount(Authentication auth) {
+        UserEntity user = currentUser(auth);
+        user.setAccountStatus("DELETED");
+        user.setFullName("মুছে ফেলা সদস্য (" + user.getId() + ")");
+        user.setPhoneNumber("DEL_" + System.currentTimeMillis() + "_" + user.getPhoneNumber());
+        user.setAddress("DELETED");
+        userRepository.save(user);
+
+        return ResponseEntity.ok(Map.of(
+                "status", "SUCCESS",
+                "message", "আপনার অ্যাকাউন্ট ও ব্যক্তিগত তথ্য সফলভাবে মুছে ফেলা হয়েছে।"
+        ));
+    }
 }

@@ -122,15 +122,18 @@ class _RegisterFormCardState extends State<RegisterFormCard> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF0B4F32),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                ),
+                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 13), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
                 onPressed: widget.isLoading ? null : _handleRegister,
                 icon: const Icon(Icons.check_circle_outline, size: 18),
-                label: Text('নিবন্ধন সম্পন্ন করুন (ফি: ৳$roleFee)', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                label: Text('নিবন্ধন সম্পন্ন করুন (ফি: ৳$roleFee)', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Center(
+              child: Text(
+                'নিবন্ধন করার মাধ্যমে আপনি আমাদের গোপনীয়তা ও শর্তাবলীতে সম্মত হচ্ছেন।',
+                style: TextStyle(fontSize: 10.5, color: Colors.grey),
+                textAlign: TextAlign.center,
               ),
             ),
           ],

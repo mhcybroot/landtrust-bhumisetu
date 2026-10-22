@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/localization/app_strings.dart';
 import '../../../../core/localization/language_toggle_button.dart';
 import '../../chat/views/my_chat_threads_dialog.dart';
+import '../../marketplace/views/privacy_policy_view.dart';
 import 'shell_helpline_dialog.dart';
 
 class ShellDrawer extends StatelessWidget {
@@ -81,6 +82,15 @@ class ShellDrawer extends StatelessWidget {
                     onTap: () {
                       Navigator.pop(context);
                       ShellHelplineDialog.show(context, config);
+                    },
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.privacy_tip_outlined, color: Color(0xFF0B4F32)),
+                    title: const Text('গোপনীয়তা ও ডেটা সুরক্ষা', style: TextStyle(fontWeight: FontWeight.w600)),
+                    trailing: const Icon(Icons.chevron_right, size: 20),
+                    onTap: () {
+                      Navigator.pop(context);
+                      PrivacyPolicyView.show(context);
                     },
                   ),
                   if (isLoggedIn) ...[

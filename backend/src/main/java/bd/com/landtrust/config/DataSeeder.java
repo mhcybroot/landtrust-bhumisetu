@@ -43,7 +43,7 @@ public class DataSeeder implements CommandLineRunner {
             s.setDealClosurePercentCommission(new BigDecimal("10"));
             s.setAdvisoryReservePercent(new BigDecimal("25"));
             s.setSupportPhone("01711-889900");
-            s.setSupportEmail("support@bhumisetu.com.bd");
+            s.setSupportEmail("support@bdhousing.com.bd");
             s.setOfficeAddress("প্রধান কার্যালয়: মাইজদী কোর্ট, সদর, নোয়াখালী");
             settingRepository.save(s);
         }
@@ -65,7 +65,7 @@ public class DataSeeder implements CommandLineRunner {
 
             PaymentMethodEntity bank = new PaymentMethodEntity();
             bank.setProviderName("ইসলামী ব্যাংক পিএলসি (মাইজদী শাখা)");
-            bank.setAccountNumber("A/C: 205019802004512 (Bhumi Setu)");
+            bank.setAccountNumber("A/C: 205019802004512 (bdHousing)");
             bank.setAccountType("Bank Account");
             bank.setInstructions("ব্যাংক ডিপোজিট বা সেলফিন/NPSB ট্রান্সফার করে রেফারেন্স আইডি দিন।");
             bank.setActive(true);

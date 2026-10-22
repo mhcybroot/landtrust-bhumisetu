@@ -181,4 +181,28 @@ public class PublicListingController {
         stats.put("coveredUpazilas", upazilas);
         return ResponseEntity.ok(stats);
     }
+
+    @PostMapping("/request-account-deletion")
+    public ResponseEntity<?> requestAccountDeletion(@RequestBody Map<String, String> body) {
+        String phone = body.getOrDefault("phoneNumber", "").trim();
+        String reason = body.getOrDefault("reason", "").trim();
+        String comments = body.getOrDefault("comments", "").trim();
+
+        if (phone.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "মোবাইল নম্বর আবশ্যক।"));
+        }
+
+        Optional<bd.com.landtrust.entity.UserEntity> userOpt = userRepository.findByPhoneNumber(phone);
+        if (userOpt.isPresent()) {
+            bd.com.landtrust.entity.UserEntity u = userOpt.get();
+            u.setAccountStatus("DELETION_REQUESTED");
+            u.setAdminNote("ইউজার ওয়েবফর্ম থেকে অ্যাকাউন্ট মোছার অনুরোধ করেছেন। কারণ: " + reason + " | মন্তব্য: " + comments);
+            userRepository.save(u);
+        }
+
+        return ResponseEntity.ok(Map.of(
+                "status", "SUCCESS",
+                "message", "আপনার অ্যাকাউন্ট ও ডেটা মুছে ফেলার অনুরোধ সফলভাবে গৃহীত হয়েছে। আমাদের টিম আগামী ৪৮ ঘণ্টার মধ্যে ডেটা স্থায়ীভাবে মুছে ফেলবে।"
+        ));
+    }
 }

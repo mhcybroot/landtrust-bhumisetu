@@ -49,7 +49,7 @@ class SafetyWarningCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           const Text(
-            'যেকোনো থার্ড-পার্টি অ্যাপ বা ওয়েবসাইট (যেমন- Bikroy বা bdHousing) থেকে জমি পছন্দ করার পর কোনো অবস্থাতেই আগে টাকা লেনদেন করবেন না। সরাসরি জমিতে গিয়ে অবস্থান যাচাই করুন এবং সরকারি ই-পর্চা বা ভূমি অফিসের মাধ্যমে দলিলের সত্যতা নিশ্চিত হয়ে তবেই আইনি প্রক্রিয়ায় রেজিস্ট্রেশন সম্পন্ন করুন।',
+            'যেকোনো অনলাইন প্ল্যাটফর্ম বা ওয়েবসাইট থেকে জমি বা ফ্ল্যাট পছন্দ করার পর কোনো অবস্থাতেই আগে টাকা লেনদেন করবেন না। সরাসরি জমিতে গিয়ে অবস্থান যাচাই করুন এবং সরকারি ই-পর্চা বা ভূমি অফিসের মাধ্যমে দলিলের সত্যতা নিশ্চিত হয়ে তবেই আইনি প্রক্রিয়ায় রেজিস্ট্রেশন সম্পন্ন করুন।',
             style: TextStyle(fontSize: 11.5, color: Color(0xFF3E2723), height: 1.4),
           ),
           const SizedBox(height: 6),
@@ -68,6 +68,28 @@ class SafetyWarningCard extends StatelessWidget {
                   child: Text(
                     'লেনদেন হবে সরাসরি ক্রেতা এবং বিক্রেতার হাতে। আমরা শুধুমাত্র একটি নিরাপদ মধ্যস্থতা তৈরি করে দেব।',
                     style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF0B4F32)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 6),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.amber.shade200),
+            ),
+            child: const Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(Icons.info_outline_rounded, size: 14, color: Color(0xFF0B4F32)),
+                SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    'আইনগত ঘোষণা: bdHousing একটি স্বাধীন বেসরকারি মার্কেটপ্লেস এবং এটি কোনো সরকারি দপ্তর বা বাংলাদেশ ভূমি মন্ত্রণালয়ের সাথে সরাসরি সংযুক্ত নয়।',
+                    style: TextStyle(fontSize: 10.5, color: Colors.black87),
                   ),
                 ),
               ],
@@ -117,7 +139,7 @@ class SafetyWarningCard extends StatelessWidget {
             SizedBox(height: 4),
             SelectableText('🌐 mutation.land.gov.bd (ই-নামজারি)', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0B4F32))),
             SizedBox(height: 8),
-            Text('সহায়তার প্রয়োজন হলে আমাদের হটলাইনে যোগাযোগ করতে পারেন।', style: TextStyle(fontSize: 11.5, color: Colors.black54)),
+            Text('ডিসক্লেইমার: উক্ত পোর্টালসমূহ সরকারি সেবা। bdHousing কোনো সরকারি সত্তা নয়, তথ্য যাচাইয়ে ব্যবহারকারীদের রেফারেন্স হিসেবে এই লিংকগুলো প্রদান করা হয়েছে।', style: TextStyle(fontSize: 11, color: Colors.black54)),
           ],
         ),
         actions: [

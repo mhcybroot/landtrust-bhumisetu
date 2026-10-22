@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/animations/bouncing_pressable.dart';
+import '../../marketplace/views/privacy_policy_view.dart';
 
 class LoginFormCard extends StatefulWidget {
   final bool isMobile;
@@ -93,6 +94,14 @@ class _LoginFormCardState extends State<LoginFormCard> {
                         'লগইন করুন',
                         style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white),
                       ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            Center(
+              child: TextButton.icon(
+                onPressed: () => PrivacyPolicyView.show(context),
+                icon: const Icon(Icons.privacy_tip_outlined, size: 14, color: Colors.black54),
+                label: const Text('গোপনীয়তা ও ডেটা নীতিমালা (Privacy Policy)', style: TextStyle(fontSize: 11, color: Colors.black54)),
               ),
             ),
           ],

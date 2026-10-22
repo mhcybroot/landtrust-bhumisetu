@@ -140,4 +140,9 @@ class MemberPortalViewModel extends ChangeNotifier {
   Future<void> changePassword(String oldPass, String newPass) async {
     await _repo.changePassword(oldPass, newPass);
   }
+
+  Future<void> deleteAccount() async {
+    await _repo.deleteAccount();
+    notifyListeners();
+  }
 }

@@ -24,8 +24,13 @@ class PaymentInfoBox extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'নিবন্ধন ফি: ৳${(fee as num?)?.toInt() ?? fee} (নিচের নম্বরে Send Money করুন)',
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+            'সার্ভিস ফি: ৳${(fee as num?)?.toInt() ?? fee} (ফিল্ড পরিদর্শন, নথি যাচাই ও লিস্টিং ফি)',
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF0B4F32)),
+          ),
+          const SizedBox(height: 2),
+          const Text(
+            'নিচের যেকোনো অনুমোদিত নম্বরে Send Money করে TrxID প্রদান করুন:',
+            style: TextStyle(fontSize: 11, color: Colors.black54),
           ),
           const SizedBox(height: 6),
           ...paymentMethods.map((pm) => Padding(
