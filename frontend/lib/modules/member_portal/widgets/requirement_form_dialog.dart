@@ -24,14 +24,15 @@ class RequirementFormDialog {
     String subArea = existing?['subArea'] ?? (subAreas.isNotEmpty ? subAreas.first : '');
     if (subArea.isNotEmpty && !subAreas.contains(subArea)) subAreas.insert(0, subArea);
 
+    final bool isEdit = existing != null;
     final areaCtrl = TextEditingController(text: existing?['preferredArea'] ?? '');
-    final minAreaCtrl = TextEditingController(text: existing?['minAreaDecimal']?.toString() ?? '5');
-    final maxAreaCtrl = TextEditingController(text: existing?['maxAreaDecimal']?.toString() ?? '15');
-    final minBudCtrl = TextEditingController(text: existing?['minBudgetBdt']?.toString() ?? '1000000');
-    final maxBudCtrl = TextEditingController(text: existing?['maxBudgetBdt']?.toString() ?? '3000000');
+    final minAreaCtrl = TextEditingController(text: existing?['minAreaDecimal']?.toString() ?? (isEdit ? '' : '5'));
+    final maxAreaCtrl = TextEditingController(text: existing?['maxAreaDecimal']?.toString() ?? (isEdit ? '' : '15'));
+    final minBudCtrl = TextEditingController(text: existing?['minBudgetBdt']?.toString() ?? (isEdit ? '' : '1000000'));
+    final maxBudCtrl = TextEditingController(text: existing?['maxBudgetBdt']?.toString() ?? (isEdit ? '' : '3000000'));
     String timeline = existing?['purchaseTimeline'] ?? '১ মাসের মধ্যে';
-    final purposeCtrl = TextEditingController(text: existing?['purpose'] ?? 'বাড়ি নির্মাণ');
-    final reqsCtrl = TextEditingController(text: existing?['specialRequirements'] ?? 'নিষ্কণ্টক কাগজপত্র ও পাকা রাস্তা সংলগ্ন');
+    final purposeCtrl = TextEditingController(text: existing?['purpose'] ?? (isEdit ? '' : 'বাড়ি নির্মাণ'));
+    final reqsCtrl = TextEditingController(text: existing?['specialRequirements'] ?? (isEdit ? '' : 'নিষ্কণ্টক কাগজপত্র ও পাকা রাস্তা সংলগ্ন'));
     bool submitting = false;
 
     showDialog(

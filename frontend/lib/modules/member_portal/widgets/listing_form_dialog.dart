@@ -28,11 +28,12 @@ class ListingFormDialog {
     String subArea = existing?['subArea'] ?? (subAreas.isNotEmpty ? subAreas.first : '');
     if (subArea.isNotEmpty && !subAreas.contains(subArea)) subAreas.insert(0, subArea);
 
+    final subAreaCtrl = TextEditingController(text: subArea);
     final areaNameCtrl = TextEditingController(text: existing?['areaName'] ?? '');
     final mouzaCtrl = TextEditingController(text: existing?['mouzaName'] ?? '');
     final areaDecCtrl = TextEditingController(text: existing?['areaDecimal']?.toString() ?? '');
     final priceCtrl = TextEditingController(text: existing?['expectedPriceBdt']?.toString() ?? '');
-    final roadCtrl = TextEditingController(text: existing?['roadAccessInfo'] ?? '১২ ফুট প্রশস্ত রাস্তা');
+    final roadCtrl = TextEditingController(text: existing?['roadAccessInfo'] ?? (existing != null ? '' : '১২ ফুট প্রশস্ত রাস্তা'));
     final descCtrl = TextEditingController(text: existing?['description'] ?? '');
     final imgCtrl = TextEditingController(text: existing?['imageUrl'] ?? '');
     final extraImgsCtrl = TextEditingController(text: existing?['additionalImageUrls'] ?? '');
@@ -102,7 +103,7 @@ class ListingFormDialog {
                           onChanged: (v) => setDialogState(() => subArea = v!),
                         ))
                       else
-                        _w(isMobile, TextField(controller: TextEditingController(text: subArea), onChanged: (v) => subArea = v, decoration: InputDecoration(labelText: '$subAreaLabel (যদি থাকে)', isDense: true))),
+                        _w(isMobile, TextField(controller: subAreaCtrl, onChanged: (v) => subArea = v, decoration: InputDecoration(labelText: '$subAreaLabel (যদি থাকে)', isDense: true))),
                       _w(isMobile, TextField(controller: areaNameCtrl, decoration: const InputDecoration(labelText: 'গ্রাম / পাড়া / রোড নং *', isDense: true))),
                       _w(isMobile, TextField(controller: mouzaCtrl, decoration: const InputDecoration(labelText: 'মৌজা ও জেএল নম্বর', isDense: true))),
                       _w(isMobile, TextField(controller: areaDecCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'পরিমাণ (শতাংশ বা স্কয়ার ফিট) *', isDense: true))),

@@ -44,18 +44,14 @@ class _AdminSettingsTabState extends State<AdminSettingsTab> {
     if (_saving || !mounted) return;
     final s = (widget.viewModel.dashboard['settings'] as Map<String, dynamic>?) ?? {};
     if (s.isEmpty) return;
-    if (s['supportPhone'] != null && _phoneCtrl.text != s['supportPhone']) {
-      _phoneCtrl.text = s['supportPhone'].toString();
-    }
-    if (s['supportWhatsapp'] != null && _whatsappCtrl.text != s['supportWhatsapp']) {
-      _whatsappCtrl.text = s['supportWhatsapp'].toString();
-    }
-    if (s['supportEmail'] != null && _emailCtrl.text != s['supportEmail']) {
-      _emailCtrl.text = s['supportEmail'].toString();
-    }
-    if (s['officeAddress'] != null && _addrCtrl.text != s['officeAddress']) {
-      _addrCtrl.text = s['officeAddress'].toString();
-    }
+    if (s['buyerRegistrationFee'] != null) _buyerFeeCtrl.text = '${s['buyerRegistrationFee']}';
+    if (s['sellerRegistrationFeePourashava'] != null) _sellerFeePourashavaCtrl.text = '${s['sellerRegistrationFeePourashava']}';
+    if (s['sellerRegistrationFeeUnion'] != null) _sellerFeeUnionCtrl.text = '${s['sellerRegistrationFeeUnion']}';
+    if (s['officerRegistrationFee'] != null) _officerFeeCtrl.text = '${s['officerRegistrationFee']}';
+    if (s['supportPhone'] != null) _phoneCtrl.text = s['supportPhone'].toString();
+    if (s['supportWhatsapp'] != null) _whatsappCtrl.text = s['supportWhatsapp'].toString();
+    if (s['supportEmail'] != null) _emailCtrl.text = s['supportEmail'].toString();
+    if (s['officeAddress'] != null) _addrCtrl.text = s['officeAddress'].toString();
   }
 
   @override

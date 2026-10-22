@@ -34,10 +34,23 @@ class _AdminListingFeesCardState extends State<AdminListingFeesCard> {
     _feeFlatCtrl = TextEditingController(text: '${s['listingFeeFlat'] ?? 1500}');
     _feeCommCtrl = TextEditingController(text: '${s['listingFeeCommercial'] ?? 2000}');
     _feeFeaturedCtrl = TextEditingController(text: '${s['listingFeeFeaturedExtra'] ?? 1000}');
+    widget.viewModel.addListener(_syncFees);
+  }
+
+  void _syncFees() {
+    if (_saving || !mounted) return;
+    final s = (widget.viewModel.dashboard['settings'] as Map<String, dynamic>?) ?? {};
+    if (s.isEmpty) return;
+    if (s['listingFeeAgri'] != null) _feeAgriCtrl.text = '${s['listingFeeAgri']}';
+    if (s['listingFeeResidential'] != null) _feeResCtrl.text = '${s['listingFeeResidential']}';
+    if (s['listingFeeFlat'] != null) _feeFlatCtrl.text = '${s['listingFeeFlat']}';
+    if (s['listingFeeCommercial'] != null) _feeCommCtrl.text = '${s['listingFeeCommercial']}';
+    if (s['listingFeeFeaturedExtra'] != null) _feeFeaturedCtrl.text = '${s['listingFeeFeaturedExtra']}';
   }
 
   @override
   void dispose() {
+    widget.viewModel.removeListener(_syncFees);
     for (final c in [_feeAgriCtrl, _feeResCtrl, _feeFlatCtrl, _feeCommCtrl, _feeFeaturedCtrl]) {
       c.dispose();
     }

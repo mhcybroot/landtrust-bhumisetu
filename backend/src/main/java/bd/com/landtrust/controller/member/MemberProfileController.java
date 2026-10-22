@@ -43,6 +43,12 @@ public class MemberProfileController {
         return userRepository.findById(u.getId()).orElse(u);
     }
 
+    @GetMapping({"/me", "/profile/me"})
+    public ResponseEntity<?> getMyProfile(Authentication auth) {
+        UserEntity user = currentUser(auth);
+        return ResponseEntity.ok(Map.of("user", UserMapper.sanitizeUser(user)));
+    }
+
     @PutMapping("/profile")
     public ResponseEntity<?> updateMyProfile(Authentication auth, @RequestBody Map<String, String> body) {
         UserEntity user = currentUser(auth);

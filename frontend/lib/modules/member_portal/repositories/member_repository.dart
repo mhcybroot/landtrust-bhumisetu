@@ -113,7 +113,13 @@ class MemberRepository {
       'upazila': upazila,
       'address': address,
     });
-    ApiClient.parseResponse(res);
+    final data = ApiClient.parseResponse(res);
+    if (data is Map<String, dynamic> && data['user'] != null) {
+      await SessionManager.instance.saveSession(
+        SessionManager.instance.token ?? '',
+        data['user'] as Map<String, dynamic>,
+      );
+    }
   }
 
   Future<void> changePassword(String currentPassword, String newPassword) async {

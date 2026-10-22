@@ -35,9 +35,9 @@ class RulesAndFeesWebView extends StatelessWidget {
                     children: [
                       const Text('১. নিবন্ধন ফি ও কমিশন হার', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                       const SizedBox(height: 8),
-                      Text('• ক্রেতা নিবন্ধন ফি: ৳${settings['buyerRegistrationFee'] ?? 500} (চাহিদা নিবন্ধন ও সংযোগ সহায়তা)'),
-                      Text('• বিক্রেতা নিবন্ধন ফি: ৳${settings['sellerRegistrationFee'] ?? 500} (বাস্তব প্রোপার্টি ফিল্ড পরিদর্শন, নথি যাচাই ও লিস্টিং সেবা ফি)'),
-                      Text('• মার্কেটিং অফিসার নিবন্ধন ফি: ৳${settings['officerRegistrationFee'] ?? 300} (ইউনিক কোড ও কমিশন পোর্টাল)'),
+                      Text('• ক্রেতা নিবন্ধন ফি: ৳${settings['buyerRegistrationFee'] ?? 1000} (চাহিদা নিবন্ধন ও সংযোগ সহায়তা)'),
+                      Text('• বিক্রেতা নিবন্ধন ফি: ৳${settings['sellerRegistrationFee'] ?? 1000} (বাস্তব প্রোপার্টি ফিল্ড পরিদর্শন, নথি যাচাই ও লিস্টিং সেবা ফি)'),
+                      Text('• মার্কেটিং অফিসার নিবন্ধন ফি: ৳${settings['officerRegistrationFee'] ?? 1000} (ইউনিক কোড ও কমিশন পোর্টাল)'),
                       const Divider(height: 20),
                       const Text('২. পেমেন্ট পাঠানোর মাধ্যমসমূহ', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                       const SizedBox(height: 8),

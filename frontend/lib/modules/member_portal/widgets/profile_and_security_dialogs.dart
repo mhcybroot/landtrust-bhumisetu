@@ -75,7 +75,10 @@ class ProfileAndSecurityDialog {
                               setDialogState(() => savingProfile = true);
                               try {
                                 await onUpdateProfile(nameCtrl.text.trim(), district, upazila, addrCtrl.text.trim());
-                                if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('প্রোফাইল তথ্য সফলভাবে সংরক্ষিত হয়েছে!')));
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('প্রোফাইল তথ্য সফলভাবে সংরক্ষিত হয়েছে!')));
+                                  Navigator.pop(ctx);
+                                }
                               } catch (e) {
                                 if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
                               } finally {
