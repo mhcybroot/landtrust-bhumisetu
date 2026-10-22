@@ -107,6 +107,21 @@ public class MemberSellerController {
 
         // Multi-level listing fee tracking
         BigDecimal feeCharged = CommonUtils.parseDecimal(body.get("listingFeeChargedBdt"), BigDecimal.ZERO);
+        String distPrefix = "NOA";
+        String d = (String) body.getOrDefault("district", "নোয়াখালী");
+        if (d != null) {
+            if (d.contains("কুমিল্লা")) distPrefix = "CUM";
+            else if (d.contains("লক্ষ্মীপুর")) distPrefix = "LAK";
+            else if (d.contains("ফেনী")) distPrefix = "FEN";
+        }
+        long regCount = listingRepository.count() + 1001;
+        listing.setPropertyRegCode("PROP-" + distPrefix + "-" + regCount);
+
+        if (user.getReferredByOfficerId() != null) {
+            listing.setReferredOfficerId(user.getReferredByOfficerId());
+            listing.setReferredOfficerName(user.getReferredByOfficerName());
+        }
+
         listing.setListingFeeChargedBdt(feeCharged);
         listing.setPaymentMethod((String) body.getOrDefault("paymentMethod", ""));
         listing.setSenderPhone((String) body.getOrDefault("senderPhone", user.getPhoneNumber()));

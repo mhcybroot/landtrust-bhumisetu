@@ -98,31 +98,46 @@ public class AdminUserController {
             if (user.getReferredByOfficerId() != null) {
                 boolean alreadyAwarded = commissionRepository.findByReferredUserIdOrderByCreatedAtDesc(user.getId())
                         .stream()
-                        .anyMatch(c -> "REFERRAL_VERIFIED_FIXED".equals(c.getCommissionType()) && !"CANCELLED".equals(c.getStatus()));
+                        .anyMatch(c -> ("REFERRAL_VERIFIED_FIXED".equals(c.getCommissionType()) || "REGISTRATION_COMMISSION".equals(c.getCommissionType())) && !"CANCELLED".equals(c.getStatus()));
 
                 if (!alreadyAwarded) {
                     Optional<UserEntity> officerOpt = userRepository.findById(user.getReferredByOfficerId());
                     SystemSettingEntity settings = getSettings();
-                    if (officerOpt.isPresent() && settings.getReferralVerifiedBonusFixed().compareTo(BigDecimal.ZERO) > 0) {
+                    if (officerOpt.isPresent()) {
                         UserEntity officer = officerOpt.get();
-                        CommissionEntryEntity comm = new CommissionEntryEntity();
-                        comm.setOfficerId(officer.getId());
-                        comm.setOfficerName(officer.getFullName());
-                        comm.setReferralCode(officer.getMyReferralCode());
-                        comm.setReferredUserId(user.getId());
-                        comm.setReferredUserName(user.getFullName());
-                        comm.setReferredUserRole(user.getRole());
-                        comm.setCommissionType("REFERRAL_VERIFIED_FIXED");
-                        comm.setBaseDealAmountBdt(user.getRegistrationFeeAmount());
-                        comm.setPercentageRate(BigDecimal.ZERO);
-                        comm.setCommissionAmountBdt(settings.getReferralVerifiedBonusFixed());
-                        comm.setStatus("APPROVED_PAYABLE");
-                        comm.setNote("রেফারকৃত " + user.getRole() + " (" + user.getFullName() + ") যাচাইকৃত নিবন্ধন সম্মানী");
-                        commissionRepository.save(comm);
+                        BigDecimal commAmount = BigDecimal.ZERO;
+                        if ("BUYER".equals(user.getRole())) {
+                            commAmount = settings.getBuyerRegCommission() != null ? settings.getBuyerRegCommission() : new BigDecimal("100");
+                        } else if ("SELLER".equals(user.getRole())) {
+                            boolean isPou = (user.getUpazila() != null && (user.getUpazila().contains("পৌরসভা") || user.getUpazila().contains("সিটি কর্পোরেশন"))) || "POURASHAVA".equalsIgnoreCase(user.getAgentTier());
+                            commAmount = isPou ? (settings.getSellerRegCommissionPourashava() != null ? settings.getSellerRegCommissionPourashava() : new BigDecimal("200"))
+                                               : (settings.getSellerRegCommissionUnion() != null ? settings.getSellerRegCommissionUnion() : new BigDecimal("100"));
+                        } else {
+                            commAmount = settings.getReferralVerifiedBonusFixed() != null ? settings.getReferralVerifiedBonusFixed() : new BigDecimal("100");
+                        }
 
-                        CommissionHelper.syncOfficerCommissionTotals(userRepository, commissionRepository, officer.getId());
-                        CommonUtils.notifyUser(notificationRepository, officer.getId(), "রেফারেল নিবন্ধন সম্মানী অনুমোদিত!",
-                                "আপনার রেফারকৃত সদস্য " + user.getFullName() + " যাচাইকৃত হওয়ায় আপনার তহবিলে ৳" + settings.getReferralVerifiedBonusFixed() + " সম্মানী যোগ হয়েছে।");
+                        if (commAmount.compareTo(BigDecimal.ZERO) > 0) {
+                            CommissionEntryEntity comm = new CommissionEntryEntity();
+                            comm.setOfficerId(officer.getId());
+                            comm.setOfficerName(officer.getFullName());
+                            comm.setReferralCode(officer.getMyReferralCode());
+                            comm.setReferredUserId(user.getId());
+                            comm.setReferredUserName(user.getFullName());
+                            comm.setReferredUserRole(user.getRole());
+                            comm.setCommissionType("REGISTRATION_COMMISSION");
+                            comm.setBaseDealAmountBdt(user.getRegistrationFeeAmount());
+                            comm.setPercentageRate(BigDecimal.ZERO);
+                            comm.setCommissionAmountBdt(commAmount);
+                            comm.setStatus("APPROVED_PAYABLE");
+                            comm.setAgentRole(officer.getRole());
+                            comm.setTierLevel("DIRECT_FIELD");
+                            comm.setNote("রেফারকৃত " + user.getRole() + " (" + user.getFullName() + ") নিবন্ধন কমিশন");
+                            commissionRepository.save(comm);
+
+                            CommissionHelper.syncOfficerCommissionTotals(userRepository, commissionRepository, officer.getId());
+                            CommonUtils.notifyUser(notificationRepository, officer.getId(), "রেফারেল নিবন্ধন কমিশন অনুমোদিত: ৳" + commAmount,
+                                    "আপনার রেফারকৃত সদস্য " + user.getFullName() + " এর অ্যাকাউন্ট অনুমোদিত হওয়ায় ৳" + commAmount + " কমিশন আপনার ব্যালেন্সে যোগ হয়েছে।");
+                        }
                     }
                 }
             }

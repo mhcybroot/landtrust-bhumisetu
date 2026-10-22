@@ -1,10 +1,8 @@
 package bd.com.landtrust.controller.admin;
 
-import bd.com.landtrust.entity.FinancialTransactionEntity;
-import bd.com.landtrust.entity.LandListingEntity;
-import bd.com.landtrust.repository.FinancialTransactionRepository;
-import bd.com.landtrust.repository.LandListingRepository;
-import bd.com.landtrust.repository.NotificationRepository;
+import bd.com.landtrust.entity.*;
+import bd.com.landtrust.repository.*;
+import bd.com.landtrust.util.CommissionHelper;
 import bd.com.landtrust.util.CommonUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,14 +19,30 @@ public class AdminListingController {
     private final LandListingRepository listingRepository;
     private final NotificationRepository notificationRepository;
     private final FinancialTransactionRepository transactionRepository;
+    private final UserRepository userRepository;
+    private final CommissionEntryRepository commissionRepository;
+    private final SystemSettingRepository settingRepository;
 
     public AdminListingController(
             LandListingRepository listingRepository,
             NotificationRepository notificationRepository,
-            FinancialTransactionRepository transactionRepository) {
+            FinancialTransactionRepository transactionRepository,
+            UserRepository userRepository,
+            CommissionEntryRepository commissionRepository,
+            SystemSettingRepository settingRepository) {
         this.listingRepository = listingRepository;
         this.notificationRepository = notificationRepository;
         this.transactionRepository = transactionRepository;
+        this.userRepository = userRepository;
+        this.commissionRepository = commissionRepository;
+        this.settingRepository = settingRepository;
+    }
+
+    private SystemSettingEntity getSettings() {
+        return settingRepository.findAll().stream().findFirst().orElseGet(() -> {
+            SystemSettingEntity def = new SystemSettingEntity();
+            return settingRepository.save(def);
+        });
     }
 
     @GetMapping("/listings")
@@ -88,6 +102,39 @@ public class AdminListingController {
                 txn.setDescription("বিজ্ঞাপন রেজিস্ট্রেশন ফি (" + listing.getTitle() + " #" + listing.getId() + ")");
                 txn.setStatus("APPROVED");
                 transactionRepository.save(txn);
+            }
+        }
+
+        // Award Listing Registration Commission to the referring Officer
+        if ("APPROVED".equals(listing.getPaymentStatus()) && !listing.isListingCommissionAwarded()) {
+            if (listing.getReferredOfficerId() != null) {
+                Optional<UserEntity> officerOpt = userRepository.findById(listing.getReferredOfficerId());
+                SystemSettingEntity settings = getSettings();
+                BigDecimal commAmount = settings.getListingRegCommission() != null ? settings.getListingRegCommission() : new BigDecimal("100");
+                if (officerOpt.isPresent() && commAmount.compareTo(BigDecimal.ZERO) > 0) {
+                    UserEntity officer = officerOpt.get();
+                    CommissionEntryEntity comm = new CommissionEntryEntity();
+                    comm.setOfficerId(officer.getId());
+                    comm.setOfficerName(officer.getFullName());
+                    comm.setReferralCode(officer.getMyReferralCode());
+                    comm.setReferredUserId(listing.getSellerId());
+                    comm.setReferredUserName(listing.getSellerName());
+                    comm.setReferredUserRole("SELLER");
+                    comm.setCommissionType("LISTING_REGISTRATION_COMMISSION");
+                    comm.setBaseDealAmountBdt(listing.getListingFeeChargedBdt() != null ? listing.getListingFeeChargedBdt() : BigDecimal.ZERO);
+                    comm.setPercentageRate(BigDecimal.ZERO);
+                    comm.setCommissionAmountBdt(commAmount);
+                    comm.setStatus("APPROVED_PAYABLE");
+                    comm.setAgentRole(officer.getRole());
+                    comm.setTierLevel("DIRECT_FIELD");
+                    comm.setNote("রেফারকৃত বিক্রেতার নতুন লিস্টিং (" + listing.getPropertyRegCode() + ") রেজিস্ট্রেশন কমিশন");
+                    commissionRepository.save(comm);
+                    listing.setListingCommissionAwarded(true);
+
+                    CommissionHelper.syncOfficerCommissionTotals(userRepository, commissionRepository, officer.getId());
+                    CommonUtils.notifyUser(notificationRepository, officer.getId(), "নতুন প্রপার্টি লিস্টিং কমিশন অনুমোদিত: ৳" + commAmount,
+                            "আপনার রেফারকৃত বিক্রেতা " + listing.getSellerName() + " এর নতুন জমি/ফ্ল্যাট (" + listing.getPropertyRegCode() + ") নিবন্ধিত হওয়ায় ৳" + commAmount + " কমিশন আপনার ব্যালেন্সে যোগ হয়েছে।");
+                }
             }
         }
 

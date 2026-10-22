@@ -80,6 +80,10 @@ public class LandListingEntity {
     private BigDecimal proposedServiceFeeBdt = BigDecimal.ZERO;
 
     // Multi-level listing fee tracking
+    private String propertyRegCode; // e.g. PROP-NOA-1001
+    private Long referredOfficerId;
+    private String referredOfficerName;
+    private boolean listingCommissionAwarded = false;
     private BigDecimal listingFeeChargedBdt = BigDecimal.ZERO;
     private String paymentMethod;
     private String senderPhone;
@@ -171,6 +175,14 @@ public class LandListingEntity {
     public void setVerificationStatus(String verificationStatus) { this.verificationStatus = verificationStatus; }
     public String getListingStatus() { return listingStatus; }
     public void setListingStatus(String listingStatus) { this.listingStatus = listingStatus; }
+    public String getPropertyRegCode() { return propertyRegCode; }
+    public void setPropertyRegCode(String propertyRegCode) { this.propertyRegCode = propertyRegCode; }
+    public Long getReferredOfficerId() { return referredOfficerId; }
+    public void setReferredOfficerId(Long referredOfficerId) { this.referredOfficerId = referredOfficerId; }
+    public String getReferredOfficerName() { return referredOfficerName; }
+    public void setReferredOfficerName(String referredOfficerName) { this.referredOfficerName = referredOfficerName; }
+    public boolean isListingCommissionAwarded() { return listingCommissionAwarded; }
+    public void setListingCommissionAwarded(boolean listingCommissionAwarded) { this.listingCommissionAwarded = listingCommissionAwarded; }
     public String getAdminRemark() { return adminRemark; }
     public void setAdminRemark(String adminRemark) { this.adminRemark = adminRemark; }
     public LocalDateTime getCreatedAt() { return createdAt; }

@@ -32,6 +32,10 @@ public class SystemSettingEntity {
 
     // Dual Commission Rules & Multi-Tiered Sharing decided by Admin
     private BigDecimal referralVerifiedBonusFixed = new BigDecimal("100");
+    private BigDecimal buyerRegCommission = new BigDecimal("100");
+    private BigDecimal sellerRegCommissionPourashava = new BigDecimal("200");
+    private BigDecimal sellerRegCommissionUnion = new BigDecimal("100");
+    private BigDecimal listingRegCommission = new BigDecimal("100");
     private BigDecimal dealClosureFixedCommission = new BigDecimal("5000");
     private BigDecimal dealClosurePercentCommission = new BigDecimal("10");
     private BigDecimal dealClosureFieldSharePercent = new BigDecimal("70");
@@ -85,6 +89,14 @@ public class SystemSettingEntity {
     public void setListingFeeFeaturedExtra(BigDecimal listingFeeFeaturedExtra) { this.listingFeeFeaturedExtra = listingFeeFeaturedExtra; }
     public BigDecimal getReferralVerifiedBonusFixed() { return referralVerifiedBonusFixed; }
     public void setReferralVerifiedBonusFixed(BigDecimal referralVerifiedBonusFixed) { this.referralVerifiedBonusFixed = referralVerifiedBonusFixed; }
+    public BigDecimal getBuyerRegCommission() { return buyerRegCommission; }
+    public void setBuyerRegCommission(BigDecimal buyerRegCommission) { this.buyerRegCommission = buyerRegCommission; }
+    public BigDecimal getSellerRegCommissionPourashava() { return sellerRegCommissionPourashava; }
+    public void setSellerRegCommissionPourashava(BigDecimal sellerRegCommissionPourashava) { this.sellerRegCommissionPourashava = sellerRegCommissionPourashava; }
+    public BigDecimal getSellerRegCommissionUnion() { return sellerRegCommissionUnion; }
+    public void setSellerRegCommissionUnion(BigDecimal sellerRegCommissionUnion) { this.sellerRegCommissionUnion = sellerRegCommissionUnion; }
+    public BigDecimal getListingRegCommission() { return listingRegCommission; }
+    public void setListingRegCommission(BigDecimal listingRegCommission) { this.listingRegCommission = listingRegCommission; }
     public BigDecimal getDealClosureFixedCommission() { return dealClosureFixedCommission; }
     public void setDealClosureFixedCommission(BigDecimal dealClosureFixedCommission) { this.dealClosureFixedCommission = dealClosureFixedCommission; }
     public BigDecimal getDealClosurePercentCommission() { return dealClosurePercentCommission; }

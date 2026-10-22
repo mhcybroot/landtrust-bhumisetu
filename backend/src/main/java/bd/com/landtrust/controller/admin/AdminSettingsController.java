@@ -60,6 +60,10 @@ public class AdminSettingsController {
         if (body.containsKey("listingFeeCommercial")) s.setListingFeeCommercial(CommonUtils.parseDecimal(body.get("listingFeeCommercial"), s.getListingFeeCommercial()));
         if (body.containsKey("listingFeeFeaturedExtra")) s.setListingFeeFeaturedExtra(CommonUtils.parseDecimal(body.get("listingFeeFeaturedExtra"), s.getListingFeeFeaturedExtra()));
         if (body.containsKey("referralVerifiedBonusFixed")) s.setReferralVerifiedBonusFixed(CommonUtils.parseDecimal(body.get("referralVerifiedBonusFixed"), s.getReferralVerifiedBonusFixed()));
+        if (body.containsKey("buyerRegCommission")) s.setBuyerRegCommission(CommonUtils.parseDecimal(body.get("buyerRegCommission"), s.getBuyerRegCommission()));
+        if (body.containsKey("sellerRegCommissionPourashava")) s.setSellerRegCommissionPourashava(CommonUtils.parseDecimal(body.get("sellerRegCommissionPourashava"), s.getSellerRegCommissionPourashava()));
+        if (body.containsKey("sellerRegCommissionUnion")) s.setSellerRegCommissionUnion(CommonUtils.parseDecimal(body.get("sellerRegCommissionUnion"), s.getSellerRegCommissionUnion()));
+        if (body.containsKey("listingRegCommission")) s.setListingRegCommission(CommonUtils.parseDecimal(body.get("listingRegCommission"), s.getListingRegCommission()));
         if (body.containsKey("dealClosureFixedCommission")) s.setDealClosureFixedCommission(CommonUtils.parseDecimal(body.get("dealClosureFixedCommission"), s.getDealClosureFixedCommission()));
         if (body.containsKey("dealClosurePercentCommission")) s.setDealClosurePercentCommission(CommonUtils.parseDecimal(body.get("dealClosurePercentCommission"), s.getDealClosurePercentCommission()));
         if (body.containsKey("advisoryReservePercent")) s.setAdvisoryReservePercent(CommonUtils.parseDecimal(body.get("advisoryReservePercent"), s.getAdvisoryReservePercent()));

@@ -60,6 +60,12 @@ class AdminListingCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Wrap(spacing: 6, runSpacing: 4, children: [
+                        if (l['propertyRegCode'] != null)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(color: const Color(0xFFE8F5E9), borderRadius: BorderRadius.circular(4), border: Border.all(color: const Color(0xFF0B4F32))),
+                            child: Text(l['propertyRegCode'].toString(), style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF0B4F32))),
+                          ),
                         VerificationBadge(status: l['verificationStatus']),
                         StatusBadge(status: l['listingStatus']),
                         Container(

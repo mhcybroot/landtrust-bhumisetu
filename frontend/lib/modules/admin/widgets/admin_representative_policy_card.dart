@@ -19,6 +19,7 @@ class AdminRepresentativePolicyCard extends StatefulWidget {
 
 class _AdminRepresentativePolicyCardState extends State<AdminRepresentativePolicyCard> {
   late final TextEditingController _distFeeCtrl, _upzFeeCtrl, _offPouFeeCtrl, _offUniFeeCtrl;
+  late final TextEditingController _buyerCommCtrl, _sellerPouCommCtrl, _sellerUniCommCtrl, _listingCommCtrl;
   late final TextEditingController _fieldShareCtrl, _upzShareCtrl, _distShareCtrl;
   bool _saving = false;
 
@@ -30,6 +31,10 @@ class _AdminRepresentativePolicyCardState extends State<AdminRepresentativePolic
     _upzFeeCtrl = TextEditingController(text: '${s['upazilaAgentRegistrationFee'] ?? 5000}');
     _offPouFeeCtrl = TextEditingController(text: '${s['officerRegistrationFeePourashava'] ?? 2000}');
     _offUniFeeCtrl = TextEditingController(text: '${s['officerRegistrationFeeUnion'] ?? 1000}');
+    _buyerCommCtrl = TextEditingController(text: '${s['buyerRegCommission'] ?? 100}');
+    _sellerPouCommCtrl = TextEditingController(text: '${s['sellerRegCommissionPourashava'] ?? 200}');
+    _sellerUniCommCtrl = TextEditingController(text: '${s['sellerRegCommissionUnion'] ?? 100}');
+    _listingCommCtrl = TextEditingController(text: '${s['listingRegCommission'] ?? 100}');
     _fieldShareCtrl = TextEditingController(text: '${s['dealClosureFieldSharePercent'] ?? 70}');
     _upzShareCtrl = TextEditingController(text: '${s['dealClosureUpazilaSharePercent'] ?? 20}');
     _distShareCtrl = TextEditingController(text: '${s['dealClosureDistrictSharePercent'] ?? 10}');
@@ -37,7 +42,7 @@ class _AdminRepresentativePolicyCardState extends State<AdminRepresentativePolic
 
   @override
   void dispose() {
-    for (final c in [_distFeeCtrl, _upzFeeCtrl, _offPouFeeCtrl, _offUniFeeCtrl, _fieldShareCtrl, _upzShareCtrl, _distShareCtrl]) {
+    for (final c in [_distFeeCtrl, _upzFeeCtrl, _offPouFeeCtrl, _offUniFeeCtrl, _buyerCommCtrl, _sellerPouCommCtrl, _sellerUniCommCtrl, _listingCommCtrl, _fieldShareCtrl, _upzShareCtrl, _distShareCtrl]) {
       c.dispose();
     }
     super.dispose();
@@ -51,6 +56,10 @@ class _AdminRepresentativePolicyCardState extends State<AdminRepresentativePolic
         'upazilaAgentRegistrationFee': double.tryParse(_upzFeeCtrl.text.trim()) ?? 5000,
         'officerRegistrationFeePourashava': double.tryParse(_offPouFeeCtrl.text.trim()) ?? 2000,
         'officerRegistrationFeeUnion': double.tryParse(_offUniFeeCtrl.text.trim()) ?? 1000,
+        'buyerRegCommission': double.tryParse(_buyerCommCtrl.text.trim()) ?? 100,
+        'sellerRegCommissionPourashava': double.tryParse(_sellerPouCommCtrl.text.trim()) ?? 200,
+        'sellerRegCommissionUnion': double.tryParse(_sellerUniCommCtrl.text.trim()) ?? 100,
+        'listingRegCommission': double.tryParse(_listingCommCtrl.text.trim()) ?? 100,
         'dealClosureFieldSharePercent': double.tryParse(_fieldShareCtrl.text.trim()) ?? 70,
         'dealClosureUpazilaSharePercent': double.tryParse(_upzShareCtrl.text.trim()) ?? 20,
         'dealClosureDistrictSharePercent': double.tryParse(_distShareCtrl.text.trim()) ?? 10,
@@ -73,7 +82,7 @@ class _AdminRepresentativePolicyCardState extends State<AdminRepresentativePolic
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('প্রতিনিধি নেটওয়ার্ক ফি ও ৩-স্তরের কমিশন বণ্টন পলিসি', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF0A2E1F))),
+            const Text('প্রতিনিধি ফি, প্রতি রেজিস্ট্রেশন কমিশন ও ডিল লভ্যাংশ পলিসি', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF0A2E1F))),
             const SizedBox(height: 12),
             Wrap(
               spacing: 10,
@@ -83,7 +92,11 @@ class _AdminRepresentativePolicyCardState extends State<AdminRepresentativePolic
                 _w(TextField(controller: _upzFeeCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'উপজেলা এজেন্ট ফি (৳)', isDense: true))),
                 _w(TextField(controller: _offPouFeeCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'পৌরসভা অফিসার ফি (৳)', isDense: true))),
                 _w(TextField(controller: _offUniFeeCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'ইউনিয়ন অফিসার ফি (৳)', isDense: true))),
-                _w(TextField(controller: _fieldShareCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'মাঠ অফিসার শেয়ার (%)', isDense: true))),
+                _w(TextField(controller: _buyerCommCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'ক্রেতা নিবন্ধন কমিশন (৳)', isDense: true))),
+                _w(TextField(controller: _sellerPouCommCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'পৌর বিক্রেতা কমিশন (৳)', isDense: true))),
+                _w(TextField(controller: _sellerUniCommCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'ইউনিয়ন বিক্রেতা কমিশন (৳)', isDense: true))),
+                _w(TextField(controller: _listingCommCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'প্রতি লিস্টিং কমিশন (৳)', isDense: true))),
+                _w(TextField(controller: _fieldShareCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'মাঠ অফিসার ডিল শেয়ার (%)', isDense: true))),
                 _w(TextField(controller: _upzShareCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'উপজেলা এজেন্ট ওভাররাইড (%)', isDense: true))),
                 _w(TextField(controller: _distShareCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'জেলা এজেন্ট ওভাররাইড (%)', isDense: true))),
               ],
@@ -93,7 +106,7 @@ class _AdminRepresentativePolicyCardState extends State<AdminRepresentativePolic
               style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
               onPressed: _saving ? null : _save,
               icon: const Icon(Icons.save, size: 16),
-              label: const Text('প্রতিনিধি পলিসি সংরক্ষণ'),
+              label: const Text('প্রতিনিধি ও কমিশন পলিসি সংরক্ষণ'),
             ),
           ],
         ),

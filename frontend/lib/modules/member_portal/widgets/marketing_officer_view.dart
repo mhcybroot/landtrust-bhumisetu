@@ -17,7 +17,7 @@ class MarketingOfficerView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final code = officerData['referralCode'] ?? 'LT-NOA-XXXX';
+    final code = officerData['referralCode'] ?? 'LT-OFF-XXXX';
     final shareLink = '${ApiClient.publicWebOrigin}/?ref=$code';
     final totalReferred = officerData['totalReferredCount'] ?? 0;
     final verifiedReferred = officerData['verifiedReferredCount'] ?? 0;
@@ -48,7 +48,21 @@ class MarketingOfficerView extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('আপনার ইউনিক রেফারেল কোড ও লিংক', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Color(0xFF0B4F32))),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('আপনার ইউনিক রেফারেল কোড ও লিংক', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF0B4F32))),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(color: const Color(0xFFE8F5E9), borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.green.shade300)),
+                  child: const Row(mainAxisSize: MainAxisSize.min, children: [
+                    Icon(Icons.verified, color: Colors.green, size: 13),
+                    SizedBox(width: 4),
+                    Text('আজীবন সদস্যপদ', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 10.5)),
+                  ]),
+                ),
+              ],
+            ),
             const SizedBox(height: 6),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -75,16 +89,12 @@ class MarketingOfficerView extends StatelessWidget {
   Widget _buildOfficerStats(dynamic totalRef, dynamic verRef, dynamic earned, dynamic pending) {
     return LayoutBuilder(builder: (ctx, constraints) {
       final cardWidth = isMobile ? (constraints.maxWidth - 10) / 2 : (constraints.maxWidth - 36) / 4;
-      return Wrap(
-        spacing: 10,
-        runSpacing: 10,
-        children: [
-          StatCardWidget(title: 'মোট রেফারেল', value: '$totalRef জন', subtitle: 'নিবন্ধনকারী সদস্য', color: const Color(0xFF0B4F32), width: cardWidth),
-          StatCardWidget(title: 'যাচাইকৃত রেফারেল', value: '$verRef জন', subtitle: 'অ্যাক্টিভ সদস্য', color: const Color(0xFF1B5E20), width: cardWidth),
-          StatCardWidget(title: 'মোট অর্জিত কমিশন', value: '৳$earned', subtitle: 'সর্বমোট পাওনা', color: const Color(0xFF1A237E), width: cardWidth),
-          StatCardWidget(title: 'উইথড্রযোগ্য বকেয়া', value: '৳$pending', subtitle: 'তুলে নেওয়ার যোগ্য', color: const Color(0xFFE65100), width: cardWidth),
-        ],
-      );
+      return Wrap(spacing: 10, runSpacing: 10, children: [
+        StatCardWidget(title: 'মোট রেফারেল', value: '$totalRef জন', subtitle: 'নিবন্ধনকারী সদস্য', color: const Color(0xFF0B4F32), width: cardWidth),
+        StatCardWidget(title: 'যাচাইকৃত রেফারেল', value: '$verRef জন', subtitle: 'অ্যাক্টিভ সদস্য', color: const Color(0xFF1B5E20), width: cardWidth),
+        StatCardWidget(title: 'মোট অর্জিত কমিশন', value: '৳$earned', subtitle: 'সর্বমোট পাওনা', color: const Color(0xFF1A237E), width: cardWidth),
+        StatCardWidget(title: 'উইথড্রযোগ্য বকেয়া', value: '৳$pending', subtitle: 'তুলে নেওয়ার যোগ্য', color: const Color(0xFFE65100), width: cardWidth),
+      ]);
     });
   }
 
@@ -99,24 +109,12 @@ class MarketingOfficerView extends StatelessWidget {
         else
           ...users.map((u) => Card(
                 margin: const EdgeInsets.only(bottom: 8),
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Row(
-                    children: [
-                      const CircleAvatar(radius: 18, backgroundColor: Color(0xFFE8F5E9), child: Icon(Icons.person, color: Color(0xFF0B4F32), size: 18)),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(u['fullName'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                            Text('${u['role']} • মোবাইল: ${u['phoneNumber']}', style: const TextStyle(fontSize: 11, color: Colors.black54)),
-                          ],
-                        ),
-                      ),
-                      StatusBadge(status: u['accountStatus']),
-                    ],
-                  ),
+                child: ListTile(
+                  dense: true,
+                  leading: const CircleAvatar(radius: 16, backgroundColor: Color(0xFFE8F5E9), child: Icon(Icons.person, color: Color(0xFF0B4F32), size: 16)),
+                  title: Text(u['fullName'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5)),
+                  subtitle: Text('রোল: ${u['role']} • এলাকা: ${u['upazila']}, ${u['district']}', style: const TextStyle(fontSize: 11)),
+                  trailing: StatusBadge(status: u['accountStatus'] ?? 'PENDING'),
                 ),
               )),
       ],
@@ -145,6 +143,15 @@ class MarketingOfficerView extends StatelessWidget {
         else
           ...commissions.map((c) {
             final isPaid = c['status'] == 'PAID';
+            final typeLabel = switch (c['commissionType']?.toString()) {
+              'REGISTRATION_COMMISSION' => 'নিবন্ধন কমিশন',
+              'LISTING_REGISTRATION_COMMISSION' => 'লিস্টিং কমিশন',
+              'UPAZILA_OVERRIDE' => 'উপজেলা ওভাররাইড',
+              'DISTRICT_OVERRIDE' => 'জেলা ওভাররাইড',
+              'DEAL_CLOSURE_FIXED' => 'ডিল লভ্যাংশ',
+              'DEAL_CLOSURE_PERCENT' => 'ডিল লভ্যাংশ',
+              _ => c['commissionType']?.toString() ?? '',
+            };
             return Card(
               margin: const EdgeInsets.only(bottom: 8),
               child: Padding(
@@ -157,7 +164,7 @@ class MarketingOfficerView extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('${c['referredUserName']} — ${c['commissionType']}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                          Text('${c['referredUserName']} — $typeLabel', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
                           Text(c['note'] ?? '', style: const TextStyle(fontSize: 11, color: Colors.black54)),
                         ],
                       ),
