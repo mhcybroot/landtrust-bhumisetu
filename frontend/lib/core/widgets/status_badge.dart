@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../animations/animated_count_text.dart';
+import '../animations/sheen_sweep_effect.dart';
 
 class StatusBadge extends StatelessWidget {
   final String? status;
@@ -43,8 +44,10 @@ class VerificationBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final s = status ?? 'PENDING';
+    final isVerified = s == 'FIELD_VERIFIED' || s == 'DOC_CHECKED' || s.contains('VERIFIED') || s.contains('APPROVED');
+    Widget badge;
     if (s == 'FIELD_VERIFIED') {
-      return Container(
+      badge = Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(
           color: Colors.green.shade50,
@@ -54,9 +57,8 @@ class VerificationBadge extends StatelessWidget {
         child: Text('🟢 সরেজমিনে যাচাইকৃত',
             style: TextStyle(color: Colors.green.shade900, fontSize: 11, fontWeight: FontWeight.bold)),
       );
-    }
-    if (s == 'DOC_CHECKED') {
-      return Container(
+    } else if (s == 'DOC_CHECKED') {
+      badge = Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(
           color: Colors.blue.shade50,
@@ -66,17 +68,31 @@ class VerificationBadge extends StatelessWidget {
         child: Text('🔵 কাগজপত্র যাচাইকৃত',
             style: TextStyle(color: Colors.blue.shade900, fontSize: 11, fontWeight: FontWeight.bold)),
       );
+    } else if (s.contains('APPROVED') || s.contains('VERIFIED')) {
+      badge = Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: Colors.green.shade50,
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(color: Colors.green.shade300),
+        ),
+        child: Text('🟢 যাচাইকৃত বিজ্ঞাপন',
+            style: TextStyle(color: Colors.green.shade900, fontSize: 11, fontWeight: FontWeight.bold)),
+      );
+    } else {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: Colors.orange.shade50,
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(color: Colors.orange.shade300),
+        ),
+        child: Text('🟡 যাচাই প্রক্রিয়াধীন',
+            style: TextStyle(color: Colors.orange.shade900, fontSize: 11, fontWeight: FontWeight.bold)),
+      );
     }
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: Colors.orange.shade50,
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: Colors.orange.shade300),
-      ),
-      child: Text('🟡 যাচাই প্রক্রিয়াধীন',
-          style: TextStyle(color: Colors.orange.shade900, fontSize: 11, fontWeight: FontWeight.bold)),
-    );
+
+    return isVerified ? SheenSweepEffect(child: badge) : badge;
   }
 }
 
