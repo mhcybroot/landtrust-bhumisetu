@@ -48,7 +48,12 @@ public class MemberChatController {
     public ResponseEntity<?> startThread(Authentication auth, @RequestBody Map<String, Object> body) {
         UserEntity user = currentUser(auth);
         String subject = (String) body.getOrDefault("subject", "সহায়তা ও ইনকোয়ারি");
-        Long listingId = body.get("listingId") != null ? Long.valueOf(body.get("listingId").toString()) : null;
+        Long listingId = null;
+        if (body.get("listingId") != null && !body.get("listingId").toString().isBlank()) {
+            try {
+                listingId = Long.valueOf(body.get("listingId").toString().trim());
+            } catch (NumberFormatException ignored) {}
+        }
         String initialMessage = (String) body.getOrDefault("initialMessage", "");
 
         ChatConversationEntity conv;

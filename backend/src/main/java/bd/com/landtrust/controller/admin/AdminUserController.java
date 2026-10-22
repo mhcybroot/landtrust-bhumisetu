@@ -62,14 +62,28 @@ public class AdminUserController {
                 .collect(Collectors.toList()));
     }
 
-    @PutMapping("/users/{id}/status")
-    public ResponseEntity<?> updateUserStatus(@PathVariable Long id, @RequestBody Map<String, String> body) {
+    @RequestMapping(value = {"/users/{id}/status", "/users/{id}/verify-payment"}, method = {RequestMethod.PUT, RequestMethod.POST})
+    public ResponseEntity<?> updateUserStatus(@PathVariable Long id, @RequestBody Map<String, Object> body) {
         Optional<UserEntity> userOpt = userRepository.findById(id);
         if (userOpt.isEmpty()) return ResponseEntity.notFound().build();
 
         UserEntity user = userOpt.get();
-        String newStatus = body.getOrDefault("accountStatus", user.getAccountStatus()).toUpperCase();
-        String adminNote = body.getOrDefault("adminNote", user.getAdminNote());
+        String newStatus;
+        if (body.containsKey("accountStatus")) {
+            newStatus = String.valueOf(body.get("accountStatus")).toUpperCase();
+        } else if (body.containsKey("approved")) {
+            boolean approved = Boolean.parseBoolean(String.valueOf(body.get("approved")));
+            newStatus = approved ? "ACTIVE" : "REJECTED";
+        } else {
+            newStatus = user.getAccountStatus();
+        }
+
+        String adminNote = user.getAdminNote();
+        if (body.containsKey("adminNote")) {
+            adminNote = String.valueOf(body.get("adminNote"));
+        } else if (body.containsKey("note")) {
+            adminNote = String.valueOf(body.get("note"));
+        }
 
         user.setAccountStatus(newStatus);
         user.setAdminNote(adminNote);
@@ -156,7 +170,7 @@ public class AdminUserController {
         return ResponseEntity.ok(UserMapper.sanitizeUser(user));
     }
 
-    @PutMapping("/users/{id}/reset-password")
+    @RequestMapping(value = "/users/{id}/reset-password", method = {RequestMethod.PUT, RequestMethod.POST})
     public ResponseEntity<?> resetUserPassword(@PathVariable Long id, @RequestBody Map<String, String> body) {
         Optional<UserEntity> userOpt = userRepository.findById(id);
         if (userOpt.isEmpty()) return ResponseEntity.notFound().build();
@@ -182,8 +196,13 @@ public class AdminUserController {
         UserEntity user = userOpt.get();
         BigDecimal refundAmount = CommonUtils.parseDecimal(body.get("amountBdt"),
                 user.getRegistrationFeeAmount() != null ? user.getRegistrationFeeAmount() : new BigDecimal("500"));
-        String refundRef = body.getOrDefault("paymentReference", "REFUND-" + System.currentTimeMillis() % 100000);
+        String refundRef = body.containsKey("paymentReference")
+                ? body.get("paymentReference")
+                : body.getOrDefault("refundTransactionId", "REFUND-" + System.currentTimeMillis() % 100000);
         String reason = body.getOrDefault("reason", "নিবন্ধন ফি রিফান্ড");
+
+        user.setAccountStatus("REJECTED");
+        userRepository.save(user);
 
         FinancialTransactionEntity txn = new FinancialTransactionEntity();
         txn.setUserId(user.getId());

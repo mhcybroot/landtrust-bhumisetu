@@ -57,7 +57,7 @@ public class AdminRepresentativeController {
         return ResponseEntity.ok(result);
     }
 
-    @PutMapping("/{id}/jurisdiction")
+    @RequestMapping(value = "/{id}/jurisdiction", method = {RequestMethod.PUT, RequestMethod.POST})
     public ResponseEntity<?> updateJurisdiction(
             @PathVariable Long id,
             @RequestBody Map<String, Object> body) {
@@ -73,11 +73,18 @@ public class AdminRepresentativeController {
         if (body.containsKey("supervisorAgentId")) {
             Object sId = body.get("supervisorAgentId");
             if (sId != null && !sId.toString().isBlank()) {
-                Long supId = Long.valueOf(sId.toString());
-                userRepository.findById(supId).ifPresent(sup -> {
-                    rep.setSupervisorAgentId(sup.getId());
-                    rep.setSupervisorAgentName(sup.getFullName());
-                });
+                try {
+                    Long supId = Long.valueOf(sId.toString().trim());
+                    userRepository.findById(supId).ifPresentOrElse(sup -> {
+                        rep.setSupervisorAgentId(sup.getId());
+                        rep.setSupervisorAgentName(sup.getFullName());
+                    }, () -> {
+                        rep.setSupervisorAgentId(null);
+                        rep.setSupervisorAgentName(null);
+                    });
+                } catch (NumberFormatException e) {
+                    return ResponseEntity.badRequest().body(Map.of("message", "সুপারভাইজার আইডি সঠিক নয়।"));
+                }
             } else {
                 rep.setSupervisorAgentId(null);
                 rep.setSupervisorAgentName(null);
@@ -91,7 +98,7 @@ public class AdminRepresentativeController {
         return ResponseEntity.ok(UserMapper.sanitizeUser(rep));
     }
 
-    @PutMapping("/{id}/approve")
+    @RequestMapping(value = "/{id}/approve", method = {RequestMethod.PUT, RequestMethod.POST})
     public ResponseEntity<?> approveRepresentative(@PathVariable Long id) {
         Optional<UserEntity> opt = userRepository.findById(id);
         if (opt.isEmpty()) return ResponseEntity.notFound().build();

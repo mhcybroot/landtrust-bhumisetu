@@ -168,19 +168,28 @@ public class MemberOfficerController {
     }
 
     @RequestMapping(value = {"/proposals/{id}/accept-counter", "/proposals/{id}/respond"}, method = {RequestMethod.PUT, RequestMethod.POST})
-    public ResponseEntity<?> acceptCounterOffer(Authentication auth, @PathVariable Long id) {
+    public ResponseEntity<?> acceptCounterOffer(Authentication auth, @PathVariable Long id, @RequestBody(required = false) Map<String, Object> body) {
         UserEntity user = currentUser(auth);
         Optional<ServiceProposalEntity> opt = proposalRepository.findById(id);
         if (opt.isEmpty() || !opt.get().getUserId().equals(user.getId())) {
             return ResponseEntity.status(403).body(Map.of("message", "অনুমোদনহীন অনুরোধ"));
         }
         ServiceProposalEntity p = opt.get();
-        if (p.getAdminCounterFeeBdt() != null) {
-            p.setFinalAgreedFeeBdt(p.getAdminCounterFeeBdt());
-        } else {
-            p.setFinalAgreedFeeBdt(p.getCustomerProposedFeeBdt());
+        if ("COMPLETED".equals(p.getStatus()) || "CANCELLED".equals(p.getStatus())) {
+            return ResponseEntity.badRequest().body(Map.of("message", "এই প্রস্তাবটি ইতোমধ্যে সমাপ্ত বা বাতিল করা হয়েছে।"));
         }
-        p.setStatus("MUTUALLY_AGREED");
+
+        String action = body != null && body.containsKey("action") ? String.valueOf(body.get("action")) : "ACCEPT";
+        if ("REJECT".equalsIgnoreCase(action) || "DECLINE".equalsIgnoreCase(action)) {
+            p.setStatus("CANCELLED");
+        } else {
+            if (p.getAdminCounterFeeBdt() != null) {
+                p.setFinalAgreedFeeBdt(p.getAdminCounterFeeBdt());
+            } else {
+                p.setFinalAgreedFeeBdt(p.getCustomerProposedFeeBdt());
+            }
+            p.setStatus("MUTUALLY_AGREED");
+        }
         return ResponseEntity.ok(proposalRepository.save(p));
     }
 }

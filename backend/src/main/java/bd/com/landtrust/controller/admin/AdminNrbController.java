@@ -36,7 +36,7 @@ public class AdminNrbController {
         return ResponseEntity.ok(nrbRepository.findAllByOrderByCreatedAtDesc());
     }
 
-    @PutMapping("/requests/{id}/status")
+    @RequestMapping(value = "/requests/{id}/status", method = {RequestMethod.PUT, RequestMethod.POST})
     public ResponseEntity<?> updateRequestStatus(@PathVariable Long id, @RequestBody Map<String, String> body) {
         Optional<NrbServiceRequestEntity> opt = nrbRepository.findById(id);
         if (opt.isEmpty()) return ResponseEntity.notFound().build();
@@ -61,22 +61,34 @@ public class AdminNrbController {
         return ResponseEntity.ok(req);
     }
 
-    @PutMapping("/requests/{id}/assign")
+    @RequestMapping(value = "/requests/{id}/assign", method = {RequestMethod.PUT, RequestMethod.POST})
     public ResponseEntity<?> assignAgent(@PathVariable Long id, @RequestBody Map<String, Object> body) {
         Optional<NrbServiceRequestEntity> opt = nrbRepository.findById(id);
         if (opt.isEmpty()) return ResponseEntity.notFound().build();
 
         NrbServiceRequestEntity req = opt.get();
         if (body.containsKey("agentId")) {
-            Long agentId = Long.valueOf(String.valueOf(body.get("agentId")));
-            Optional<UserEntity> agentOpt = userRepository.findById(agentId);
-            if (agentOpt.isPresent()) {
-                UserEntity agent = agentOpt.get();
-                req.setAssignedAgentId(agent.getId());
-                req.setAssignedAgentName(agent.getFullName() + " (" + agent.getRole() + ")");
-                CommonUtils.notifyUser(notificationRepository, agent.getId(),
-                        "নতুন প্রবাসী প্রতিনিধিত্ব দায়িত্ব অর্পণ",
-                        "আপনাকে " + req.getApplicantName() + " (" + req.getCountryOfResidence() + ") এর " + req.getUpazila() + " এলাকার প্রপার্টির প্রতিনিধি হিসেবে মনোনীত করা হয়েছে।");
+            Object aIdObj = body.get("agentId");
+            if (aIdObj != null && !aIdObj.toString().isBlank()) {
+                try {
+                    Long agentId = Long.valueOf(aIdObj.toString().trim());
+                    Optional<UserEntity> agentOpt = userRepository.findById(agentId);
+                    if (agentOpt.isPresent()) {
+                        UserEntity agent = agentOpt.get();
+                        req.setAssignedAgentId(agent.getId());
+                        req.setAssignedAgentName(agent.getFullName() + " (" + agent.getRole() + ")");
+                        CommonUtils.notifyUser(notificationRepository, agent.getId(),
+                                "নতুন প্রবাসী প্রতিনিধিত্ব দায়িত্ব অর্পণ",
+                                "আপনাকে " + req.getApplicantName() + " (" + req.getCountryOfResidence() + ") এর " + req.getUpazila() + " এলাকার প্রপার্টির প্রতিনিধি হিসেবে মনোনীত করা হয়েছে।");
+                    } else {
+                        return ResponseEntity.badRequest().body(Map.of("message", "মনোনীত প্রতিনিধি খুঁজে পাওয়া যায়নি।"));
+                    }
+                } catch (NumberFormatException e) {
+                    return ResponseEntity.badRequest().body(Map.of("message", "প্রতিনিধি আইডি সঠিক নয়।"));
+                }
+            } else {
+                req.setAssignedAgentId(null);
+                req.setAssignedAgentName(null);
             }
         }
         req.setUpdatedAt(LocalDateTime.now());

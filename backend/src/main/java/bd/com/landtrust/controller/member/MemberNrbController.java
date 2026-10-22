@@ -47,6 +47,12 @@ public class MemberNrbController {
     @PostMapping("/request")
     public ResponseEntity<?> submitNrbRequest(Authentication auth, @RequestBody Map<String, Object> body) {
         UserEntity user = currentUser(auth);
+        if (!"ACTIVE".equals(user.getAccountStatus())) {
+            return ResponseEntity.status(403).body(Map.of(
+                    "message", "আপনার অ্যাকাউন্টটি সক্রিয় (ACTIVE) নয়। প্রবাসী সেবা আবেদন করতে অ্যাকাউন্টটি সক্রিয় হওয়া আবশ্যক।",
+                    "accountStatus", user.getAccountStatus()
+            ));
+        }
 
         String applicantName = (String) body.getOrDefault("applicantName", user.getFullName());
         String country = (String) body.getOrDefault("countryOfResidence", "সৌদি আরব");

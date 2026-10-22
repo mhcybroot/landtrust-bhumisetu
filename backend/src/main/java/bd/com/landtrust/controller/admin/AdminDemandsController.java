@@ -39,17 +39,22 @@ public class AdminDemandsController {
         return ResponseEntity.ok(requirementRepository.findAllByOrderByCreatedAtDesc());
     }
 
-    @PutMapping("/requirements/{id}/status")
-    public ResponseEntity<?> updateRequirementStatus(@PathVariable Long id, @RequestBody Map<String, String> body) {
+    @RequestMapping(value = {"/requirements/{id}/status", "/requirements/{id}/verify"}, method = {RequestMethod.PUT, RequestMethod.POST})
+    public ResponseEntity<?> updateRequirementStatus(@PathVariable Long id, @RequestBody Map<String, Object> body) {
         Optional<BuyerRequirementEntity> opt = requirementRepository.findById(id);
         if (opt.isEmpty()) return ResponseEntity.notFound().build();
 
         BuyerRequirementEntity req = opt.get();
         if (body.containsKey("status")) {
-            req.setStatus(body.get("status"));
+            req.setStatus(String.valueOf(body.get("status")));
+        } else if (body.containsKey("approved")) {
+            boolean approved = Boolean.parseBoolean(String.valueOf(body.get("approved")));
+            req.setStatus(approved ? "ACTIVE" : "REJECTED");
         }
         if (body.containsKey("adminRemark")) {
-            req.setAdminRemark(body.get("adminRemark"));
+            req.setAdminRemark(String.valueOf(body.get("adminRemark")));
+        } else if (body.containsKey("notes")) {
+            req.setAdminRemark(String.valueOf(body.get("notes")));
         }
         req = requirementRepository.save(req);
 

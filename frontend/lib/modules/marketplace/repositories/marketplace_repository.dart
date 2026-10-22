@@ -21,7 +21,10 @@ class MarketplaceRepository {
     if (district.isNotEmpty) queryParams['district'] = district;
     if (upazila.isNotEmpty) queryParams['upazila'] = upazila;
     if (landType.isNotEmpty) queryParams['landType'] = landType;
-    if (verification.isNotEmpty) queryParams['verification'] = verification;
+    if (verification.isNotEmpty) {
+      queryParams['verification'] = verification;
+      queryParams['verificationStatus'] = verification;
+    }
     if (keyword.isNotEmpty) queryParams['keyword'] = keyword;
     if (maxBudget != null && maxBudget.isNotEmpty) queryParams['maxBudget'] = maxBudget;
     if (minArea != null && minArea.isNotEmpty) queryParams['minArea'] = minArea;
@@ -49,7 +52,9 @@ class MarketplaceRepository {
   }) async {
     final res = await ApiClient.post('/member/buyer/inquiries', body: {
       'listingId': listingId,
+      'offeredBudgetBdt': proposedBudget,
       'proposedBudgetBdt': proposedBudget,
+      'message': message,
       'buyerNotes': message,
     });
     return ApiClient.parseResponse(res) as Map<String, dynamic>;
@@ -61,10 +66,13 @@ class MarketplaceRepository {
     required double expectedPrice,
     required double commissionFee,
   }) async {
-    final res = await ApiClient.post('/member/seller/proposals', body: {
+    final res = await ApiClient.post('/member/requirements/$requirementId/seller-offer', body: {
       'buyerRequirementId': requirementId,
+      'landDetails': description,
       'sellerNotes': description,
+      'askingPriceBdt': expectedPrice,
       'proposedTotalBdt': expectedPrice,
+      'proposedServiceFeeBdt': commissionFee,
       'customerProposedFeeBdt': commissionFee,
     });
     return ApiClient.parseResponse(res) as Map<String, dynamic>;

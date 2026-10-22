@@ -39,6 +39,11 @@ public class AdminSettingsController {
         });
     }
 
+    @GetMapping("/settings")
+    public ResponseEntity<SystemSettingEntity> getSettingsEndpoint() {
+        return ResponseEntity.ok(getSettings());
+    }
+
     @PutMapping("/settings")
     public ResponseEntity<SystemSettingEntity> updateSettings(@RequestBody Map<String, Object> body) {
         SystemSettingEntity s = getSettings();

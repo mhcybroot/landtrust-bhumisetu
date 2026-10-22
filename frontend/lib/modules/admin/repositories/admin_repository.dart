@@ -14,8 +14,10 @@ class AdminRepository {
   }
 
   Future<void> verifyUserPayment(int userId, bool isApproved, String? note) async {
-    await ApiClient.post('/admin/users/$userId/verify-payment', body: {
+    await ApiClient.post('/admin/users/$userId/status', body: {
+      'accountStatus': isApproved ? 'ACTIVE' : 'REJECTED',
       'approved': isApproved,
+      if (note != null) 'adminNote': note,
       if (note != null) 'note': note,
     });
   }
@@ -29,6 +31,7 @@ class AdminRepository {
   Future<void> refundUserFee(int userId, String reason, String trxId) async {
     await ApiClient.post('/admin/users/$userId/refund', body: {
       'reason': reason,
+      'paymentReference': trxId,
       'refundTransactionId': trxId,
     });
   }
@@ -57,7 +60,8 @@ class AdminRepository {
   }
 
   Future<void> verifyRequirement(int reqId, bool isApproved) async {
-    await ApiClient.post('/admin/requirements/$reqId/verify', body: {
+    await ApiClient.post('/admin/requirements/$reqId/status', body: {
+      'status': isApproved ? 'ACTIVE' : 'REJECTED',
       'approved': isApproved,
     });
   }
@@ -99,13 +103,13 @@ class AdminRepository {
   }
 
   Future<List<dynamic>> fetchTransactions() async {
-    final res = await ApiClient.get('/admin/finance/transactions');
+    final res = await ApiClient.get('/admin/transactions');
     final data = ApiClient.parseResponse(res);
     return data is List ? data : [];
   }
 
   Future<void> addExpense(Map<String, dynamic> payload) async {
-    await ApiClient.post('/admin/finance/expenses', body: payload);
+    await ApiClient.post('/admin/transactions', body: payload);
   }
 
   Future<List<dynamic>> fetchPaymentMethods() async {

@@ -71,9 +71,14 @@ public class PublicListingController {
             @RequestParam(required = false) String landType,
             @RequestParam(required = false) BigDecimal maxBudget,
             @RequestParam(required = false) String verificationStatus,
+            @RequestParam(required = false) String verification,
             @RequestParam(required = false) BigDecimal minArea,
             @RequestParam(required = false) BigDecimal maxArea,
             @RequestParam(required = false) String keyword) {
+
+        String targetVerification = (verificationStatus != null && !verificationStatus.isBlank())
+                ? verificationStatus
+                : verification;
 
         List<LandListingEntity> all = listingRepository.findAllByOrderByCreatedAtDesc();
         List<Map<String, Object>> result = all.stream()
@@ -82,7 +87,7 @@ public class PublicListingController {
                 .filter(l -> upazila == null || upazila.isBlank() || upazila.equalsIgnoreCase(l.getUpazila()))
                 .filter(l -> landType == null || landType.isBlank() || landType.equalsIgnoreCase(l.getLandType()))
                 .filter(l -> maxBudget == null || l.getExpectedPriceBdt().compareTo(maxBudget) <= 0)
-                .filter(l -> verificationStatus == null || verificationStatus.isBlank() || verificationStatus.equalsIgnoreCase(l.getVerificationStatus()))
+                .filter(l -> targetVerification == null || targetVerification.isBlank() || targetVerification.equalsIgnoreCase(l.getVerificationStatus()))
                 .filter(l -> minArea == null || (l.getAreaDecimal() != null && l.getAreaDecimal().compareTo(minArea) >= 0))
                 .filter(l -> maxArea == null || (l.getAreaDecimal() != null && l.getAreaDecimal().compareTo(maxArea) <= 0))
                 .filter(l -> {
@@ -99,6 +104,11 @@ public class PublicListingController {
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/listings/{id}/share")
+    public ResponseEntity<?> recordListingShare(@PathVariable Long id, @RequestParam(required = false) String channel) {
+        return ResponseEntity.ok(Map.of("status", "SUCCESS", "message", "শেয়ার সফল হয়েছে"));
     }
 
     private Map<String, Object> toPublicListingMap(LandListingEntity l) {

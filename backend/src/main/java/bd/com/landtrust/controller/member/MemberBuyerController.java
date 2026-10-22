@@ -106,7 +106,11 @@ public class MemberBuyerController {
         if (body.containsKey("purchaseTimeline")) req.setPurchaseTimeline(String.valueOf(body.get("purchaseTimeline")));
         if (body.containsKey("proposedServiceFeeBdt")) req.setProposedServiceFeeBdt(CommonUtils.parseDecimal(body.get("proposedServiceFeeBdt"), req.getProposedServiceFeeBdt()));
         if (body.containsKey("specialRequirements")) req.setSpecialRequirements(String.valueOf(body.get("specialRequirements")));
-        // Note: status cannot be self-modified by regular buyer (must be verified by admin)
+        
+        // Reset status to SUBMITTED if modified so changes are verified by admin
+        if (!"ADMIN".equals(user.getRole())) {
+            req.setStatus("SUBMITTED");
+        }
 
         return ResponseEntity.ok(requirementRepository.save(req));
     }
@@ -123,8 +127,8 @@ public class MemberBuyerController {
         return ResponseEntity.ok(requirementRepository.save(req));
     }
 
-    @PostMapping("/requirements/{id}/seller-offer")
-    public ResponseEntity<?> submitSellerOfferForRequirement(Authentication auth, @PathVariable Long id, @RequestBody Map<String, Object> body) {
+    @PostMapping({"/requirements/{id}/seller-offer", "/seller/proposals", "/requirements/seller-offer"})
+    public ResponseEntity<?> submitSellerOfferForRequirement(Authentication auth, @PathVariable(required = false) Long id, @RequestBody Map<String, Object> body) {
         UserEntity seller = currentUser(auth);
         if (!"ACTIVE".equals(seller.getAccountStatus())) {
             return ResponseEntity.status(403).body(Map.of(
@@ -135,14 +139,26 @@ public class MemberBuyerController {
         if (!"SELLER".equals(seller.getRole()) && !"ADMIN".equals(seller.getRole())) {
             return ResponseEntity.status(403).body(Map.of("message", "শুধুমাত্র বিক্রেতা সদস্যগণ চাহিদাপত্রের বিপরীতে প্রস্তাব দিতে পারেন।"));
         }
-        Optional<BuyerRequirementEntity> opt = requirementRepository.findById(id);
+        Long reqId = id;
+        if (reqId == null && body.containsKey("buyerRequirementId")) {
+            try {
+                reqId = Long.valueOf(body.get("buyerRequirementId").toString().trim());
+            } catch (Exception ignored) {}
+        }
+        if (reqId == null) {
+            return ResponseEntity.badRequest().body(Map.of("message", "চাহিদাপত্র আইডি আবশ্যক।"));
+        }
+        Optional<BuyerRequirementEntity> opt = requirementRepository.findById(reqId);
         if (opt.isEmpty()) {
             return ResponseEntity.badRequest().body(Map.of("message", "চাহিদাপত্র খুঁজে পাওয়া যায়নি।"));
         }
         BuyerRequirementEntity req = opt.get();
-        String landDetails = String.valueOf(body.getOrDefault("landDetails", "")).trim();
-        BigDecimal askingPrice = CommonUtils.parseDecimal(body.get("askingPriceBdt"), req.getMaxBudgetBdt());
-        BigDecimal proposedFee = CommonUtils.parseDecimal(body.get("proposedServiceFeeBdt"), new BigDecimal("50000"));
+        Object dObj = body.containsKey("landDetails") ? body.get("landDetails") : body.get("sellerNotes");
+        String landDetails = String.valueOf(dObj != null ? dObj : "").trim();
+        Object pObj = body.containsKey("askingPriceBdt") ? body.get("askingPriceBdt") : body.get("proposedTotalBdt");
+        BigDecimal askingPrice = CommonUtils.parseDecimal(pObj, req.getMaxBudgetBdt());
+        Object fObj = body.containsKey("proposedServiceFeeBdt") ? body.get("proposedServiceFeeBdt") : body.get("customerProposedFeeBdt");
+        BigDecimal proposedFee = CommonUtils.parseDecimal(fObj, new BigDecimal("50000"));
 
         ServiceProposalEntity p = new ServiceProposalEntity();
         p.setUserId(seller.getId());
@@ -197,8 +213,12 @@ public class MemberBuyerController {
         inquiry.setBuyerId(user.getId());
         inquiry.setBuyerName(user.getFullName());
         inquiry.setBuyerPhone(user.getPhoneNumber());
-        inquiry.setOfferedBudgetBdt(CommonUtils.parseDecimal(body.get("offeredBudgetBdt"), land.getExpectedPriceBdt()));
-        inquiry.setMessage((String) body.getOrDefault("message", "এই জমিটি পরিদর্শন ও ক্রয়ের ব্যাপারে আগ্রহী।"));
+
+        Object budgetObj = body.containsKey("offeredBudgetBdt") ? body.get("offeredBudgetBdt") : body.get("proposedBudgetBdt");
+        inquiry.setOfferedBudgetBdt(CommonUtils.parseDecimal(budgetObj, land.getExpectedPriceBdt()));
+
+        Object msgObj = body.containsKey("message") ? body.get("message") : body.get("buyerNotes");
+        inquiry.setMessage(String.valueOf(msgObj != null && !msgObj.toString().isBlank() ? msgObj : "এই জমিটি পরিদর্শন ও ক্রয়ের ব্যাপারে আগ্রহী।"));
         inquiry.setStatus("PENDING");
 
         inquiry = inquiryRepository.save(inquiry);
