@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/constants/app_constants.dart';
 import '../view_models/admin_view_model.dart';
 import '../widgets/admin_listing_fees_card.dart';
 import '../widgets/admin_representative_policy_card.dart';
@@ -33,25 +34,32 @@ class _AdminSettingsTabState extends State<AdminSettingsTab> {
     _sellerFeePourashavaCtrl = TextEditingController(text: '${s['sellerRegistrationFeePourashava'] ?? 2000}');
     _sellerFeeUnionCtrl = TextEditingController(text: '${s['sellerRegistrationFeeUnion'] ?? 1000}');
     _officerFeeCtrl = TextEditingController(text: '${s['officerRegistrationFee'] ?? 1000}');
-    _phoneCtrl = TextEditingController(text: s['supportPhone'] ?? '01711-889900');
-    _whatsappCtrl = TextEditingController(text: s['supportWhatsapp'] ?? s['supportPhone'] ?? '01711-889900');
-    _emailCtrl = TextEditingController(text: s['supportEmail'] ?? 'support@landtrust.com.bd');
-    _addrCtrl = TextEditingController(text: s['officeAddress'] ?? 'মাইজদী কোর্ট, নোয়াখালী');
+    _phoneCtrl = TextEditingController(text: s['supportPhone'] ?? AppConstants.defaultSupportPhone);
+    _whatsappCtrl = TextEditingController(text: s['supportWhatsapp'] ?? s['supportPhone'] ?? AppConstants.defaultSupportWhatsapp);
+    _emailCtrl = TextEditingController(text: s['supportEmail'] ?? AppConstants.defaultSupportEmail);
+    _addrCtrl = TextEditingController(text: s['officeAddress'] ?? AppConstants.defaultOfficeAddress);
     widget.viewModel.addListener(_syncSettings);
+  }
+
+  void _syncField(TextEditingController ctrl, dynamic val, String baseline) {
+    if (val == null) return;
+    if (ctrl.text.isEmpty || ctrl.text == baseline) {
+      ctrl.text = '$val';
+    }
   }
 
   void _syncSettings() {
     if (_saving || !mounted) return;
     final s = (widget.viewModel.dashboard['settings'] as Map<String, dynamic>?) ?? {};
     if (s.isEmpty) return;
-    if (s['buyerRegistrationFee'] != null) _buyerFeeCtrl.text = '${s['buyerRegistrationFee']}';
-    if (s['sellerRegistrationFeePourashava'] != null) _sellerFeePourashavaCtrl.text = '${s['sellerRegistrationFeePourashava']}';
-    if (s['sellerRegistrationFeeUnion'] != null) _sellerFeeUnionCtrl.text = '${s['sellerRegistrationFeeUnion']}';
-    if (s['officerRegistrationFee'] != null) _officerFeeCtrl.text = '${s['officerRegistrationFee']}';
-    if (s['supportPhone'] != null) _phoneCtrl.text = s['supportPhone'].toString();
-    if (s['supportWhatsapp'] != null) _whatsappCtrl.text = s['supportWhatsapp'].toString();
-    if (s['supportEmail'] != null) _emailCtrl.text = s['supportEmail'].toString();
-    if (s['officeAddress'] != null) _addrCtrl.text = s['officeAddress'].toString();
+    _syncField(_buyerFeeCtrl, s['buyerRegistrationFee'], '1000');
+    _syncField(_sellerFeePourashavaCtrl, s['sellerRegistrationFeePourashava'], '2000');
+    _syncField(_sellerFeeUnionCtrl, s['sellerRegistrationFeeUnion'], '1000');
+    _syncField(_officerFeeCtrl, s['officerRegistrationFee'], '1000');
+    _syncField(_phoneCtrl, s['supportPhone'], AppConstants.defaultSupportPhone);
+    _syncField(_whatsappCtrl, s['supportWhatsapp'], AppConstants.defaultSupportWhatsapp);
+    _syncField(_emailCtrl, s['supportEmail'], AppConstants.defaultSupportEmail);
+    _syncField(_addrCtrl, s['officeAddress'], AppConstants.defaultOfficeAddress);
   }
 
   @override

@@ -37,15 +37,22 @@ class _AdminListingFeesCardState extends State<AdminListingFeesCard> {
     widget.viewModel.addListener(_syncFees);
   }
 
+  void _syncField(TextEditingController ctrl, dynamic val, String baseline) {
+    if (val == null) return;
+    if (ctrl.text.isEmpty || ctrl.text == baseline) {
+      ctrl.text = '$val';
+    }
+  }
+
   void _syncFees() {
     if (_saving || !mounted) return;
     final s = (widget.viewModel.dashboard['settings'] as Map<String, dynamic>?) ?? {};
     if (s.isEmpty) return;
-    if (s['listingFeeAgri'] != null) _feeAgriCtrl.text = '${s['listingFeeAgri']}';
-    if (s['listingFeeResidential'] != null) _feeResCtrl.text = '${s['listingFeeResidential']}';
-    if (s['listingFeeFlat'] != null) _feeFlatCtrl.text = '${s['listingFeeFlat']}';
-    if (s['listingFeeCommercial'] != null) _feeCommCtrl.text = '${s['listingFeeCommercial']}';
-    if (s['listingFeeFeaturedExtra'] != null) _feeFeaturedCtrl.text = '${s['listingFeeFeaturedExtra']}';
+    _syncField(_feeAgriCtrl, s['listingFeeAgri'], '500');
+    _syncField(_feeResCtrl, s['listingFeeResidential'], '1000');
+    _syncField(_feeFlatCtrl, s['listingFeeFlat'], '1500');
+    _syncField(_feeCommCtrl, s['listingFeeCommercial'], '2000');
+    _syncField(_feeFeaturedCtrl, s['listingFeeFeaturedExtra'], '1000');
   }
 
   @override

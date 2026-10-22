@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../../../core/constants/app_constants.dart';
 import '../../widgets/safety_warning_card.dart';
 
 class RulesAndFeesMobileView extends StatelessWidget {
@@ -75,11 +76,11 @@ class RulesAndFeesMobileView extends StatelessWidget {
           title: 'জরুরি সহায়তা ও হেল্পলাইন',
           icon: Icons.support_agent_outlined,
           children: [
-            Text('📞 সাপোর্ট: ${settings['supportPhone'] ?? '01800-000000'}', style: const TextStyle(fontWeight: FontWeight.bold)),
+            Text('📞 সাপোর্ট: ${settings['supportPhone'] ?? AppConstants.defaultSupportPhone}', style: const TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 4),
-            Text('📍 অফিস: ${settings['officeAddress'] ?? 'মাইজদী কোর্ট, নোয়াখালী'}', style: const TextStyle(fontSize: 12)),
+            Text('📍 অফিস: ${settings['officeAddress'] ?? AppConstants.defaultOfficeAddress}', style: const TextStyle(fontSize: 12)),
             const SizedBox(height: 4),
-            Text('✉️ ইমেইল: ${settings['supportEmail'] ?? 'support@bdhousing.com.bd'}', style: const TextStyle(fontSize: 12)),
+            Text('✉️ ইমেইল: ${settings['supportEmail'] ?? AppConstants.defaultSupportEmail}', style: const TextStyle(fontSize: 12)),
           ],
         ),
       ],

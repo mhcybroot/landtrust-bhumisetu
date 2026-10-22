@@ -41,21 +41,28 @@ class _AdminRepresentativePolicyCardState extends State<AdminRepresentativePolic
     widget.viewModel.addListener(_syncSettings);
   }
 
+  void _syncField(TextEditingController ctrl, dynamic val, String baseline) {
+    if (val == null) return;
+    if (ctrl.text.isEmpty || ctrl.text == baseline) {
+      ctrl.text = '$val';
+    }
+  }
+
   void _syncSettings() {
     if (_saving || !mounted) return;
     final s = (widget.viewModel.dashboard['settings'] as Map<String, dynamic>?) ?? {};
     if (s.isEmpty) return;
-    if (s['districtAgentRegistrationFee'] != null) _distFeeCtrl.text = '${s['districtAgentRegistrationFee']}';
-    if (s['upazilaAgentRegistrationFee'] != null) _upzFeeCtrl.text = '${s['upazilaAgentRegistrationFee']}';
-    if (s['officerRegistrationFeePourashava'] != null) _offPouFeeCtrl.text = '${s['officerRegistrationFeePourashava']}';
-    if (s['officerRegistrationFeeUnion'] != null) _offUniFeeCtrl.text = '${s['officerRegistrationFeeUnion']}';
-    if (s['buyerRegCommission'] != null) _buyerCommCtrl.text = '${s['buyerRegCommission']}';
-    if (s['sellerRegCommissionPourashava'] != null) _sellerPouCommCtrl.text = '${s['sellerRegCommissionPourashava']}';
-    if (s['sellerRegCommissionUnion'] != null) _sellerUniCommCtrl.text = '${s['sellerRegCommissionUnion']}';
-    if (s['listingRegCommission'] != null) _listingCommCtrl.text = '${s['listingRegCommission']}';
-    if (s['dealClosureFieldSharePercent'] != null) _fieldShareCtrl.text = '${s['dealClosureFieldSharePercent']}';
-    if (s['dealClosureUpazilaSharePercent'] != null) _upzShareCtrl.text = '${s['dealClosureUpazilaSharePercent']}';
-    if (s['dealClosureDistrictSharePercent'] != null) _distShareCtrl.text = '${s['dealClosureDistrictSharePercent']}';
+    _syncField(_distFeeCtrl, s['districtAgentRegistrationFee'], '10000');
+    _syncField(_upzFeeCtrl, s['upazilaAgentRegistrationFee'], '5000');
+    _syncField(_offPouFeeCtrl, s['officerRegistrationFeePourashava'], '2000');
+    _syncField(_offUniFeeCtrl, s['officerRegistrationFeeUnion'], '1000');
+    _syncField(_buyerCommCtrl, s['buyerRegCommission'], '100');
+    _syncField(_sellerPouCommCtrl, s['sellerRegCommissionPourashava'], '200');
+    _syncField(_sellerUniCommCtrl, s['sellerRegCommissionUnion'], '100');
+    _syncField(_listingCommCtrl, s['listingRegCommission'], '100');
+    _syncField(_fieldShareCtrl, s['dealClosureFieldSharePercent'], '70');
+    _syncField(_upzShareCtrl, s['dealClosureUpazilaSharePercent'], '20');
+    _syncField(_distShareCtrl, s['dealClosureDistrictSharePercent'], '10');
   }
 
   @override

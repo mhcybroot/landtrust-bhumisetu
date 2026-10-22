@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../../../core/constants/app_constants.dart';
 import '../../widgets/safety_warning_card.dart';
 
 class RulesAndFeesWebView extends StatelessWidget {
@@ -70,7 +71,7 @@ class RulesAndFeesWebView extends StatelessWidget {
                       const Text('• bdHousing কোনো সরকারি সংস্থা নয়; এটি একটি স্বাধীন বেসরকারি আবাসন মার্কেটপ্লেস।'),
                       const Divider(height: 20),
                       Text(
-                        'অফিস: ${settings['officeAddress'] ?? 'মাইজদী কোর্ট, নোয়াখালী'} | হেল্পলাইন: ${settings['supportPhone'] ?? '01800-000000'} | ইমেইল: ${settings['supportEmail'] ?? 'support@bdhousing.com.bd'}',
+                        'অফিস: ${settings['officeAddress'] ?? AppConstants.defaultOfficeAddress} | হেল্পলাইন: ${settings['supportPhone'] ?? AppConstants.defaultSupportPhone} | ইমেইল: ${settings['supportEmail'] ?? AppConstants.defaultSupportEmail}',
                         style: const TextStyle(fontSize: 12, color: Colors.black87),
                       ),
                     ],
