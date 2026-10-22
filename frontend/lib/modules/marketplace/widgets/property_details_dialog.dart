@@ -52,11 +52,14 @@ class PropertyDetailsDialog {
                   if (allImages.isNotEmpty) ...[
                     ClipRRect(
                       borderRadius: BorderRadius.circular(10),
-                      child: SmartImageViewer(
-                        url: allImages[activeImgIndex],
-                        height: isMobile ? 210 : 280,
-                        width: double.infinity,
-                        enableZoom: true,
+                      child: Hero(
+                        tag: 'property_img_${listing['id'] ?? 'unknown'}',
+                        child: SmartImageViewer(
+                          url: allImages[activeImgIndex],
+                          height: isMobile ? 210 : 280,
+                          width: double.infinity,
+                          enableZoom: true,
+                        ),
                       ),
                     ),
                     if (allImages.length > 1) ...[

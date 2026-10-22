@@ -42,7 +42,7 @@ class PropertyCardWidget extends StatelessWidget {
               child: Stack(
                 children: [
                   Hero(
-                    tag: 'listing-img-${listing['id'] ?? 'unknown'}',
+                    tag: 'property_img_${listing['id'] ?? 'unknown'}',
                     child: SmartImageViewer(
                       url: listing['imageUrl'] as String?,
                       height: isMobile ? 180 : 200,
