@@ -1,0 +1,199 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 500" width="1024" height="500">
+  <defs>
+    <!-- Background Gradient (Rich Emerald to Midnight Green) -->
+    <linearGradient id="mainBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#021E12"/>
+      <stop offset="40%" stop-color="#073B25"/>
+      <stop offset="85%" stop-color="#0E5839"/>
+      <stop offset="100%" stop-color="#09442B"/>
+    </linearGradient>
+
+    <!-- Golden Metallic Gradient -->
+    <linearGradient id="goldMetallic" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFBEB"/>
+      <stop offset="25%" stop-color="#FCD34D"/>
+      <stop offset="65%" stop-color="#F59E0B"/>
+      <stop offset="100%" stop-color="#B45309"/>
+    </linearGradient>
+
+    <!-- Subtle Architectural Grid Pattern -->
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#34D399" stroke-width="0.75" opacity="0.08"/>
+    </pattern>
+
+    <!-- Glass Pill Gradient -->
+    <linearGradient id="glassPill" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.16"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0.04"/>
+    </linearGradient>
+
+    <!-- House Gradient -->
+    <linearGradient id="villaGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#E2E8F0"/>
+    </linearGradient>
+
+    <!-- Drop Shadows -->
+    <filter id="heroShadow" x="-15%" y="-15%" width="130%" height="135%">
+      <feDropShadow dx="0" dy="16" stdDeviation="20" flood-color="#000000" flood-opacity="0.5"/>
+    </filter>
+    
+    <filter id="glowGreen" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="0" stdDeviation="15" flood-color="#10B981" flood-opacity="0.4"/>
+    </filter>
+    <filter id="glowGold" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="10" flood-color="#F59E0B" flood-opacity="0.45"/>
+    </filter>
+  </defs>
+
+  <!-- 1. Solid Background (Strictly Opaque, No Alpha) -->
+  <rect width="1024" height="500" fill="url(#mainBg)"/>
+
+  <!-- 2. Architectural Blueprint Grid Overlay -->
+  <rect width="1024" height="500" fill="url(#grid)"/>
+
+  <!-- 3. Ambient Lighting Glows -->
+  <circle cx="280" cy="250" r="220" fill="#059669" opacity="0.22" filter="blur(60px)"/>
+  <circle cx="780" cy="220" r="250" fill="#10B981" opacity="0.25" filter="blur(65px)"/>
+  <circle cx="850" cy="140" r="100" fill="#F59E0B" opacity="0.15" filter="blur(40px)"/>
+
+  <!-- 4. Right Side: Modern Architectural Composition -->
+  <g filter="url(#heroShadow)">
+    <!-- Skyscraper / Apartment Block in Background -->
+    <rect x="760" y="100" width="130" height="270" rx="8" fill="#042617" stroke="#10B981" stroke-width="2" opacity="0.9"/>
+    <!-- Windows in Skyscraper -->
+    <g fill="#A7F3D0" opacity="0.5">
+      <rect x="778" y="125" width="18" height="22" rx="3"/>
+      <rect x="806" y="125" width="18" height="22" rx="3"/>
+      <rect x="834" y="125" width="18" height="22" rx="3"/>
+      <rect x="862" y="125" width="18" height="22" rx="3" fill="#FDE68A" opacity="0.8"/>
+
+      <rect x="778" y="160" width="18" height="22" rx="3"/>
+      <rect x="806" y="160" width="18" height="22" rx="3" fill="#FDE68A" opacity="0.8"/>
+      <rect x="834" y="160" width="18" height="22" rx="3"/>
+      <rect x="862" y="160" width="18" height="22" rx="3"/>
+
+      <rect x="778" y="195" width="18" height="22" rx="3"/>
+      <rect x="806" y="195" width="18" height="22" rx="3"/>
+      <rect x="834" y="195" width="18" height="22" rx="3" fill="#FDE68A" opacity="0.8"/>
+      <rect x="862" y="195" width="18" height="22" rx="3"/>
+
+      <rect x="778" y="230" width="18" height="22" rx="3"/>
+      <rect x="806" y="230" width="18" height="22" rx="3"/>
+      <rect x="834" y="230" width="18" height="22" rx="3"/>
+      <rect x="862" y="230" width="18" height="22" rx="3"/>
+    </g>
+
+    <!-- Foreground Modern Duplex Villa -->
+    <!-- Foundation / Lawn Base -->
+    <rect x="580" y="360" width="370" height="22" rx="11" fill="url(#goldMetallic)" opacity="0.9"/>
+    
+    <!-- Main Villa Building -->
+    <path d="M600 230 L730 140 L840 230 V360 H600 Z" fill="url(#villaGrad)"/>
+    <!-- Angled Roof Wing in Gold -->
+    <path d="M580 234 L730 130 L860 234 L844 234 L730 144 L600 234 Z" fill="url(#goldMetallic)"/>
+
+    <!-- Modern Architecture Balcony & Glass Windows -->
+    <rect x="625" y="250" width="60" height="85" rx="6" fill="#063520"/>
+    <rect x="705" y="250" width="115" height="45" rx="6" fill="#063520"/>
+    <!-- Glass railing -->
+    <rect x="700" y="280" width="125" height="18" rx="3" fill="#34D399" opacity="0.5" stroke="#FFFFFF" stroke-width="1"/>
+
+    <!-- Glowing Interior Lights -->
+    <circle cx="655" cy="275" r="8" fill="#FDE68A" opacity="0.9"/>
+    <circle cx="735" cy="265" r="7" fill="#FDE68A" opacity="0.85"/>
+    <circle cx="785" cy="265" r="7" fill="#FDE68A" opacity="0.85"/>
+
+    <!-- Grand Wooden Entrance Door -->
+    <path d="M735 360 V298 Q760 286 785 298 V360 Z" fill="#082A1B"/>
+    <circle cx="775" cy="330" r="3.5" fill="url(#goldMetallic)"/>
+
+    <!-- Floating 3D Golden Location Pin Marker -->
+    <g filter="url(#glowGold)" transform="translate(860, 160)">
+      <path d="M30 0 C13.4 0 0 13.4 0 30 C0 52.5 30 85 30 85 C30 85 60 52.5 60 30 C60 13.4 46.6 0 30 0 Z" fill="url(#goldMetallic)"/>
+      <circle cx="30" cy="30" r="16" fill="#0B4F32"/>
+      <!-- Home Icon inside Pin -->
+      <path d="M30 20 L21 28 H24 V38 H36 V28 H39 Z" fill="#FFFFFF"/>
+    </g>
+
+    <!-- Trust Shield Badge Floating on Left of House -->
+    <g filter="url(#glowGreen)" transform="translate(560, 160)">
+      <circle cx="28" cy="28" r="26" fill="url(#goldMetallic)"/>
+      <circle cx="28" cy="28" r="22" fill="#0B4F32"/>
+      <path d="M19 28 L25 34 L37 20" fill="none" stroke="url(#goldMetallic)" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+  </g>
+
+  <!-- 5. Left Side: Brand Identity, Typography & Value Propositions (Safe Zone) -->
+  <g transform="translate(80, 0)">
+    <!-- Platform Category Badge -->
+    <g transform="translate(0, 72)">
+      <rect width="320" height="34" rx="17" fill="url(#glassPill)" stroke="#34D399" stroke-width="1.2"/>
+      <circle cx="18" cy="17" r="5" fill="#34D399" filter="url(#glowGreen)"/>
+      <text x="34" y="22" font-family="-apple-system, BlinkMacSystemFont, 'Hind Siliguri', 'Segoe UI', Arial, sans-serif" font-weight="700" font-size="13.5" fill="#A7F3D0" letter-spacing="1">
+        বিশেষায়িত আবাসন মার্কেটপ্লেস
+      </text>
+    </g>
+
+    <!-- Main App Name Logo -->
+    <g transform="translate(0, 175)" filter="url(#heroShadow)">
+      <text font-family="-apple-system, BlinkMacSystemFont, 'Montserrat', 'Segoe UI', Arial, sans-serif" font-weight="900" font-size="78" letter-spacing="1">
+        <tspan fill="#FFFFFF">bd</tspan><tspan fill="url(#goldMetallic)">Housing</tspan>
+      </text>
+    </g>
+
+    <!-- Punchy Tagline -->
+    <g transform="translate(0, 222)">
+      <text font-family="-apple-system, BlinkMacSystemFont, 'Hind Siliguri', 'Segoe UI', Arial, sans-serif" font-weight="700" font-size="24" fill="#FFFFFF">
+        নিরাপদে জমি ও ফ্ল্যাট কেনাবেচার বিশ্বস্ত মাধ্যম
+      </text>
+    </g>
+
+    <!-- Feature Value Pills -->
+    <g transform="translate(0, 266)">
+      <!-- Feature 1 -->
+      <g transform="translate(0, 0)">
+        <rect width="240" height="36" rx="8" fill="#042C1B" stroke="#15803D" stroke-width="1"/>
+        <text x="14" y="23" font-family="-apple-system, BlinkMacSystemFont, 'Hind Siliguri', 'Segoe UI', sans-serif" font-weight="600" font-size="13.5" fill="#FFFFFF">
+          ✅ ১০০% ভেরিফায়েড লিস্টিং
+        </text>
+      </g>
+
+      <!-- Feature 2 -->
+      <g transform="translate(252, 0)">
+        <rect width="210" height="36" rx="8" fill="#042C1B" stroke="#15803D" stroke-width="1"/>
+        <text x="14" y="23" font-family="-apple-system, BlinkMacSystemFont, 'Hind Siliguri', 'Segoe UI', sans-serif" font-weight="600" font-size="13.5" fill="#FFFFFF">
+          🤝 সরাসরি P2P লেনদেন
+        </text>
+      </g>
+    </g>
+
+    <g transform="translate(0, 314)">
+      <!-- Feature 3 -->
+      <g transform="translate(0, 0)">
+        <rect width="280" height="36" rx="8" fill="#042C1B" stroke="#15803D" stroke-width="1"/>
+        <text x="14" y="23" font-family="-apple-system, BlinkMacSystemFont, 'Hind Siliguri', 'Segoe UI', sans-serif" font-weight="600" font-size="13.5" fill="#FFFFFF">
+          🌍 প্রবাসীদের পাওয়ার অব অ্যাটর্নি সেবা
+        </text>
+      </g>
+
+      <!-- Feature 4 (Districts coverage) -->
+      <g transform="translate(292, 0)">
+        <rect width="170" height="36" rx="8" fill="#042C1B" stroke="url(#goldMetallic)" stroke-width="1"/>
+        <text x="12" y="23" font-family="-apple-system, BlinkMacSystemFont, 'Hind Siliguri', 'Segoe UI', sans-serif" font-weight="700" font-size="13" fill="#FDE68A">
+          📍 নোয়াখালী • ফেনী • কুমিল্লা
+        </text>
+      </g>
+    </g>
+
+    <!-- Bottom App Store Trust Signal -->
+    <g transform="translate(0, 395)">
+      <text font-family="-apple-system, BlinkMacSystemFont, 'Hind Siliguri', 'Segoe UI', sans-serif" font-weight="500" font-size="12.5" fill="#6EE7B7" opacity="0.9">
+        🏛️ সরকারি ই-পর্চা যাচাই সহায়তাসহ আইনি সুরক্ষায় পরিচালিত বেসরকারি প্ল্যাটফর্ম
+      </text>
+    </g>
+  </g>
+
+  <!-- Elegant Top Gold Accent Line -->
+  <rect x="0" y="0" width="1024" height="4" fill="url(#goldMetallic)"/>
+</svg>
