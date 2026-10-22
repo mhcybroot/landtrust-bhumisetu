@@ -83,7 +83,7 @@ class MemberRepository {
   Future<Map<String, dynamic>> respondProposal(int id, String action, {String? notes}) async {
     final res = await ApiClient.post('/member/proposals/$id/respond', body: {
       'action': action,
-      if (notes != null) 'notes': notes,
+      'notes': ?notes,
     });
     return ApiClient.parseResponse(res) as Map<String, dynamic>;
   }

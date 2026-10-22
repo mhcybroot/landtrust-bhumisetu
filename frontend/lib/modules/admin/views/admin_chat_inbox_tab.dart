@@ -66,7 +66,7 @@ class _AdminChatInboxTabState extends State<AdminChatInboxTab> {
                   child: ListTile(
                     contentPadding: EdgeInsets.all(widget.isMobile ? 10 : 14),
                     leading: CircleAvatar(
-                      backgroundColor: unread > 0 ? Colors.red.shade100 : const Color(0xFF0B4F32).withOpacity(0.1),
+                      backgroundColor: unread > 0 ? Colors.red.shade100 : const Color(0xFF0B4F32).withValues(alpha: 0.1),
                       child: Icon(
                         unread > 0 ? Icons.mark_chat_unread : Icons.chat_outlined,
                         color: unread > 0 ? Colors.red : const Color(0xFF0B4F32),

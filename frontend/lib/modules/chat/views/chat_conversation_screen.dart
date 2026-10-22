@@ -84,7 +84,7 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
         ),
       ),
       body: Container(
-        color: const Color(0xFFECE5DD).withOpacity(0.4),
+        color: const Color(0xFFECE5DD).withValues(alpha: 0.4),
         child: Column(
           children: [
             Expanded(

@@ -14,8 +14,8 @@ class ChatRepository {
   }) async {
     final res = await ApiClient.post('/member/chat/threads', body: {
       'subject': subject,
-      if (listingId != null) 'listingId': listingId,
-      if (initialMessage != null) 'initialMessage': initialMessage,
+      'listingId': ?listingId,
+      'initialMessage': ?initialMessage,
     });
     final data = ApiClient.parseResponse(res);
     return data is Map<String, dynamic> ? data : {};
@@ -30,7 +30,7 @@ class ChatRepository {
   Future<Map<String, dynamic>> sendMessage(int threadId, String text, {String? attachmentUrl}) async {
     final res = await ApiClient.post('/member/chat/threads/$threadId/messages', body: {
       'text': text,
-      if (attachmentUrl != null) 'attachmentUrl': attachmentUrl,
+      'attachmentUrl': ?attachmentUrl,
     });
     final data = ApiClient.parseResponse(res);
     return data is Map<String, dynamic> ? data : {};

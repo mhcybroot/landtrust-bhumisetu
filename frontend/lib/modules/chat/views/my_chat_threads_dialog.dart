@@ -65,7 +65,7 @@ class MyChatThreadsDialog {
                   return ListTile(
                     contentPadding: EdgeInsets.zero,
                     leading: CircleAvatar(
-                      backgroundColor: const Color(0xFF0B4F32).withOpacity(0.12),
+                      backgroundColor: const Color(0xFF0B4F32).withValues(alpha: 0.12),
                       child: const Icon(Icons.support_agent, color: Color(0xFF0B4F32)),
                     ),
                     title: Text(t['subject'] ?? 'সহায়তা', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5)),

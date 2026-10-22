@@ -17,8 +17,8 @@ class AdminRepository {
     await ApiClient.post('/admin/users/$userId/status', body: {
       'accountStatus': isApproved ? 'ACTIVE' : 'REJECTED',
       'approved': isApproved,
-      if (note != null) 'adminNote': note,
-      if (note != null) 'note': note,
+      'adminNote': ?note,
+      'note': ?note,
     });
   }
 
@@ -45,7 +45,7 @@ class AdminRepository {
   Future<void> verifyListing(int listingId, String status, String? notes) async {
     await ApiClient.post('/admin/listings/$listingId/verify', body: {
       'status': status,
-      if (notes != null) 'notes': notes,
+      'notes': ?notes,
     });
   }
 
@@ -97,8 +97,8 @@ class AdminRepository {
   Future<void> respondProposal(int id, String action, {String? notes, double? agreedFee}) async {
     await ApiClient.post('/admin/proposals/$id/respond', body: {
       'action': action,
-      if (notes != null) 'notes': notes,
-      if (agreedFee != null) 'finalAgreedFeeBdt': agreedFee,
+      'notes': ?notes,
+      'finalAgreedFeeBdt': ?agreedFee,
     });
   }
 
@@ -161,7 +161,7 @@ class AdminRepository {
     final res = await ApiClient.post('/admin/notifications/broadcast', body: {
       'title': title,
       'message': message,
-      if (role != null) 'role': role,
+      'role': ?role,
     });
     ApiClient.parseResponse(res);
   }
