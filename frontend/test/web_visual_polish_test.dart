@@ -79,7 +79,7 @@ void main() {
 
       await gesture.moveTo(tester.getCenter(find.byType(HoverLiftCard)));
       await tester.pump(const Duration(milliseconds: 100));
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 200));
 
       // Tap on Details button
       final detailsBtn = find.widgetWithText(OutlinedButton, 'বিস্তারিত');
@@ -100,7 +100,7 @@ void main() {
 
       // Exit hover
       await gesture.moveTo(const Offset(1200, 1200));
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 200));
     });
   });
 
@@ -162,7 +162,7 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 300));
 
       expect(find.byType(ShimmerCardPlaceholder), findsNothing);
       expect(find.byType(PropertyCardWidget), findsNWidgets(2));
