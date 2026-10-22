@@ -15,6 +15,14 @@ class EscrowVaultLock extends StatelessWidget {
   }
 }
 
+String _toBn(int n) {
+  var s = '$n';
+  const en = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+  const bn = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+  for (int i = 0; i < 10; i++) { s = s.replaceAll(en[i], bn[i]); }
+  return s;
+}
+
 /// ২২. ব্যাংক নোট কাউন্টার মেশিন (Bank Note Counter)
 class BankNoteCounter extends StatelessWidget {
   final int notesCount;
@@ -24,7 +32,7 @@ class BankNoteCounter extends StatelessWidget {
     return Row(mainAxisSize: MainAxisSize.min, children: [
       const Icon(Icons.payments_outlined, color: Color(0xFF10B981), size: 18),
       const SizedBox(width: 4),
-      Text('$notesCount বান্ডিল (৫০ বান্ডিল)', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
+      Text('${_toBn(notesCount)} বান্ডিল', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
     ]);
   }
 }

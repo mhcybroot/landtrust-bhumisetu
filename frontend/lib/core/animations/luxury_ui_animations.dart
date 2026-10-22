@@ -39,6 +39,14 @@ class OledDarkShimmer extends StatelessWidget {
   }
 }
 
+String _toBn(int n) {
+  var s = '$n';
+  const en = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+  const bn = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+  for (int i = 0; i < 10; i++) { s = s.replaceAll(en[i], bn[i]); }
+  return s;
+}
+
 /// ৪৩. প্রপার্টি তুলনা ড্রয়ার মর্ফ (Comparison Drawer Morph)
 class ComparisonDrawerMorph extends StatelessWidget {
   final int itemCount;
@@ -46,7 +54,7 @@ class ComparisonDrawerMorph extends StatelessWidget {
   const ComparisonDrawerMorph({super.key, required this.itemCount, this.onCompare});
   @override
   Widget build(BuildContext context) {
-    final bn = '$itemCount'.replaceAll('0', '০').replaceAll('1', '১').replaceAll('2', '২').replaceAll('3', '৩').replaceAll('4', '৪').replaceAll('5', '৫');
+    final bn = _toBn(itemCount);
     return AnimatedContainer(
       duration: const Duration(milliseconds: 250),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),

@@ -38,6 +38,13 @@ class _TracerPainter extends CustomPainter {
   bool shouldRepaint(_TracerPainter o) => o.progress != progress;
 }
 
+String _toBn(String s) {
+  const en = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+  const bn = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+  for (int i = 0; i < 10; i++) { s = s.replaceAll(en[i], bn[i]); }
+  return s;
+}
+
 /// ২. রাস্তার পরিমাপক ফিতা (Road Width Tape)
 class RoadWidthTape extends StatelessWidget {
   final double widthFeet;
@@ -50,7 +57,7 @@ class RoadWidthTape extends StatelessWidget {
       child: Row(mainAxisSize: MainAxisSize.min, children: [
         const Icon(Icons.straighten_rounded, size: 14, color: Colors.white),
         const SizedBox(width: 4),
-        Text('${widthFeet.toStringAsFixed(0)} ফুট রাস্তা (২৪ ফুট)', style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
+        Text('${_toBn(widthFeet.toStringAsFixed(0))} ফুট রাস্তা', style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
       ]),
     );
   }
@@ -137,7 +144,7 @@ class ElevationProfileBar extends StatelessWidget {
     return Column(mainAxisSize: MainAxisSize.min, children: [
       Container(width: 14, height: 36, decoration: BoxDecoration(color: const Color(0xFF0B4F32), borderRadius: BorderRadius.circular(3))),
       const SizedBox(height: 2),
-      Text('${heightFeet.toStringAsFixed(1)} ফুট উঁচু (৬.৫ ফুট)', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+      Text('${_toBn(heightFeet.toStringAsFixed(1))} ফুট উঁচু', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
     ]);
   }
 }
