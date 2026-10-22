@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../animations/animated_count_text.dart';
 
 class StatusBadge extends StatelessWidget {
   final String? status;
@@ -125,7 +126,7 @@ class StatCardWidget extends StatelessWidget {
             FittedBox(
               fit: BoxFit.scaleDown,
               alignment: Alignment.centerLeft,
-              child: Text(value, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: color)),
+              child: AnimatedCountText(text: value, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: color)),
             ),
             const SizedBox(height: 4),
             Text(subtitle,
