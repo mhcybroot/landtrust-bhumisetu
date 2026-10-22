@@ -182,7 +182,27 @@ The LandApp (bdHousing) platform requires a comprehensive suite of 100 domain-sp
 
 ---
 
-## 6. Verification & Testing Strategy
+## 6. Architectural & API Standards (Builder Check Decisions)
+
+1. **Integration Scope:**
+   - Standalone design-system transition framework under `lib/core/animations/transitions/` with dedicated automated unit/widget tests in `test/transitions/`.
+   - Zero modifications to existing feature screens during initial library construction, guaranteeing 100% safety and zero regression risk across the platform.
+
+2. **Suite 1 Route Contract:**
+   - Concrete `PageRouteBuilder<T>` classes (e.g. `Navigator.push(context, SharedAxisSlideRoute(page: ...))`).
+   - Each class also provides a static `Widget buildTransition(BuildContext, Animation<double>, Animation<double>, Widget)` to enable plugging into GoRouter or standard routes if needed.
+   - For `CircularClipRevealRoute`, an optional `Offset? epicenter` parameter is accepted, defaulting to the viewport center.
+
+3. **Suite 3 Shared-Element Morphs:**
+   - Implemented as declarative in-place expandable morphs accepting `collapsedChild`, `expandedChild`, and `isExpanded` boolean state, while optionally accepting a `heroTag` string for pairing across separate routes.
+
+4. **Animation Driver Model for Suites 2 and 4–10:**
+   - Declarative state widgets (`TweenAnimationBuilder`, `AnimatedContainer`, `AnimatedScale`, `AnimatedOpacity`) driven by simple boolean/numerical inputs.
+   - Modals in Suite 2 provide static `.show(context, ...)` helper methods alongside the embeddable transition widget.
+
+---
+
+## 7. Verification & Testing Strategy
 
 - **10 Modular Test Files:** Every suite has a corresponding test file in `test/transitions/`:
   - `route_navigation_transitions_test.dart`
@@ -203,7 +223,7 @@ The LandApp (bdHousing) platform requires a comprehensive suite of 100 domain-sp
 
 ---
 
-## 7. What's Left to the Implementer
+## 8. What's Left to the Implementer
 - Exact duration tuning (defaulting to 250ms–350ms for micro-interactions, 350ms–450ms for full-screen route shifts).
 - Cubic Bezier curve selection (`Curves.fastOutSlowIn`, `Curves.easeOutCubic`, `Curves.elasticOut`).
 - Bengali number formatters and localized labels across financial and multi-step forms.
