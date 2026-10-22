@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:landtrust_app/core/animations/staggered_slide_fade.dart';
 import 'package:landtrust_app/core/session/session_manager.dart';
 import 'package:landtrust_app/core/widgets/account_status_lock_dialog.dart';
+import 'package:landtrust_app/core/widgets/shimmer_card_placeholder.dart';
 import '../../view_models/marketplace_view_model.dart';
 import '../../widgets/contact_inquiry_dialog.dart';
 import '../../widgets/hero_banner_widget.dart';
@@ -24,10 +26,8 @@ class HomeMarketplaceWebView extends StatefulWidget {
 }
 
 class _HomeMarketplaceWebViewState extends State<HomeMarketplaceWebView> {
-  final _searchCtrl = TextEditingController();
-  final _maxBudgetCtrl = TextEditingController();
-  final _minAreaCtrl = TextEditingController();
-  final _maxAreaCtrl = TextEditingController();
+  final _searchCtrl = TextEditingController(), _maxBudgetCtrl = TextEditingController();
+  final _minAreaCtrl = TextEditingController(), _maxAreaCtrl = TextEditingController();
 
   @override
   void dispose() {
@@ -113,11 +113,11 @@ class _HomeMarketplaceWebViewState extends State<HomeMarketplaceWebView> {
                       maxBudgetCtrl: _maxBudgetCtrl,
                       minAreaCtrl: _minAreaCtrl,
                       maxAreaCtrl: _maxAreaCtrl,
-                      onDistrictChanged: (d) => vm.setFilterDistrict(d),
-                      onUpazilaChanged: (u) => vm.setFilterUpazila(u),
-                      onLandTypeSelected: (lt) => vm.setFilterLandType(lt),
-                      onVerificationSelected: (v) => vm.setFilterVerification(v),
-                      onToggleExpanded: () => vm.toggleFiltersExpanded(),
+                      onDistrictChanged: vm.setFilterDistrict,
+                      onUpazilaChanged: vm.setFilterUpazila,
+                      onLandTypeSelected: vm.setFilterLandType,
+                      onVerificationSelected: vm.setFilterVerification,
+                      onToggleExpanded: vm.toggleFiltersExpanded,
                       onSearch: _triggerSearch,
                       onReset: _resetSearch,
                     ),
@@ -126,12 +126,7 @@ class _HomeMarketplaceWebViewState extends State<HomeMarketplaceWebView> {
                     const SizedBox(height: 24),
                     _buildHeader(vm.listings.length),
                     const SizedBox(height: 14),
-                    if (vm.isLoading)
-                      const Center(child: Padding(padding: EdgeInsets.all(32), child: CircularProgressIndicator()))
-                    else if (vm.listings.isEmpty)
-                      _buildEmptyCard()
-                    else
-                      _buildGrid(vm.listings),
+                    if (vm.isLoading) _buildSkeletonGrid() else if (vm.listings.isEmpty) _buildEmptyCard() else _buildGrid(vm.listings),
                   ],
                 ),
               ),
@@ -170,25 +165,31 @@ class _HomeMarketplaceWebViewState extends State<HomeMarketplaceWebView> {
     );
   }
 
-  Widget _buildGrid(List<dynamic> listings) {
+  Widget _buildCardGrid(List<Widget> items) {
     return LayoutBuilder(builder: (ctx, constraints) {
       final cardWidth = constraints.maxWidth < 980 ? ((constraints.maxWidth - 14) / 2).floorToDouble() : ((constraints.maxWidth - 32) / 3).floorToDouble();
       return Wrap(
         spacing: 14,
         runSpacing: 14,
-        children: listings.map((l) {
-          final map = l as Map<String, dynamic>;
-          return SizedBox(
-            width: cardWidth,
-            child: PropertyCardWidget(
-              listing: map,
-              isMobile: false,
-              onDetailsClick: () => PropertyDetailsDialog.show(context, listing: map, isMobile: false, onInquiryClick: () => _handleInquiry(map)),
-              onInquiryClick: () => _handleInquiry(map),
-            ),
-          );
-        }).toList(),
+        children: items.map((w) => SizedBox(width: cardWidth, child: w)).toList(),
       );
     });
+  }
+
+  Widget _buildSkeletonGrid() => _buildCardGrid(List.generate(6, (_) => const ShimmerCardPlaceholder()));
+
+  Widget _buildGrid(List<dynamic> listings) {
+    return _buildCardGrid(List.generate(listings.length, (i) {
+      final map = listings[i] as Map<String, dynamic>;
+      return StaggeredSlideFade(
+        index: i,
+        child: PropertyCardWidget(
+          listing: map,
+          isMobile: false,
+          onDetailsClick: () => PropertyDetailsDialog.show(context, listing: map, isMobile: false, onInquiryClick: () => _handleInquiry(map)),
+          onInquiryClick: () => _handleInquiry(map),
+        ),
+      );
+    }));
   }
 }

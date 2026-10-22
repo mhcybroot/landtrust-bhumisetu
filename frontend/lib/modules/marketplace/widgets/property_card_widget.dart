@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/animations/hover_lift_card.dart';
 import '../../../../core/localization/app_strings.dart';
 import '../../../../core/utils/whatsapp_helper.dart';
 import '../../../../core/widgets/smart_image_viewer.dart';
@@ -24,155 +25,149 @@ class PropertyCardWidget extends StatelessWidget {
     final hasVideo = (listing['videoUrl'] ?? '').toString().trim().isNotEmpty;
     final hasMap = (listing['mapLink'] ?? '').toString().trim().isNotEmpty;
 
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          InkWell(
-            onTap: onDetailsClick,
-            child: Stack(
-              children: [
-                SmartImageViewer(
-                  url: listing['imageUrl'] as String?,
-                  height: isMobile ? 180 : 200,
-                  width: double.infinity,
-                  enableZoom: false,
-                ),
-                Positioned(
-                  top: 10,
-                  left: 10,
-                  child: VerificationBadge(status: vStatus),
-                ),
-                Positioned(
-                  top: 10,
-                  right: 10,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(color: const Color(0xFF0B4F32), borderRadius: BorderRadius.circular(20)),
-                    child: Text(listing['landType'] ?? 'আবাসিক', style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: Colors.white)),
+    return HoverLiftCard(
+      onTap: onDetailsClick,
+      borderRadius: BorderRadius.circular(14),
+      child: Card(
+        margin: EdgeInsets.zero,
+        clipBehavior: Clip.antiAlias,
+        elevation: 2,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            InkWell(
+              onTap: onDetailsClick,
+              child: Stack(
+                children: [
+                  SmartImageViewer(
+                    url: listing['imageUrl'] as String?,
+                    height: isMobile ? 180 : 200,
+                    width: double.infinity,
+                    enableZoom: false,
                   ),
-                ),
-                if (hasVideo || hasMap)
+                  Positioned(top: 10, left: 10, child: VerificationBadge(status: vStatus)),
                   Positioned(
-                    bottom: 8,
-                    right: 8,
-                    child: Wrap(
-                      spacing: 4,
-                      children: [
-                        if (hasVideo) _mediaIndicator(Icons.play_circle_fill, 'ভিডিও', Colors.red.shade700),
-                        if (hasMap) _mediaIndicator(Icons.map, 'ম্যাপ', Colors.blue.shade800),
-                      ],
+                    top: 10,
+                    right: 10,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(color: const Color(0xFF0B4F32), borderRadius: BorderRadius.circular(20)),
+                      child: Text(listing['landType'] ?? 'আবাসিক', style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: Colors.white)),
                     ),
                   ),
-              ],
+                  if (hasVideo || hasMap)
+                    Positioned(
+                      bottom: 8,
+                      right: 8,
+                      child: Wrap(
+                        spacing: 4,
+                        children: [
+                          if (hasVideo) _mediaIndicator(Icons.play_circle_fill, 'ভিডিও', Colors.red.shade700),
+                          if (hasMap) _mediaIndicator(Icons.map, 'ম্যাপ', Colors.blue.shade800),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(14),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  listing['title'] ?? '',
-                  style: const TextStyle(fontSize: 15.5, fontWeight: FontWeight.bold),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 6),
-                Row(
-                  children: [
-                    const Icon(Icons.location_on, size: 15, color: Color(0xFF0B4F32)),
-                    const SizedBox(width: 4),
-                    Expanded(
-                      child: Text(
-                        '${listing['areaName']}, ${listing['upazila']}, ${listing['district']}',
-                        style: const TextStyle(fontSize: 12.5, color: Colors.black87),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF3F8F5),
-                    borderRadius: BorderRadius.circular(8),
+            Padding(
+              padding: const EdgeInsets.all(14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    listing['title'] ?? '',
+                    style: const TextStyle(fontSize: 15.5, fontWeight: FontWeight.bold),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  const SizedBox(height: 6),
+                  Row(
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text('পরিমাণ', style: TextStyle(fontSize: 10.5, color: Colors.black54)),
-                          Text('${listing['areaDecimal']} শতাংশ', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5)),
-                        ],
-                      ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          const Text('মূল্য', style: TextStyle(fontSize: 10.5, color: Colors.black54)),
-                          Text(
-                            '৳${listing['expectedPriceBdt']}',
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14.5, color: Color(0xFF0B4F32)),
-                          ),
-                          if (listing['pricePerDecimalBdt'] != null)
-                            Text(
-                              '(৳${listing['pricePerDecimalBdt']}/শতাংশ)',
-                              style: const TextStyle(fontSize: 10, color: Colors.black54, fontWeight: FontWeight.w600),
-                            ),
-                        ],
+                      const Icon(Icons.location_on, size: 15, color: Color(0xFF0B4F32)),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          '${listing['areaName']}, ${listing['upazila']}, ${listing['district']}',
+                          style: const TextStyle(fontSize: 12.5, color: Colors.black87),
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                     ],
                   ),
-                ),
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.chat_bubble_outline_rounded, color: Color(0xFF25D366), size: 20),
-                      tooltip: context.tr('whatsapp_chat'),
-                      onPressed: () {
-                        WhatsAppHelper.openPropertyInquiry(
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(color: const Color(0xFFF3F8F5), borderRadius: BorderRadius.circular(8)),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Flexible(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text('পরিমাণ', style: TextStyle(fontSize: 10.5, color: Colors.black54)),
+                              Text('${listing['areaDecimal']} শতাংশ', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5)),
+                            ],
+                          ),
+                        ),
+                        Flexible(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              const Text('মূল্য', style: TextStyle(fontSize: 10.5, color: Colors.black54)),
+                              Text('৳${listing['expectedPriceBdt']}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14.5, color: Color(0xFF0B4F32))),
+                              if (listing['pricePerDecimalBdt'] != null)
+                                Text('(৳${listing['pricePerDecimalBdt']}/শতাংশ)', style: const TextStyle(fontSize: 10, color: Colors.black54, fontWeight: FontWeight.w600)),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.chat_bubble_outline_rounded, color: Color(0xFF25D366), size: 20),
+                        tooltip: context.tr('whatsapp_chat'),
+                        onPressed: () => WhatsAppHelper.openPropertyInquiry(
                           rawPhone: listing['supportWhatsapp']?.toString() ?? listing['sellerPhone']?.toString(),
                           listing: listing,
                           isEnglish: context.isEnglish,
-                        );
-                      },
-                    ),
-                    Expanded(
-                      child: OutlinedButton(
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                         ),
-                        onPressed: onDetailsClick,
-                        child: Text(context.tr('details'), style: const TextStyle(fontSize: 12)),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF0B4F32),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      Expanded(
+                        child: OutlinedButton(
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          ),
+                          onPressed: onDetailsClick,
+                          child: Text(context.tr('details'), style: const TextStyle(fontSize: 12)),
                         ),
-                        onPressed: onInquiryClick,
-                        child: Text(context.tr('contact'), style: const TextStyle(fontSize: 12)),
                       ),
-                    ),
-                  ],
-                ),
-              ],
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF0B4F32),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          ),
+                          onPressed: onInquiryClick,
+                          child: Text(context.tr('contact'), style: const TextStyle(fontSize: 12)),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
