@@ -99,6 +99,12 @@ class AdminViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> approveListing(int listingId) async {
+    await _repo.approveListing(listingId);
+    _listings = await _repo.fetchListings();
+    notifyListeners();
+  }
+
   Future<void> verifyRequirement(int reqId, bool isApproved) async {
     await _repo.verifyRequirement(reqId, isApproved);
     _requirements = await _repo.fetchRequirements();

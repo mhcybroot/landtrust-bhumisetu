@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:landtrust_app/core/widgets/horizontal_scroll_fade_view.dart';
-import 'package:landtrust_app/core/widgets/smart_image_viewer.dart';
-import 'package:landtrust_app/core/widgets/status_badge.dart';
-import 'package:landtrust_app/modules/member_portal/widgets/private_document_preview_dialog.dart';
 import '../view_models/admin_view_model.dart';
+import '../widgets/admin_listing_card.dart';
 
 class AdminListingsTab extends StatefulWidget {
   final AdminViewModel viewModel;
@@ -39,11 +37,11 @@ class _AdminListingsTabState extends State<AdminListingsTab> {
                 DropdownButtonFormField<String>(
                   value: status,
                   decoration: const InputDecoration(labelText: 'যাচাইকরণ স্ট্যাটাস', isDense: true),
-                  items: [
-                    const DropdownMenuItem(value: 'FIELD_VERIFIED', child: Text('🟢 সরেজমিনে যাচাইকৃত (Field Verified)')),
-                    const DropdownMenuItem(value: 'DOC_CHECKED', child: Text('🔵 প্রাথমিক কাগজপত্র যাচাই (Doc Checked)')),
-                    const DropdownMenuItem(value: 'SUBMITTED', child: Text('⚪ সাধারণ জমা (Submitted)')),
-                    const DropdownMenuItem(value: 'REJECTED', child: Text('🔴 বাতিল (Rejected)')),
+                  items: const [
+                    DropdownMenuItem(value: 'FIELD_VERIFIED', child: Text('🟢 সরেজমিনে যাচাইকৃত (Field Verified)')),
+                    DropdownMenuItem(value: 'DOC_CHECKED', child: Text('🔵 প্রাথমিক কাগজপত্র যাচাই (Doc Checked)')),
+                    DropdownMenuItem(value: 'SUBMITTED', child: Text('⚪ সাধারণ জমা (Submitted)')),
+                    DropdownMenuItem(value: 'REJECTED', child: Text('🔴 বাতিল (Rejected)')),
                   ],
                   onChanged: (v) => setDialogState(() => status = v!),
                 ),
@@ -68,6 +66,19 @@ class _AdminListingsTabState extends State<AdminListingsTab> {
     );
   }
 
+  Future<void> _approveListing(Map<String, dynamic> listing) async {
+    try {
+      await widget.viewModel.approveListing(listing['id'] as int);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('বিজ্ঞাপন ও পেমেন্ট সফলভাবে অনুমোদিত: ${listing['title']}')),
+        );
+      }
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final listings = widget.viewModel.listings.where((l) {
@@ -83,7 +94,12 @@ class _AdminListingsTabState extends State<AdminListingsTab> {
         if (listings.isEmpty)
           const Card(child: Padding(padding: EdgeInsets.all(32), child: Center(child: Text('এই ফিল্টারে কোনো বিজ্ঞাপন নেই।'))))
         else
-          ...listings.map((l) => _listingCard(l as Map<String, dynamic>)),
+          ...listings.map((l) => AdminListingCard(
+                listing: l as Map<String, dynamic>,
+                isMobile: widget.isMobile,
+                onVerifyTap: () => _showVerifyDialog(l),
+                onApproveTap: () => _approveListing(l),
+              )),
       ],
     );
   }
@@ -111,68 +127,6 @@ class _AdminListingsTabState extends State<AdminListingsTab> {
       selectedColor: const Color(0xFF0B4F32),
       labelStyle: TextStyle(color: sel ? Colors.white : Colors.black87, fontSize: 11.5, fontWeight: sel ? FontWeight.bold : FontWeight.normal),
       onSelected: (_) => onTap(),
-    );
-  }
-
-  Widget _listingCard(Map<String, dynamic> l) {
-    final hasDoc = l['privateDocumentUrl'] != null && l['privateDocumentUrl'].toString().isNotEmpty;
-
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: Padding(
-        padding: EdgeInsets.all(widget.isMobile ? 12 : 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: SmartImageViewer(url: l['imageUrl'] as String?, height: widget.isMobile ? 65 : 75, width: widget.isMobile ? 85 : 100),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(l['title'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-                      const SizedBox(height: 4),
-                      Wrap(spacing: 6, runSpacing: 4, children: [
-                        VerificationBadge(status: l['verificationStatus']),
-                        StatusBadge(status: l['listingStatus']),
-                      ]),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text('অবস্থান: ${l['areaName']}, ${l['upazila']}, ${l['district']} • মৌজা: ${l['mouzaName'] ?? '-'}'),
-            const SizedBox(height: 2),
-            Text('পরিমাণ: ${l['areaDecimal']} শতাংশ • মূল্য: ৳${l['expectedPriceBdt']}', style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0B4F32))),
-            const SizedBox(height: 10),
-            Wrap(
-              spacing: 8,
-              runSpacing: 6,
-              children: [
-                ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
-                  onPressed: () => _showVerifyDialog(l),
-                  icon: const Icon(Icons.verified, size: 15),
-                  label: const Text('যাচাইকরণ পরিবর্তন', style: TextStyle(fontSize: 11)),
-                ),
-                if (hasDoc)
-                  OutlinedButton.icon(
-                    onPressed: () => PrivateDocumentPreviewDialog.show(context, listing: l, isMobile: widget.isMobile),
-                    icon: const Icon(Icons.description, size: 15),
-                    label: const Text('দলিল প্রিভিউ', style: TextStyle(fontSize: 11)),
-                  ),
-              ],
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

@@ -28,21 +28,23 @@ public class LandListingEntity {
     private String district;
 
     @Column(nullable = false)
-    private String upazila;
+    private String upazila; // উপজেলা অথবা পৌরসভার নাম
+
+    private String subArea; // ইউনিয়ন অথবা ওয়ার্ডের নাম (যেমন: রাজগঞ্জ / ৪ নং ওয়ার্ড)
 
     @Column(nullable = false)
-    private String areaName;
+    private String areaName; // পাড়া / গ্রাম / রোড
 
     private String mouzaName;
-    private String khatianNo; // Private document info
-    private String dagNo;     // Private document info
-    private String mutationInfo; // Private document info
+    private String khatianNo;
+    private String dagNo;
+    private String mutationInfo;
 
     @Column(nullable = false)
-    private String landType; // আবাসিক, বাণিজ্যিক, কৃষি, বাগান/খামার
+    private String landType; // আবাসিক জমি, ফ্ল্যাট / অ্যাপার্টমেন্ট, বাণিজ্যিক সম্পত্তি, কৃষি জমি, বাগান বাড়ি
 
     @Column(nullable = false)
-    private BigDecimal areaDecimal; // শতাংশ
+    private BigDecimal areaDecimal; // শতাংশ / স্কয়ার ফিট
 
     @Column(nullable = false)
     private BigDecimal expectedPriceBdt;
@@ -57,16 +59,16 @@ public class LandListingEntity {
     private String imageUrl;
 
     @Column(columnDefinition = "TEXT")
-    private String additionalImageUrls; // Optional multiple photos (separated by ||| or newline)
+    private String additionalImageUrls;
 
     @Column(length = 1000)
-    private String videoUrl; // Optional YouTube / Drive video tour URL
+    private String videoUrl;
 
     @Column(length = 1000)
-    private String mapLink; // Optional Google Maps location pin URL
+    private String mapLink;
 
     @Column(columnDefinition = "TEXT")
-    private String privateDocumentUrl; // Only visible to Admin & Seller (never exposed publicly)
+    private String privateDocumentUrl;
 
     private String privateDocumentName;
 
@@ -75,15 +77,21 @@ public class LandListingEntity {
     @Column(length = 1000)
     private String duplicateNote;
 
-    // Proposed fixed service fee offered by seller to Bhumi Setu
     private BigDecimal proposedServiceFeeBdt = BigDecimal.ZERO;
+
+    // Multi-level listing fee tracking
+    private BigDecimal listingFeeChargedBdt = BigDecimal.ZERO;
+    private String paymentMethod;
+    private String senderPhone;
+    private String transactionId;
+    private String paymentStatus = "PENDING"; // PENDING, APPROVED, REJECTED, WAIVED
+    private boolean isFeatured = false;
 
     // Verification Badge: SUBMITTED, DOC_CHECKED, FIELD_VERIFIED
     @Column(nullable = false)
     private String verificationStatus = "SUBMITTED";
 
     // Listing Status: SUBMITTED, UNDER_REVIEW, APPROVED_PUBLISHED, RESERVED, SOLD, SUSPENDED, REJECTED
-    // Admin can set SUSPENDED or REJECTED at any stage!
     @Column(nullable = false)
     private String listingStatus = "SUBMITTED";
 
@@ -104,6 +112,8 @@ public class LandListingEntity {
     public void setDistrict(String district) { this.district = district; }
     public String getUpazila() { return upazila; }
     public void setUpazila(String upazila) { this.upazila = upazila; }
+    public String getSubArea() { return subArea; }
+    public void setSubArea(String subArea) { this.subArea = subArea; }
     public String getAreaName() { return areaName; }
     public void setAreaName(String areaName) { this.areaName = areaName; }
     public String getMouzaName() { return mouzaName; }
@@ -144,6 +154,19 @@ public class LandListingEntity {
     public void setDuplicateNote(String duplicateNote) { this.duplicateNote = duplicateNote; }
     public BigDecimal getProposedServiceFeeBdt() { return proposedServiceFeeBdt; }
     public void setProposedServiceFeeBdt(BigDecimal proposedServiceFeeBdt) { this.proposedServiceFeeBdt = proposedServiceFeeBdt; }
+    public BigDecimal getListingFeeChargedBdt() { return listingFeeChargedBdt; }
+    public void setListingFeeChargedBdt(BigDecimal listingFeeChargedBdt) { this.listingFeeChargedBdt = listingFeeChargedBdt; }
+    public String getPaymentMethod() { return paymentMethod; }
+    public void setPaymentMethod(String paymentMethod) { this.paymentMethod = paymentMethod; }
+    public String getSenderPhone() { return senderPhone; }
+    public void setSenderPhone(String senderPhone) { this.senderPhone = senderPhone; }
+    public String getTransactionId() { return transactionId; }
+    public void setTransactionId(String transactionId) { this.transactionId = transactionId; }
+    public String getPaymentStatus() { return paymentStatus; }
+    public void setPaymentStatus(String paymentStatus) { this.paymentStatus = paymentStatus; }
+    @com.fasterxml.jackson.annotation.JsonProperty("isFeatured")
+    public boolean isFeatured() { return isFeatured; }
+    public void setFeatured(boolean featured) { isFeatured = featured; }
     public String getVerificationStatus() { return verificationStatus; }
     public void setVerificationStatus(String verificationStatus) { this.verificationStatus = verificationStatus; }
     public String getListingStatus() { return listingStatus; }

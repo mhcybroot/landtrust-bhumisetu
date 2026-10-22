@@ -107,6 +107,8 @@ public class PublicListingController {
         m.put("title", l.getTitle());
         m.put("district", l.getDistrict());
         m.put("upazila", l.getUpazila());
+        m.put("subArea", l.getSubArea());
+        m.put("isFeatured", l.isFeatured());
         m.put("areaName", l.getAreaName());
         m.put("mouzaName", l.getMouzaName());
         m.put("landType", l.getLandType());

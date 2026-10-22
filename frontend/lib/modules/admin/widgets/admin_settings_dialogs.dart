@@ -72,6 +72,9 @@ class AdminSettingsDialogs {
   }) {
     final distCtrl = TextEditingController(text: 'নোয়াখালী');
     final upzCtrl = TextEditingController();
+    final subAreasCtrl = TextEditingController();
+    String areaType = 'UPAZILA';
+    String subAreaType = 'UNION';
     bool submitting = false;
 
     showDialog(
@@ -79,16 +82,58 @@ class AdminSettingsDialogs {
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) => AlertDialog(
           insetPadding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 24, vertical: 16),
-          title: const Text('নতুন জেলা / উপজেলা যোগ করুন', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          title: const Text('নতুন উপজেলা / পৌরসভা ও ইউনিয়ন যোগ করুন', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
           content: SizedBox(
-            width: isMobile ? double.infinity : 400,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(controller: distCtrl, decoration: const InputDecoration(labelText: 'জেলার নাম (বাংলা) *', isDense: true)),
-                const SizedBox(height: 10),
-                TextField(controller: upzCtrl, decoration: const InputDecoration(labelText: 'উপজেলার নাম (বাংলা) *', isDense: true)),
-              ],
+            width: isMobile ? double.infinity : 460,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  DropdownButtonFormField<String>(
+                    value: areaType,
+                    decoration: const InputDecoration(labelText: 'এলাকার ধরন *', isDense: true),
+                    items: const [
+                      DropdownMenuItem(value: 'UPAZILA', child: Text('🌾 উপজেলা (Upazila)')),
+                      DropdownMenuItem(value: 'POURASHAVA', child: Text('🏛️ পৌরসভা (Pourashava)')),
+                    ],
+                    onChanged: (v) {
+                      setDialogState(() {
+                        areaType = v!;
+                        subAreaType = (areaType == 'POURASHAVA') ? 'WARD' : 'UNION';
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 10),
+                  TextField(controller: distCtrl, decoration: const InputDecoration(labelText: 'জেলার নাম (বাংলা) *', isDense: true)),
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: upzCtrl,
+                    decoration: InputDecoration(
+                      labelText: areaType == 'POURASHAVA' ? 'পৌরসভার নাম (যেমন: মাইজদী পৌরসভা) *' : 'উপজেলার নাম (যেমন: নোয়াখালী সদর) *',
+                      isDense: true,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  DropdownButtonFormField<String>(
+                    value: subAreaType,
+                    decoration: const InputDecoration(labelText: 'উপ-এলাকার ধরন *', isDense: true),
+                    items: const [
+                      DropdownMenuItem(value: 'UNION', child: Text('ইউনিয়নসমূহ (Unions)')),
+                      DropdownMenuItem(value: 'WARD', child: Text('ওয়ার্ডসমূহ (Wards)')),
+                    ],
+                    onChanged: (v) => setDialogState(() => subAreaType = v!),
+                  ),
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: subAreasCtrl,
+                    maxLines: 2,
+                    decoration: InputDecoration(
+                      labelText: subAreaType == 'WARD' ? 'ওয়ার্ডের তালিকা (কমা দিয়ে, যেমন: ১ নং ওয়ার্ড, ২ নং ওয়ার্ড)' : 'ইউনিয়নের তালিকা (কমা দিয়ে, যেমন: চরমটুয়া, কাদিরহানিফ)',
+                      isDense: true,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
           actions: [
@@ -106,6 +151,9 @@ class AdminSettingsDialogs {
                           'districtNameEn': distCtrl.text.trim(),
                           'upazilaNameBn': upzCtrl.text.trim(),
                           'upazilaNameEn': upzCtrl.text.trim(),
+                          'areaType': areaType,
+                          'subAreaType': subAreaType,
+                          'subAreaNames': subAreasCtrl.text.trim(),
                         });
                         if (context.mounted) Navigator.pop(ctx);
                       } catch (e) {

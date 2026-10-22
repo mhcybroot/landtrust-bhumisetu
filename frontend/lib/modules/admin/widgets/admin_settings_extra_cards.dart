@@ -68,6 +68,9 @@ class AdminLocationsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final locs = viewModel.locations;
+    final pourashavas = locs.where((l) => l['areaType'] == 'POURASHAVA').toList();
+    final upazilas = locs.where((l) => l['areaType'] != 'POURASHAVA').toList();
+
     return Card(
       elevation: 2,
       child: Padding(
@@ -81,7 +84,7 @@ class AdminLocationsCard extends StatelessWidget {
               spacing: 8,
               runSpacing: 8,
               children: [
-                Text('কভারেজ জেলা ও উপজেলাসমূহ (${locs.length})', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                Text('কভারেজ উপজেলা ও পৌরসভাসমূহ (${locs.length})', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
                 ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
                   onPressed: () => AdminSettingsDialogs.showAddLocationDialog(context, isMobile: isMobile, onSubmit: (loc) async {
@@ -89,26 +92,65 @@ class AdminLocationsCard extends StatelessWidget {
                     onSaved?.call();
                   }),
                   icon: const Icon(Icons.add_location_alt, size: 16),
-                  label: const Text('নতুন এলাকা'),
+                  label: const Text('নতুন এলাকা যোগ'),
                 ),
               ],
             ),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: locs.map((l) => Chip(
-                    label: Text('${l['districtNameBn']} - ${l['upazilaNameBn']}', style: const TextStyle(fontSize: 11.5)),
-                    onDeleted: () async {
-                      await viewModel.deleteLocation(l['id'] as int);
-                      onSaved?.call();
-                    },
-                    deleteIconColor: Colors.red,
-                  )).toList(),
-            ),
+            if (pourashavas.isNotEmpty) ...[
+              const SizedBox(height: 10),
+              const Row(
+                children: [
+                  Icon(Icons.apartment, size: 16, color: Colors.purple),
+                  SizedBox(width: 4),
+                  Text('পৌরসভাসমূহ (ওয়ার্ডসহ):', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.purple)),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: pourashavas.map((l) => _buildChip(l)).toList(),
+              ),
+            ],
+            if (upazilas.isNotEmpty) ...[
+              const SizedBox(height: 10),
+              const Row(
+                children: [
+                  Icon(Icons.nature_people, size: 16, color: Color(0xFF0B4F32)),
+                  SizedBox(width: 4),
+                  Text('উপজেলাসমূহ (ইউনিয়নসহ):', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF0B4F32))),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: upazilas.map((l) => _buildChip(l)).toList(),
+              ),
+            ],
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildChip(dynamic l) {
+    final subCount = (l['subAreaNames']?.toString().split(',') ?? []).where((s) => s.trim().isNotEmpty).length;
+    final isPourashava = l['areaType'] == 'POURASHAVA';
+    return Chip(
+      avatar: CircleAvatar(
+        backgroundColor: isPourashava ? Colors.purple.shade50 : const Color(0xFFE8F5E9),
+        child: Icon(isPourashava ? Icons.apartment : Icons.location_city, size: 13, color: isPourashava ? Colors.purple : const Color(0xFF0B4F32)),
+      ),
+      label: Text(
+        '${l['upazilaNameBn']}${subCount > 0 ? " ($subCount ${isPourashava ? 'ওয়ার্ড' : 'ইউনিয়ন'})" : ''}',
+        style: const TextStyle(fontSize: 11.5),
+      ),
+      onDeleted: () async {
+        await viewModel.deleteLocation(l['id'] as int);
+        onSaved?.call();
+      },
+      deleteIconColor: Colors.red,
     );
   }
 }

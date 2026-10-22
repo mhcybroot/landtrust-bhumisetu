@@ -59,6 +59,7 @@ public class MemberSellerController {
         listing.setTitle((String) body.getOrDefault("title", "জমি বিক্রয়ের বিজ্ঞাপন"));
         listing.setDistrict((String) body.getOrDefault("district", "নোয়াখালী"));
         listing.setUpazila(upazila);
+        listing.setSubArea((String) body.getOrDefault("subArea", ""));
         listing.setAreaName((String) body.getOrDefault("areaName", ""));
         listing.setMouzaName((String) body.getOrDefault("mouzaName", ""));
         listing.setKhatianNo(khatianNo);
@@ -103,8 +104,19 @@ public class MemberSellerController {
         listing.setPrivateDocumentUrl((String) body.getOrDefault("privateDocumentUrl", ""));
         listing.setPrivateDocumentName((String) body.getOrDefault("privateDocumentName", ""));
         listing.setProposedServiceFeeBdt(proposedFee);
-        listing.setVerificationStatus("SUBMITTED");
-        listing.setListingStatus("SUBMITTED");
+
+        // Multi-level listing fee tracking
+        BigDecimal feeCharged = CommonUtils.parseDecimal(body.get("listingFeeChargedBdt"), BigDecimal.ZERO);
+        listing.setListingFeeChargedBdt(feeCharged);
+        listing.setPaymentMethod((String) body.getOrDefault("paymentMethod", ""));
+        listing.setSenderPhone((String) body.getOrDefault("senderPhone", user.getPhoneNumber()));
+        listing.setTransactionId((String) body.getOrDefault("transactionId", ""));
+        listing.setFeatured(Boolean.TRUE.equals(body.get("isFeatured")));
+
+        boolean isAdmin = "ADMIN".equals(user.getRole());
+        listing.setPaymentStatus(isAdmin ? "APPROVED" : "PENDING");
+        listing.setVerificationStatus(isAdmin ? "FIELD_VERIFIED" : "SUBMITTED");
+        listing.setListingStatus(isAdmin ? "APPROVED_PUBLISHED" : "UNDER_REVIEW");
 
         listing = listingRepository.save(listing);
         return ResponseEntity.ok(listing);
@@ -122,6 +134,7 @@ public class MemberSellerController {
         if (body.containsKey("title")) listing.setTitle(String.valueOf(body.get("title")));
         if (body.containsKey("district")) listing.setDistrict(String.valueOf(body.get("district")));
         if (body.containsKey("upazila")) listing.setUpazila(String.valueOf(body.get("upazila")));
+        if (body.containsKey("subArea")) listing.setSubArea(String.valueOf(body.get("subArea")));
         if (body.containsKey("areaName")) listing.setAreaName(String.valueOf(body.get("areaName")));
         if (body.containsKey("mouzaName")) listing.setMouzaName(String.valueOf(body.get("mouzaName")));
         if (body.containsKey("khatianNo")) listing.setKhatianNo(String.valueOf(body.get("khatianNo")));

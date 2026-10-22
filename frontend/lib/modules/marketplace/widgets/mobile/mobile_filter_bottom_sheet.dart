@@ -112,9 +112,9 @@ class _MobileFilterBottomSheetState extends State<MobileFilterBottomSheet> {
           DropdownButtonFormField<String>(
             isExpanded: true,
             value: _upazila.isEmpty ? null : _upazila,
-            decoration: const InputDecoration(labelText: 'উপজেলা নির্বাচন করুন', border: OutlineInputBorder()),
+            decoration: const InputDecoration(labelText: 'উপজেলা / পৌরসভা নির্বাচন করুন', border: OutlineInputBorder()),
             items: [
-              const DropdownMenuItem(value: '', child: Text('সব উপজেলা (নোয়াখালী)', overflow: TextOverflow.ellipsis)),
+              const DropdownMenuItem(value: '', child: Text('সকল এলাকা (উপজেলা ও পৌরসভা)', overflow: TextOverflow.ellipsis)),
               ...widget.upazilas.map((u) => DropdownMenuItem(value: u, child: Text(u, overflow: TextOverflow.ellipsis))),
             ],
             onChanged: (v) => setState(() => _upazila = v ?? ''),

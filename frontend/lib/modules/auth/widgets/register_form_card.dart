@@ -156,7 +156,7 @@ class _RegisterFormCardState extends State<RegisterFormCard> {
         SizedBox(width: half, child: TextField(controller: _phoneCtrl, decoration: const InputDecoration(labelText: 'মোবাইল নম্বর (01XXXXXXXXX) *', isDense: true))),
         SizedBox(width: half, child: TextField(controller: _passCtrl, obscureText: true, decoration: const InputDecoration(labelText: 'পাসওয়ার্ড দিন *', isDense: true))),
         SizedBox(width: half, child: DropdownButtonFormField<String>(isExpanded: true, value: _district, decoration: const InputDecoration(labelText: 'জেলা', isDense: true), items: districts.map((d) => DropdownMenuItem(value: d, child: Text(d, overflow: TextOverflow.ellipsis))).toList(), onChanged: (v) => setState(() => _district = v!))),
-        SizedBox(width: half, child: DropdownButtonFormField<String>(isExpanded: true, value: _upazila, decoration: const InputDecoration(labelText: 'উপজেলা', isDense: true), items: upazilas.map((u) => DropdownMenuItem(value: u, child: Text(u, overflow: TextOverflow.ellipsis))).toList(), onChanged: (v) => setState(() => _upazila = v!))),
+        SizedBox(width: half, child: DropdownButtonFormField<String>(isExpanded: true, value: _upazila, decoration: const InputDecoration(labelText: 'উপজেলা / পৌরসভা', isDense: true), items: upazilas.map((u) => DropdownMenuItem(value: u, child: Text(u, overflow: TextOverflow.ellipsis))).toList(), onChanged: (v) => setState(() => _upazila = v!))),
         SizedBox(width: half, child: TextField(controller: _addressCtrl, decoration: const InputDecoration(labelText: 'বর্তমান ঠিকানা / এলাকা', isDense: true))),
       ]);
     });

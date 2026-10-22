@@ -97,11 +97,13 @@ class ListingFilterBar extends StatelessWidget {
             HorizontalScrollFadeView(
               child: Row(
                 children: [
-                  _chip('সকল জমি', selectedLandType.isEmpty && selectedVerification.isEmpty, () => onLandTypeSelected('')),
+                  _chip('সকল প্রোপার্টি', selectedLandType.isEmpty && selectedVerification.isEmpty, () => onLandTypeSelected('')),
                   const SizedBox(width: 6),
                   _chip('🟢 সরেজমিনে যাচাইকৃত', selectedVerification == 'FIELD_VERIFIED', () => onVerificationSelected('FIELD_VERIFIED')),
                   const SizedBox(width: 6),
                   _chip('আবাসিক', selectedLandType == 'আবাসিক', () => onLandTypeSelected('আবাসিক')),
+                  const SizedBox(width: 6),
+                  _chip('🏢 ফ্ল্যাট', selectedLandType == 'ফ্ল্যাট', () => onLandTypeSelected('ফ্ল্যাট')),
                   const SizedBox(width: 6),
                   _chip('বাণিজ্যিক', selectedLandType == 'বাণিজ্যিক', () => onLandTypeSelected('বাণিজ্যিক')),
                   const SizedBox(width: 6),

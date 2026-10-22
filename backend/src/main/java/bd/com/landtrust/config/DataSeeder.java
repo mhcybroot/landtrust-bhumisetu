@@ -73,24 +73,54 @@ public class DataSeeder implements CommandLineRunner {
             paymentMethodRepository.saveAll(List.of(bkash, nagad, bank));
         }
 
-        if (locationRepository.count() == 0) {
-            String[][] noakhaliUpazilas = {
-                {"নোয়াখালী সদর", "Noakhali Sadar"},
-                {"বেগমগঞ্জ", "Begumganj"},
-                {"চাটখিল", "Chatkhil"},
-                {"কোম্পানীগঞ্জ", "Companiganj"},
-                {"সেনবাগ", "Senbagh"},
-                {"সোনাইমুড়ী", "Sonaimuri"},
-                {"কবিরহাট", "Kabirhat"},
-                {"সুবর্ণচর", "Subarnachar"},
-                {"হাতিয়া", "Hatiya"}
+        if (locationRepository.count() < 16) {
+            locationRepository.deleteAll();
+
+            // 1. Pourashavas (৭টি পৌরসভা ও ওয়ার্ড ১-৯)
+            String[][] pourashavas = {
+                {"চৌমুহনী পৌরসভা", "Choumuhani Pourashava"},
+                {"নোয়াখালী পৌরসভা", "Noakhali Pourashava"},
+                {"কবিরহাট পৌরসভা", "Kabirhat Pourashava"},
+                {"বসুরহাট পৌরসভা", "Basurhat Pourashava"},
+                {"চাটখিল পৌরসভা", "Chatkhil Pourashava"},
+                {"সেনবাগ পৌরসভা", "Senbagh Pourashava"},
+                {"সোনাইমুড়ী পৌরসভা", "Sonaimuri Pourashava"}
             };
-            for (String[] upz : noakhaliUpazilas) {
+            String wardList = "১ নং ওয়ার্ড,২ নং ওয়ার্ড,৩ নং ওয়ার্ড,৪ নং ওয়ার্ড,৫ নং ওয়ার্ড,৬ নং ওয়ার্ড,৭ নং ওয়ার্ড,৮ নং ওয়ার্ড,৯ নং ওয়ার্ড";
+            for (String[] p : pourashavas) {
                 LocationEntity loc = new LocationEntity();
                 loc.setDistrictNameBn("নোয়াখালী");
                 loc.setDistrictNameEn("Noakhali");
-                loc.setUpazilaNameBn(upz[0]);
-                loc.setUpazilaNameEn(upz[1]);
+                loc.setUpazilaNameBn(p[0]);
+                loc.setUpazilaNameEn(p[1]);
+                loc.setAreaType("POURASHAVA");
+                loc.setSubAreaNames(wardList);
+                loc.setSubAreaType("WARD");
+                loc.setActive(true);
+                locationRepository.save(loc);
+            }
+
+            // 2. Upazilas with Unions (৯টি উপজেলা ও ইউনিয়নসমূহ)
+            String[][] upazilasWithUnions = {
+                {"নোয়াখালী সদর", "Noakhali Sadar", "চরমটুয়া,কাদিরহানিফ,বিনোদপুর,দাদপুর,চর মটুয়া,নেয়াজপুর,নোয়াখালী ইউনিয়ন,অশ্বদিয়া,কালাদরাপ"},
+                {"বেগমগঞ্জ", "Begumganj", "রাজগঞ্জ,একলাশপুর,মিরওয়ারিশপুর,বেগমগঞ্জ,আমানউল্ল্যাপুর,গোপালপুর,আলাইয়ারপুর,ছয়ানী,কুতুবপুর"},
+                {"সেনবাগ", "Senbagh", "ছাতারপাইয়া,কেশারপাড়,ডুমুরুয়া,কাদরা,নবীপুর,বিজবাগ,মোহাম্মদপুর"},
+                {"চাটখিল", "Chatkhil", "রামনারায়ণপুর,নোয়াখলা,খিলপাড়া,বদলকোট,পরকোট,সাহাপুর,পাঁচগাঁও"},
+                {"সোনাইমুড়ী", "Sonaimuri", "জয়াগ,নদনা,বজরা,দেওটি,সোনাপুর,অম্বরনগর,বারাহিপুর"},
+                {"কোম্পানীগঞ্জ", "Companiganj", "চরহাজারী,চরকাঁকড়া,মুছাপুর,চরফকিরা,রামপুর,সিরাজপুর"},
+                {"কবিরহাট", "Kabirhat", "নরোত্তমপুর,সুন্দলপুর,ধানসিঁড়ি,ঘোষবাগ,চাপরাশিরহাট,বাটইয়া"},
+                {"সুবর্ণচর", "Subarnachar", "চরজব্বার,চরবাটা,চরক্লার্ক,চরওয়াপদা,চরআমানউল্লাহ,পূর্ব চরবাটা"},
+                {"হাতিয়া", "Hatiya", "চরকিং,তমরদ্দি,সোনাদিয়া,বুড়িরচর,জাহাজমারা,নিঝুমদ্বীপ,হরণী,চাননন্দী"}
+            };
+            for (String[] u : upazilasWithUnions) {
+                LocationEntity loc = new LocationEntity();
+                loc.setDistrictNameBn("নোয়াখালী");
+                loc.setDistrictNameEn("Noakhali");
+                loc.setUpazilaNameBn(u[0]);
+                loc.setUpazilaNameEn(u[1]);
+                loc.setAreaType("UPAZILA");
+                loc.setSubAreaNames(u[2]);
+                loc.setSubAreaType("UNION");
                 loc.setActive(true);
                 locationRepository.save(loc);
             }

@@ -17,6 +17,13 @@ public class SystemSettingEntity {
     private BigDecimal sellerRegistrationFee = new BigDecimal("500");
     private BigDecimal officerRegistrationFee = new BigDecimal("300");
 
+    // Multi-Level Listing Fees per Property decided by Admin
+    private BigDecimal listingFeeAgri = new BigDecimal("500");
+    private BigDecimal listingFeeResidential = new BigDecimal("1000");
+    private BigDecimal listingFeeFlat = new BigDecimal("1500");
+    private BigDecimal listingFeeCommercial = new BigDecimal("2000");
+    private BigDecimal listingFeeFeaturedExtra = new BigDecimal("1000");
+
     // Dual Commission Rules decided by Admin
     private BigDecimal referralVerifiedBonusFixed = new BigDecimal("100");
     private BigDecimal dealClosureFixedCommission = new BigDecimal("5000");
@@ -39,6 +46,16 @@ public class SystemSettingEntity {
     public void setSellerRegistrationFee(BigDecimal sellerRegistrationFee) { this.sellerRegistrationFee = sellerRegistrationFee; }
     public BigDecimal getOfficerRegistrationFee() { return officerRegistrationFee; }
     public void setOfficerRegistrationFee(BigDecimal officerRegistrationFee) { this.officerRegistrationFee = officerRegistrationFee; }
+    public BigDecimal getListingFeeAgri() { return listingFeeAgri; }
+    public void setListingFeeAgri(BigDecimal listingFeeAgri) { this.listingFeeAgri = listingFeeAgri; }
+    public BigDecimal getListingFeeResidential() { return listingFeeResidential; }
+    public void setListingFeeResidential(BigDecimal listingFeeResidential) { this.listingFeeResidential = listingFeeResidential; }
+    public BigDecimal getListingFeeFlat() { return listingFeeFlat; }
+    public void setListingFeeFlat(BigDecimal listingFeeFlat) { this.listingFeeFlat = listingFeeFlat; }
+    public BigDecimal getListingFeeCommercial() { return listingFeeCommercial; }
+    public void setListingFeeCommercial(BigDecimal listingFeeCommercial) { this.listingFeeCommercial = listingFeeCommercial; }
+    public BigDecimal getListingFeeFeaturedExtra() { return listingFeeFeaturedExtra; }
+    public void setListingFeeFeaturedExtra(BigDecimal listingFeeFeaturedExtra) { this.listingFeeFeaturedExtra = listingFeeFeaturedExtra; }
     public BigDecimal getReferralVerifiedBonusFixed() { return referralVerifiedBonusFixed; }
     public void setReferralVerifiedBonusFixed(BigDecimal referralVerifiedBonusFixed) { this.referralVerifiedBonusFixed = referralVerifiedBonusFixed; }
     public BigDecimal getDealClosureFixedCommission() { return dealClosureFixedCommission; }

@@ -46,6 +46,10 @@ class AdminRepository {
     });
   }
 
+  Future<void> approveListing(int listingId) async {
+    await ApiClient.post('/admin/listings/$listingId/approve');
+  }
+
   Future<List<dynamic>> fetchRequirements() async {
     final res = await ApiClient.get('/admin/requirements');
     final data = ApiClient.parseResponse(res);

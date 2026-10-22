@@ -56,9 +56,9 @@ class AdvancedFiltersPanel extends StatelessWidget {
             child: DropdownButtonFormField<String>(
               isExpanded: true,
               value: upazilas.contains(selectedUpazila) && selectedUpazila.isNotEmpty ? selectedUpazila : null,
-              decoration: const InputDecoration(labelText: 'উপজেলা', isDense: true),
+              decoration: const InputDecoration(labelText: 'উপজেলা / পৌরসভা', isDense: true),
               items: [
-                const DropdownMenuItem(value: '', child: Text('সকল উপজেলা', overflow: TextOverflow.ellipsis)),
+                const DropdownMenuItem(value: '', child: Text('সকল এলাকা', overflow: TextOverflow.ellipsis)),
                 ...upazilas.map((u) => DropdownMenuItem(value: u, child: Text(u, overflow: TextOverflow.ellipsis))),
               ],
               onChanged: (v) => onUpazilaChanged(v ?? ''),

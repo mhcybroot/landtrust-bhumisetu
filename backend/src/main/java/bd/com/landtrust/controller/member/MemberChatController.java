@@ -33,9 +33,8 @@ public class MemberChatController {
     }
 
     private UserEntity currentUser(Authentication auth) {
-        String phone = auth.getName();
-        return userRepository.findByPhoneNumber(phone)
-                .orElseThrow(() -> new RuntimeException("ইউজার পাওয়া যায়নি"));
+        UserEntity u = (UserEntity) auth.getPrincipal();
+        return userRepository.findById(u.getId()).orElse(u);
     }
 
     @GetMapping("/threads")

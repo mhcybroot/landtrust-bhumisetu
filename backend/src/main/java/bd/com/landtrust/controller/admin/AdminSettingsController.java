@@ -45,6 +45,11 @@ public class AdminSettingsController {
         if (body.containsKey("buyerRegistrationFee")) s.setBuyerRegistrationFee(CommonUtils.parseDecimal(body.get("buyerRegistrationFee"), s.getBuyerRegistrationFee()));
         if (body.containsKey("sellerRegistrationFee")) s.setSellerRegistrationFee(CommonUtils.parseDecimal(body.get("sellerRegistrationFee"), s.getSellerRegistrationFee()));
         if (body.containsKey("officerRegistrationFee")) s.setOfficerRegistrationFee(CommonUtils.parseDecimal(body.get("officerRegistrationFee"), s.getOfficerRegistrationFee()));
+        if (body.containsKey("listingFeeAgri")) s.setListingFeeAgri(CommonUtils.parseDecimal(body.get("listingFeeAgri"), s.getListingFeeAgri()));
+        if (body.containsKey("listingFeeResidential")) s.setListingFeeResidential(CommonUtils.parseDecimal(body.get("listingFeeResidential"), s.getListingFeeResidential()));
+        if (body.containsKey("listingFeeFlat")) s.setListingFeeFlat(CommonUtils.parseDecimal(body.get("listingFeeFlat"), s.getListingFeeFlat()));
+        if (body.containsKey("listingFeeCommercial")) s.setListingFeeCommercial(CommonUtils.parseDecimal(body.get("listingFeeCommercial"), s.getListingFeeCommercial()));
+        if (body.containsKey("listingFeeFeaturedExtra")) s.setListingFeeFeaturedExtra(CommonUtils.parseDecimal(body.get("listingFeeFeaturedExtra"), s.getListingFeeFeaturedExtra()));
         if (body.containsKey("referralVerifiedBonusFixed")) s.setReferralVerifiedBonusFixed(CommonUtils.parseDecimal(body.get("referralVerifiedBonusFixed"), s.getReferralVerifiedBonusFixed()));
         if (body.containsKey("dealClosureFixedCommission")) s.setDealClosureFixedCommission(CommonUtils.parseDecimal(body.get("dealClosureFixedCommission"), s.getDealClosureFixedCommission()));
         if (body.containsKey("dealClosurePercentCommission")) s.setDealClosurePercentCommission(CommonUtils.parseDecimal(body.get("dealClosurePercentCommission"), s.getDealClosurePercentCommission()));
@@ -103,6 +108,11 @@ public class AdminSettingsController {
         loc.setDistrictNameEn(distEn);
         loc.setUpazilaNameBn(upzBn);
         loc.setUpazilaNameEn(upzEn);
+        loc.setAreaType(String.valueOf(body.getOrDefault("areaType", upzBn.contains("পৌরসভা") ? "POURASHAVA" : "UPAZILA")));
+        if (body.containsKey("subAreaNames")) {
+            loc.setSubAreaNames(String.valueOf(body.get("subAreaNames")).trim());
+        }
+        loc.setSubAreaType(String.valueOf(body.getOrDefault("subAreaType", loc.getAreaType().equals("POURASHAVA") ? "WARD" : "UNION")));
         loc.setActive(true);
         return ResponseEntity.ok(locationRepository.save(loc));
     }

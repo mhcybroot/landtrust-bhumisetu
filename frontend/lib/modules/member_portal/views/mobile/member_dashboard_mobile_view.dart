@@ -66,9 +66,25 @@ class MemberDashboardMobileView extends StatelessWidget {
               tooltip: currentMode == 'SELLER' ? 'নতুন জমি যোগ করুন' : 'নতুন চাহিদা দিন',
               onPressed: () => guardAction(() {
                 if (currentMode == 'SELLER') {
-                  ListingFormDialog.show(context, isMobile: true, districts: getDistricts(), getUpazilas: getUpazilas, onSubmit: (p) async { await viewModel.createListing(p); onRefreshParent(); });
+                  ListingFormDialog.show(
+                    context,
+                    isMobile: true,
+                    districts: getDistricts(),
+                    getUpazilas: getUpazilas,
+                    rawLocations: viewModel.publicConfig['locations'] as List<dynamic>?,
+                    settings: viewModel.publicConfig['settings'] as Map<String, dynamic>?,
+                    paymentMethods: viewModel.publicConfig['paymentMethods'] as List<dynamic>?,
+                    onSubmit: (p) async { await viewModel.createListing(p); onRefreshParent(); },
+                  );
                 } else {
-                  RequirementFormDialog.show(context, isMobile: true, districts: getDistricts(), getUpazilas: getUpazilas, onSubmit: (p) async { await viewModel.createRequirement(p); onRefreshParent(); });
+                  RequirementFormDialog.show(
+                    context,
+                    isMobile: true,
+                    districts: getDistricts(),
+                    getUpazilas: getUpazilas,
+                    rawLocations: viewModel.publicConfig['locations'] as List<dynamic>?,
+                    onSubmit: (p) async { await viewModel.createRequirement(p); onRefreshParent(); },
+                  );
                 }
               }),
               child: const Icon(Icons.add_rounded, size: 26),
@@ -115,9 +131,28 @@ class MemberDashboardMobileView extends StatelessWidget {
                       SellerWorkspaceView(
                         myListings: viewModel.myListings,
                         isMobile: true,
-                        onAddListing: () => guardAction(() => ListingFormDialog.show(context, isMobile: true, districts: getDistricts(), getUpazilas: getUpazilas, onSubmit: (p) async { await viewModel.createListing(p); onRefreshParent(); })),
+                        onAddListing: () => guardAction(() => ListingFormDialog.show(
+                          context,
+                          isMobile: true,
+                          districts: getDistricts(),
+                          getUpazilas: getUpazilas,
+                          rawLocations: viewModel.publicConfig['locations'] as List<dynamic>?,
+                          settings: viewModel.publicConfig['settings'] as Map<String, dynamic>?,
+                          paymentMethods: viewModel.publicConfig['paymentMethods'] as List<dynamic>?,
+                          onSubmit: (p) async { await viewModel.createListing(p); onRefreshParent(); },
+                        )),
                         onAddProposal: () => guardAction(() => AddCustomProposalDialog.show(context, isMobile: true, onSubmitted: viewModel.loadData)),
-                        onEditListing: (item) => ListingFormDialog.show(context, existing: item, isMobile: true, districts: getDistricts(), getUpazilas: getUpazilas, onSubmit: (p) async { await viewModel.updateListing(item['id'] as int, p); onRefreshParent(); }),
+                        onEditListing: (item) => ListingFormDialog.show(
+                          context,
+                          existing: item,
+                          isMobile: true,
+                          districts: getDistricts(),
+                          getUpazilas: getUpazilas,
+                          rawLocations: viewModel.publicConfig['locations'] as List<dynamic>?,
+                          settings: viewModel.publicConfig['settings'] as Map<String, dynamic>?,
+                          paymentMethods: viewModel.publicConfig['paymentMethods'] as List<dynamic>?,
+                          onSubmit: (p) async { await viewModel.updateListing(item['id'] as int, p); onRefreshParent(); },
+                        ),
                         onPreviewDoc: (item) => PrivateDocumentPreviewDialog.show(context, listing: item, isMobile: true),
                         onMarkSold: (id) async { await ApiClient.post('/member/seller/listings/$id/sold'); await viewModel.loadData(); onRefreshParent(); },
                       ),
@@ -128,9 +163,24 @@ class MemberDashboardMobileView extends StatelessWidget {
                         myRequirements: viewModel.myRequirements,
                         myInquiries: viewModel.myInquiries,
                         isMobile: true,
-                        onAddRequirement: () => guardAction(() => RequirementFormDialog.show(context, isMobile: true, districts: getDistricts(), getUpazilas: getUpazilas, onSubmit: (p) async { await viewModel.createRequirement(p); onRefreshParent(); })),
+                        onAddRequirement: () => guardAction(() => RequirementFormDialog.show(
+                          context,
+                          isMobile: true,
+                          districts: getDistricts(),
+                          getUpazilas: getUpazilas,
+                          rawLocations: viewModel.publicConfig['locations'] as List<dynamic>?,
+                          onSubmit: (p) async { await viewModel.createRequirement(p); onRefreshParent(); },
+                        )),
                         onAddProposal: () => guardAction(() => AddCustomProposalDialog.show(context, isMobile: true, onSubmitted: viewModel.loadData)),
-                        onEditRequirement: (item) => RequirementFormDialog.show(context, existing: item, isMobile: true, districts: getDistricts(), getUpazilas: getUpazilas, onSubmit: (p) async { await viewModel.updateRequirement(item['id'] as int, p); onRefreshParent(); }),
+                        onEditRequirement: (item) => RequirementFormDialog.show(
+                          context,
+                          existing: item,
+                          isMobile: true,
+                          districts: getDistricts(),
+                          getUpazilas: getUpazilas,
+                          rawLocations: viewModel.publicConfig['locations'] as List<dynamic>?,
+                          onSubmit: (p) async { await viewModel.updateRequirement(item['id'] as int, p); onRefreshParent(); },
+                        ),
                         onFulfillRequirement: (id) async { await ApiClient.post('/member/buyer/requirements/$id/fulfill'); await viewModel.loadData(); onRefreshParent(); },
                       ),
                       const SizedBox(height: 16),
