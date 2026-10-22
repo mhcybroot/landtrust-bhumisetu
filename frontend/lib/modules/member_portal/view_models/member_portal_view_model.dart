@@ -49,9 +49,9 @@ class MemberPortalViewModel extends ChangeNotifier {
 
       final role = currentUser?['role']?.toString() ?? 'BUYER';
       if (_activePortalMode.isEmpty) {
-        _activePortalMode = role == 'ADMIN' ? 'SELLER' : role;
+        _activePortalMode = (role == 'UPAZILA_AGENT' || role == 'DISTRICT_AGENT') ? 'MARKETING_OFFICER' : (role == 'ADMIN' ? 'SELLER' : role);
       }
-      if (role == 'MARKETING_OFFICER') {
+      if (role == 'MARKETING_OFFICER' || role == 'UPAZILA_AGENT' || role == 'DISTRICT_AGENT') {
         _officerDashboard = await _repo.fetchOfficerDashboard();
       }
 

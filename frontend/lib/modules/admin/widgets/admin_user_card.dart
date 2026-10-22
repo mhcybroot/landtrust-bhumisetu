@@ -24,6 +24,15 @@ class AdminUserCard extends StatelessWidget {
     final phone = user['phoneNumber']?.toString() ?? '';
     final name = user['fullName']?.toString() ?? '';
 
+    final roleBn = switch (user['role']?.toString()) {
+      'DISTRICT_AGENT' => 'জেলা প্রধান এজেন্ট',
+      'UPAZILA_AGENT' => 'উপজেলা এজেন্ট',
+      'MARKETING_OFFICER' => 'মার্কেটিং অফিসার',
+      'SELLER' => 'জমির বিক্রেতা',
+      'BUYER' => 'জমির ক্রেতা',
+      _ => user['role']?.toString() ?? '',
+    };
+
     return Card(
       margin: const EdgeInsets.only(bottom: 10),
       child: Padding(
@@ -35,7 +44,7 @@ class AdminUserCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Expanded(
-                  child: Text('${user['fullName']} (${user['role']})', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                  child: Text('${user['fullName']} ($roleBn)', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
                 ),
                 StatusBadge(status: status),
               ],

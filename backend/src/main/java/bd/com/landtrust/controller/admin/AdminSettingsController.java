@@ -47,6 +47,13 @@ public class AdminSettingsController {
         if (body.containsKey("sellerRegistrationFeePourashava")) s.setSellerRegistrationFeePourashava(CommonUtils.parseDecimal(body.get("sellerRegistrationFeePourashava"), s.getSellerRegistrationFeePourashava()));
         if (body.containsKey("sellerRegistrationFeeUnion")) s.setSellerRegistrationFeeUnion(CommonUtils.parseDecimal(body.get("sellerRegistrationFeeUnion"), s.getSellerRegistrationFeeUnion()));
         if (body.containsKey("officerRegistrationFee")) s.setOfficerRegistrationFee(CommonUtils.parseDecimal(body.get("officerRegistrationFee"), s.getOfficerRegistrationFee()));
+        if (body.containsKey("officerRegistrationFeePourashava")) s.setOfficerRegistrationFeePourashava(CommonUtils.parseDecimal(body.get("officerRegistrationFeePourashava"), s.getOfficerRegistrationFeePourashava()));
+        if (body.containsKey("officerRegistrationFeeUnion")) s.setOfficerRegistrationFeeUnion(CommonUtils.parseDecimal(body.get("officerRegistrationFeeUnion"), s.getOfficerRegistrationFeeUnion()));
+        if (body.containsKey("districtAgentRegistrationFee")) s.setDistrictAgentRegistrationFee(CommonUtils.parseDecimal(body.get("districtAgentRegistrationFee"), s.getDistrictAgentRegistrationFee()));
+        if (body.containsKey("upazilaAgentRegistrationFee")) s.setUpazilaAgentRegistrationFee(CommonUtils.parseDecimal(body.get("upazilaAgentRegistrationFee"), s.getUpazilaAgentRegistrationFee()));
+        if (body.containsKey("dealClosureFieldSharePercent")) s.setDealClosureFieldSharePercent(CommonUtils.parseDecimal(body.get("dealClosureFieldSharePercent"), s.getDealClosureFieldSharePercent()));
+        if (body.containsKey("dealClosureUpazilaSharePercent")) s.setDealClosureUpazilaSharePercent(CommonUtils.parseDecimal(body.get("dealClosureUpazilaSharePercent"), s.getDealClosureUpazilaSharePercent()));
+        if (body.containsKey("dealClosureDistrictSharePercent")) s.setDealClosureDistrictSharePercent(CommonUtils.parseDecimal(body.get("dealClosureDistrictSharePercent"), s.getDealClosureDistrictSharePercent()));
         if (body.containsKey("listingFeeAgri")) s.setListingFeeAgri(CommonUtils.parseDecimal(body.get("listingFeeAgri"), s.getListingFeeAgri()));
         if (body.containsKey("listingFeeResidential")) s.setListingFeeResidential(CommonUtils.parseDecimal(body.get("listingFeeResidential"), s.getListingFeeResidential()));
         if (body.containsKey("listingFeeFlat")) s.setListingFeeFlat(CommonUtils.parseDecimal(body.get("listingFeeFlat"), s.getListingFeeFlat()));

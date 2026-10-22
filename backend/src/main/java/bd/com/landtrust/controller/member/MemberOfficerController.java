@@ -106,8 +106,8 @@ public class MemberOfficerController {
                     "accountStatus", officer.getAccountStatus()
             ));
         }
-        if (!"MARKETING_OFFICER".equals(officer.getRole()) && !"ADMIN".equals(officer.getRole())) {
-            return ResponseEntity.status(403).body(Map.of("message", "শুধুমাত্র মার্কেটিং অফিসার সদস্যগণ এই অনুরোধ করতে পারেন।"));
+        if (!List.of("MARKETING_OFFICER", "UPAZILA_AGENT", "DISTRICT_AGENT", "ADMIN").contains(officer.getRole())) {
+            return ResponseEntity.status(403).body(Map.of("message", "শুধুমাত্র মার্কেটিং অফিসার ও অনুমোদিত এজেন্টগণ এই অনুরোধ করতে পারেন।"));
         }
         String paymentMethod = body.getOrDefault("paymentMethod", "বিকাশ (bKash)");
         String accountNumber = body.getOrDefault("accountNumber", officer.getPhoneNumber()).trim();

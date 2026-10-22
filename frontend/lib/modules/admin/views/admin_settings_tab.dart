@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../view_models/admin_view_model.dart';
 import '../widgets/admin_listing_fees_card.dart';
+import '../widgets/admin_representative_policy_card.dart';
 import '../widgets/admin_settings_extra_cards.dart';
 
 class AdminSettingsTab extends StatefulWidget {
@@ -95,6 +96,8 @@ class _AdminSettingsTabState extends State<AdminSettingsTab> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildFeesCard(),
+        const SizedBox(height: 14),
+        AdminRepresentativePolicyCard(viewModel: widget.viewModel, isMobile: widget.isMobile, onSaved: widget.onSettingsSaved),
         const SizedBox(height: 14),
         AdminListingFeesCard(viewModel: widget.viewModel, isMobile: widget.isMobile, onSaved: widget.onSettingsSaved),
         const SizedBox(height: 14),

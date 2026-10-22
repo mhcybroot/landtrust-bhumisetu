@@ -74,20 +74,17 @@ class _RegisterFormCardState extends State<RegisterFormCard> {
         : ['বিকাশ (bKash)', 'নগদ (Nagad)', 'ইসলামী ব্যাংক পিএলসি'];
     if (!paymentOptions.contains(_selectedPaymentMethod)) _selectedPaymentMethod = paymentOptions.first;
 
-    final isPourashava = locations.any((l) =>
-        l['districtNameBn'] == _district &&
-        l['upazilaNameBn'] == _upazila &&
-        l['areaType'] == 'POURASHAVA') ||
-        _upazila.contains('পৌরসভা') ||
-        _upazila.contains('সিটি কর্পোরেশন');
+    final isPourashava = locations.any((l) => l['districtNameBn'] == _district && l['upazilaNameBn'] == _upazila && l['areaType'] == 'POURASHAVA') || _upazila.contains('পৌরসভা') || _upazila.contains('সিটি কর্পোরেশন');
 
     final roleFee = switch (_selectedRole) {
-      'SELLER' => isPourashava
-          ? (settings['sellerRegistrationFeePourashava'] ?? 2000)
-          : (settings['sellerRegistrationFeeUnion'] ?? 1000),
-      'MARKETING_OFFICER' => settings['officerRegistrationFee'] ?? 1000,
+      'DISTRICT_AGENT' => settings['districtAgentRegistrationFee'] ?? 10000,
+      'UPAZILA_AGENT' => settings['upazilaAgentRegistrationFee'] ?? 5000,
+      'MARKETING_OFFICER' => isPourashava ? (settings['officerRegistrationFeePourashava'] ?? 2000) : (settings['officerRegistrationFeeUnion'] ?? 1000),
+      'SELLER' => isPourashava ? (settings['sellerRegistrationFeePourashava'] ?? 2000) : (settings['sellerRegistrationFeeUnion'] ?? 1000),
       _ => settings['buyerRegistrationFee'] ?? 1000,
     };
+
+    final isOrdinaryUser = _selectedRole == 'BUYER' || _selectedRole == 'SELLER';
 
     return Card(
       elevation: 2,
@@ -98,7 +95,7 @@ class _RegisterFormCardState extends State<RegisterFormCard> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'সদস্য নিবন্ধন ফর্ম',
+              'সদস্য ও প্রতিনিধি নিবন্ধন ফর্ম',
               style: TextStyle(fontSize: widget.isMobile ? 17 : 20, fontWeight: FontWeight.bold, color: const Color(0xFF0B4F32)),
             ),
             const SizedBox(height: 12),
@@ -110,11 +107,11 @@ class _RegisterFormCardState extends State<RegisterFormCard> {
             ),
             const SizedBox(height: 14),
             _buildInputs(districts, upazilaList),
-            if (_selectedRole != 'MARKETING_OFFICER') ...[
+            if (isOrdinaryUser) ...[
               const SizedBox(height: 10),
               TextField(
                 controller: _referralCodeCtrl,
-                decoration: const InputDecoration(labelText: 'রেফারেল কোড (ঐচ্ছিক, যেমন: LT-NOA-1001)', prefixIcon: Icon(Icons.card_giftcard, size: 18), isDense: true),
+                decoration: const InputDecoration(labelText: 'রেফারেল কোড (ঐচ্ছিক, যেমন: LT-OFF-1001)', prefixIcon: Icon(Icons.card_giftcard, size: 18), isDense: true),
               ),
             ],
             const SizedBox(height: 14),
@@ -151,7 +148,7 @@ class _RegisterFormCardState extends State<RegisterFormCard> {
         SizedBox(width: half, child: TextField(controller: _passCtrl, obscureText: true, decoration: const InputDecoration(labelText: 'পাসওয়ার্ড দিন *', isDense: true))),
         SizedBox(width: half, child: DropdownButtonFormField<String>(isExpanded: true, value: _district, decoration: const InputDecoration(labelText: 'জেলা', isDense: true), items: districts.map((d) => DropdownMenuItem(value: d, child: Text(d, overflow: TextOverflow.ellipsis))).toList(), onChanged: (v) => setState(() => _district = v!))),
         SizedBox(width: half, child: DropdownButtonFormField<String>(isExpanded: true, value: _upazila, decoration: const InputDecoration(labelText: 'উপজেলা / পৌরসভা', isDense: true), items: upazilas.map((u) => DropdownMenuItem(value: u, child: Text(u, overflow: TextOverflow.ellipsis))).toList(), onChanged: (v) => setState(() => _upazila = v!))),
-        SizedBox(width: half, child: TextField(controller: _addressCtrl, decoration: const InputDecoration(labelText: 'বর্তমান ঠিকানা / এলাকা', isDense: true))),
+        SizedBox(width: half, child: TextField(controller: _addressCtrl, decoration: const InputDecoration(labelText: 'বর্তমান ঠিকানা / ইউনিয়ন / ওয়ার্ড', isDense: true))),
       ]);
     });
   }
@@ -176,6 +173,7 @@ class _RegisterFormCardState extends State<RegisterFormCard> {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('অনুগ্রহ করে পেমেন্টের ট্রানজ্যাকশন আইডি (TrxID) প্রদান করুন।')));
       return;
     }
+    final isOrdinaryUser = _selectedRole == 'BUYER' || _selectedRole == 'SELLER';
     widget.onSubmit({
       'fullName': _fullNameCtrl.text.trim(),
       'phoneNumber': _phoneCtrl.text.trim(),
@@ -184,7 +182,7 @@ class _RegisterFormCardState extends State<RegisterFormCard> {
       'district': _district,
       'upazila': _upazila,
       'address': _addressCtrl.text.trim(),
-      'referralCode': _selectedRole == 'MARKETING_OFFICER' ? '' : _referralCodeCtrl.text.trim(),
+      'referralCode': isOrdinaryUser ? _referralCodeCtrl.text.trim() : '',
       'paymentMethod': _selectedPaymentMethod,
       'senderPhone': _senderPhoneCtrl.text.trim().isEmpty ? _phoneCtrl.text.trim() : _senderPhoneCtrl.text.trim(),
       'transactionId': _trxIdCtrl.text.trim(),

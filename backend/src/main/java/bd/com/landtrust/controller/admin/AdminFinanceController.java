@@ -21,16 +21,25 @@ public class AdminFinanceController {
     private final CommissionEntryRepository commissionRepository;
     private final FinancialTransactionRepository transactionRepository;
     private final NotificationRepository notificationRepository;
+    private final SystemSettingRepository settingRepository;
 
     public AdminFinanceController(
             UserRepository userRepository, ServiceProposalRepository proposalRepository,
             CommissionEntryRepository commissionRepository, FinancialTransactionRepository transactionRepository,
-            NotificationRepository notificationRepository) {
+            NotificationRepository notificationRepository, SystemSettingRepository settingRepository) {
         this.userRepository = userRepository;
         this.proposalRepository = proposalRepository;
         this.commissionRepository = commissionRepository;
         this.transactionRepository = transactionRepository;
         this.notificationRepository = notificationRepository;
+        this.settingRepository = settingRepository;
+    }
+
+    private SystemSettingEntity getSettings() {
+        return settingRepository.findAll().stream().findFirst().orElseGet(() -> {
+            SystemSettingEntity def = new SystemSettingEntity();
+            return settingRepository.save(def);
+        });
     }
 
     @GetMapping("/proposals")
@@ -97,6 +106,16 @@ public class AdminFinanceController {
                 ? baseDealAmount.multiply(percentageRate).divide(new BigDecimal("100"), 0, RoundingMode.HALF_UP)
                 : customFixedAmount;
 
+        SystemSettingEntity settings = getSettings();
+        BigDecimal fieldSharePct = settings.getDealClosureFieldSharePercent() != null ? settings.getDealClosureFieldSharePercent() : new BigDecimal("70");
+        BigDecimal upazilaSharePct = settings.getDealClosureUpazilaSharePercent() != null ? settings.getDealClosureUpazilaSharePercent() : new BigDecimal("20");
+        BigDecimal districtSharePct = settings.getDealClosureDistrictSharePercent() != null ? settings.getDealClosureDistrictSharePercent() : new BigDecimal("10");
+
+        boolean isDealClosure = commissionType.startsWith("DEAL_CLOSURE");
+        BigDecimal officerShare = isDealClosure
+                ? finalCommission.multiply(fieldSharePct).divide(new BigDecimal("100"), 0, RoundingMode.HALF_UP)
+                : finalCommission;
+
         CommissionEntryEntity entry = new CommissionEntryEntity();
         entry.setOfficerId(officer.getId());
         entry.setOfficerName(officer.getFullName());
@@ -107,14 +126,80 @@ public class AdminFinanceController {
         entry.setCommissionType(commissionType);
         entry.setBaseDealAmountBdt(baseDealAmount);
         entry.setPercentageRate(percentageRate);
-        entry.setCommissionAmountBdt(finalCommission);
+        entry.setCommissionAmountBdt(officerShare);
         entry.setStatus("APPROVED_PAYABLE");
-        entry.setNote(note);
+        entry.setAgentRole(officer.getRole());
+        entry.setTierLevel("DIRECT_FIELD");
+        entry.setNote(note + (isDealClosure ? " (মাঠ পর্যায় " + fieldSharePct + "%)" : ""));
 
         entry = commissionRepository.save(entry);
         CommissionHelper.syncOfficerCommissionTotals(userRepository, commissionRepository, officer.getId());
-        CommonUtils.notifyUser(notificationRepository, officer.getId(), "নতুন কমিশন অনুমোদিত: ৳" + finalCommission,
-                "রেফারকৃত সদস্য " + referredUser.getFullName() + " এর বিপরীতে ৳" + finalCommission + " কমিশন অনুমোদিত (" + note + ")।");
+        CommonUtils.notifyUser(notificationRepository, officer.getId(), "নতুন কমিশন অনুমোদিত: ৳" + officerShare,
+                "রেফারকৃত সদস্য " + referredUser.getFullName() + " এর বিপরীতে ৳" + officerShare + " কমিশন অনুমোদিত (" + note + ")।");
+
+        if (isDealClosure) {
+            Optional<UserEntity> upzAgentOpt = Optional.empty();
+            if (officer.getSupervisorAgentId() != null) {
+                upzAgentOpt = userRepository.findById(officer.getSupervisorAgentId());
+            }
+            if (upzAgentOpt.isEmpty() && officer.getDistrict() != null && officer.getUpazila() != null) {
+                upzAgentOpt = userRepository.findFirstByRoleAndDistrictAndUpazilaAndAccountStatus("UPAZILA_AGENT", officer.getDistrict(), officer.getUpazila(), "ACTIVE");
+            }
+            if (upzAgentOpt.isPresent()) {
+                UserEntity upzAgent = upzAgentOpt.get();
+                BigDecimal upzShare = finalCommission.multiply(upazilaSharePct).divide(new BigDecimal("100"), 0, RoundingMode.HALF_UP);
+                CommissionEntryEntity upzEntry = new CommissionEntryEntity();
+                upzEntry.setOfficerId(upzAgent.getId());
+                upzEntry.setOfficerName(upzAgent.getFullName());
+                upzEntry.setReferralCode(upzAgent.getMyReferralCode());
+                upzEntry.setReferredUserId(referredUser.getId());
+                upzEntry.setReferredUserName(referredUser.getFullName());
+                upzEntry.setReferredUserRole(referredUser.getRole());
+                upzEntry.setCommissionType("UPAZILA_OVERRIDE");
+                upzEntry.setBaseDealAmountBdt(baseDealAmount);
+                upzEntry.setPercentageRate(upazilaSharePct);
+                upzEntry.setCommissionAmountBdt(upzShare);
+                upzEntry.setStatus("APPROVED_PAYABLE");
+                upzEntry.setAgentRole("UPAZILA_AGENT");
+                upzEntry.setTierLevel("UPAZILA_OVERRIDE");
+                upzEntry.setNote("উপজেলা এজেন্ট সুপারভাইজরি কমিশন (" + upazilaSharePct + "%)");
+                commissionRepository.save(upzEntry);
+                CommissionHelper.syncOfficerCommissionTotals(userRepository, commissionRepository, upzAgent.getId());
+                CommonUtils.notifyUser(notificationRepository, upzAgent.getId(), "নতুন উপজেলা ওভাররাইড কমিশন: ৳" + upzShare,
+                        "অধীনস্থ অফিসার " + officer.getFullName() + " এর ডিল ক্লোজিংয়ের বিপরীতে ৳" + upzShare + " কমিশন প্রাপ্ত হয়েছে।");
+
+                Optional<UserEntity> distAgentOpt = Optional.empty();
+                if (upzAgent.getSupervisorAgentId() != null) {
+                    distAgentOpt = userRepository.findById(upzAgent.getSupervisorAgentId());
+                }
+                if (distAgentOpt.isEmpty() && officer.getDistrict() != null) {
+                    distAgentOpt = userRepository.findFirstByRoleAndDistrictAndAccountStatus("DISTRICT_AGENT", officer.getDistrict(), "ACTIVE");
+                }
+                if (distAgentOpt.isPresent()) {
+                    UserEntity distAgent = distAgentOpt.get();
+                    BigDecimal distShare = finalCommission.multiply(districtSharePct).divide(new BigDecimal("100"), 0, RoundingMode.HALF_UP);
+                    CommissionEntryEntity distEntry = new CommissionEntryEntity();
+                    distEntry.setOfficerId(distAgent.getId());
+                    distEntry.setOfficerName(distAgent.getFullName());
+                    distEntry.setReferralCode(distAgent.getMyReferralCode());
+                    distEntry.setReferredUserId(referredUser.getId());
+                    distEntry.setReferredUserName(referredUser.getFullName());
+                    distEntry.setReferredUserRole(referredUser.getRole());
+                    distEntry.setCommissionType("DISTRICT_OVERRIDE");
+                    distEntry.setBaseDealAmountBdt(baseDealAmount);
+                    distEntry.setPercentageRate(districtSharePct);
+                    distEntry.setCommissionAmountBdt(distShare);
+                    distEntry.setStatus("APPROVED_PAYABLE");
+                    distEntry.setAgentRole("DISTRICT_AGENT");
+                    distEntry.setTierLevel("DISTRICT_OVERRIDE");
+                    distEntry.setNote("জেলা প্রধান প্রতিনিধি আঞ্চলিক ওভাররাইড (" + districtSharePct + "%)");
+                    commissionRepository.save(distEntry);
+                    CommissionHelper.syncOfficerCommissionTotals(userRepository, commissionRepository, distAgent.getId());
+                    CommonUtils.notifyUser(notificationRepository, distAgent.getId(), "নতুন জেলা ওভাররাইড কমিশন: ৳" + distShare,
+                            "আঞ্চলিক ডিল ক্লোজিংয়ের বিপরীতে ৳" + distShare + " কমিশন প্রাপ্ত হয়েছে।");
+                }
+            }
+        }
 
         return ResponseEntity.ok(entry);
     }

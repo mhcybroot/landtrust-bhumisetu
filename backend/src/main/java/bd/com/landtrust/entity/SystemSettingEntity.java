@@ -18,6 +18,10 @@ public class SystemSettingEntity {
     private BigDecimal sellerRegistrationFeePourashava = new BigDecimal("2000");
     private BigDecimal sellerRegistrationFeeUnion = new BigDecimal("1000");
     private BigDecimal officerRegistrationFee = new BigDecimal("1000");
+    private BigDecimal officerRegistrationFeePourashava = new BigDecimal("2000");
+    private BigDecimal officerRegistrationFeeUnion = new BigDecimal("1000");
+    private BigDecimal districtAgentRegistrationFee = new BigDecimal("10000");
+    private BigDecimal upazilaAgentRegistrationFee = new BigDecimal("5000");
 
     // Multi-Level Listing Fees per Property decided by Admin
     private BigDecimal listingFeeAgri = new BigDecimal("500");
@@ -26,10 +30,13 @@ public class SystemSettingEntity {
     private BigDecimal listingFeeCommercial = new BigDecimal("2000");
     private BigDecimal listingFeeFeaturedExtra = new BigDecimal("1000");
 
-    // Dual Commission Rules decided by Admin
+    // Dual Commission Rules & Multi-Tiered Sharing decided by Admin
     private BigDecimal referralVerifiedBonusFixed = new BigDecimal("100");
     private BigDecimal dealClosureFixedCommission = new BigDecimal("5000");
     private BigDecimal dealClosurePercentCommission = new BigDecimal("10");
+    private BigDecimal dealClosureFieldSharePercent = new BigDecimal("70");
+    private BigDecimal dealClosureUpazilaSharePercent = new BigDecimal("20");
+    private BigDecimal dealClosureDistrictSharePercent = new BigDecimal("10");
 
     // Advisory Reserve Suggestion (No Lock! Only Advisory Display)
     private BigDecimal advisoryReservePercent = new BigDecimal("25");
@@ -52,6 +59,20 @@ public class SystemSettingEntity {
     public void setSellerRegistrationFeeUnion(BigDecimal sellerRegistrationFeeUnion) { this.sellerRegistrationFeeUnion = sellerRegistrationFeeUnion; }
     public BigDecimal getOfficerRegistrationFee() { return officerRegistrationFee; }
     public void setOfficerRegistrationFee(BigDecimal officerRegistrationFee) { this.officerRegistrationFee = officerRegistrationFee; }
+    public BigDecimal getOfficerRegistrationFeePourashava() { return officerRegistrationFeePourashava; }
+    public void setOfficerRegistrationFeePourashava(BigDecimal officerRegistrationFeePourashava) { this.officerRegistrationFeePourashava = officerRegistrationFeePourashava; }
+    public BigDecimal getOfficerRegistrationFeeUnion() { return officerRegistrationFeeUnion; }
+    public void setOfficerRegistrationFeeUnion(BigDecimal officerRegistrationFeeUnion) { this.officerRegistrationFeeUnion = officerRegistrationFeeUnion; }
+    public BigDecimal getDistrictAgentRegistrationFee() { return districtAgentRegistrationFee; }
+    public void setDistrictAgentRegistrationFee(BigDecimal districtAgentRegistrationFee) { this.districtAgentRegistrationFee = districtAgentRegistrationFee; }
+    public BigDecimal getUpazilaAgentRegistrationFee() { return upazilaAgentRegistrationFee; }
+    public void setUpazilaAgentRegistrationFee(BigDecimal upazilaAgentRegistrationFee) { this.upazilaAgentRegistrationFee = upazilaAgentRegistrationFee; }
+    public BigDecimal getDealClosureFieldSharePercent() { return dealClosureFieldSharePercent; }
+    public void setDealClosureFieldSharePercent(BigDecimal dealClosureFieldSharePercent) { this.dealClosureFieldSharePercent = dealClosureFieldSharePercent; }
+    public BigDecimal getDealClosureUpazilaSharePercent() { return dealClosureUpazilaSharePercent; }
+    public void setDealClosureUpazilaSharePercent(BigDecimal dealClosureUpazilaSharePercent) { this.dealClosureUpazilaSharePercent = dealClosureUpazilaSharePercent; }
+    public BigDecimal getDealClosureDistrictSharePercent() { return dealClosureDistrictSharePercent; }
+    public void setDealClosureDistrictSharePercent(BigDecimal dealClosureDistrictSharePercent) { this.dealClosureDistrictSharePercent = dealClosureDistrictSharePercent; }
     public BigDecimal getListingFeeAgri() { return listingFeeAgri; }
     public void setListingFeeAgri(BigDecimal listingFeeAgri) { this.listingFeeAgri = listingFeeAgri; }
     public BigDecimal getListingFeeResidential() { return listingFeeResidential; }

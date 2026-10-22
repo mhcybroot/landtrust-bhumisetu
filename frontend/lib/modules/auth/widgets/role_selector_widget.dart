@@ -19,7 +19,10 @@ class RoleSelectorWidget extends StatelessWidget {
     final buyerFee = settings['buyerRegistrationFee'] ?? 1000;
     final sPourashava = settings['sellerRegistrationFeePourashava'] ?? 2000;
     final sUnion = settings['sellerRegistrationFeeUnion'] ?? 1000;
-    final officerFee = settings['officerRegistrationFee'] ?? 1000;
+    final oPourashava = settings['officerRegistrationFeePourashava'] ?? 2000;
+    final oUnion = settings['officerRegistrationFeeUnion'] ?? 1000;
+    final upzFee = settings['upazilaAgentRegistrationFee'] ?? 5000;
+    final distFee = settings['districtAgentRegistrationFee'] ?? 10000;
 
     return LayoutBuilder(builder: (ctx, constraints) {
       final cardWidth = isMobile ? constraints.maxWidth : (constraints.maxWidth - 16) / 3;
@@ -29,30 +32,23 @@ class RoleSelectorWidget extends StatelessWidget {
         children: [
           SizedBox(
             width: cardWidth,
-            child: _roleCard(
-              'BUYER',
-              '১. জমির ক্রেতা',
-              'ফি: ৳$buyerFee',
-              Icons.person_search,
-            ),
+            child: _roleCard('BUYER', '১. জমির ক্রেতা', 'ফি: ৳$buyerFee', Icons.person_search),
           ),
           SizedBox(
             width: cardWidth,
-            child: _roleCard(
-              'SELLER',
-              '২. জমির বিক্রেতা',
-              'ফি: ৳$sUnion - $sPourashava',
-              Icons.landscape,
-            ),
+            child: _roleCard('SELLER', '২. জমির বিক্রেতা', 'ফি: ৳$sUnion - $sPourashava', Icons.landscape),
           ),
           SizedBox(
             width: cardWidth,
-            child: _roleCard(
-              'MARKETING_OFFICER',
-              '৩. মার্কেটিং অফিসার',
-              'ফি: ৳$officerFee',
-              Icons.share,
-            ),
+            child: _roleCard('MARKETING_OFFICER', '৩. পৌরসভা/ইউনিয়ন অফিসার', 'ফি: ৳$oUnion - $oPourashava', Icons.badge),
+          ),
+          SizedBox(
+            width: cardWidth,
+            child: _roleCard('UPAZILA_AGENT', '৪. উপজেলা এজেন্ট / প্রতিনিধি', 'ফি: ৳$upzFee', Icons.account_balance),
+          ),
+          SizedBox(
+            width: cardWidth,
+            child: _roleCard('DISTRICT_AGENT', '৫. জেলা প্রধান প্রতিনিধি', 'ফি: ৳$distFee', Icons.domain),
           ),
         ],
       );
@@ -82,8 +78,8 @@ class RoleSelectorWidget extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5)),
-                  Text(sub, style: const TextStyle(fontSize: 11, color: Color(0xFF0B4F32), fontWeight: FontWeight.w600)),
+                  Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                  Text(sub, style: const TextStyle(fontSize: 10.5, color: Color(0xFF0B4F32), fontWeight: FontWeight.w600)),
                 ],
               ),
             ),

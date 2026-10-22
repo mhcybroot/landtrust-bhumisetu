@@ -44,6 +44,9 @@ public class CommissionEntryEntity {
     @Column(nullable = false)
     private String status = "APPROVED_PAYABLE";
 
+    private String agentRole = "MARKETING_OFFICER"; // MARKETING_OFFICER, UPAZILA_AGENT, DISTRICT_AGENT
+    private String tierLevel = "DIRECT_FIELD"; // DIRECT_FIELD, UPAZILA_OVERRIDE, DISTRICT_OVERRIDE
+
     private String paymentReference;
     private String note;
     private LocalDateTime createdAt = LocalDateTime.now();
@@ -73,6 +76,10 @@ public class CommissionEntryEntity {
     public void setCommissionAmountBdt(BigDecimal commissionAmountBdt) { this.commissionAmountBdt = commissionAmountBdt; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+    public String getAgentRole() { return agentRole; }
+    public void setAgentRole(String agentRole) { this.agentRole = agentRole; }
+    public String getTierLevel() { return tierLevel; }
+    public void setTierLevel(String tierLevel) { this.tierLevel = tierLevel; }
     public String getPaymentReference() { return paymentReference; }
     public void setPaymentReference(String paymentReference) { this.paymentReference = paymentReference; }
     public String getNote() { return note; }

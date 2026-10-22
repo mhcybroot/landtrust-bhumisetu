@@ -37,8 +37,8 @@ class PortalModeChips extends StatelessWidget {
                 color: Color(0xFF0B4F32),
               ),
             ),
-            if (userRole == 'MARKETING_OFFICER') ...[
-              _chip('MARKETING_OFFICER', '📊 মার্কেটিং অফিসার'),
+            if (userRole == 'MARKETING_OFFICER' || userRole == 'UPAZILA_AGENT' || userRole == 'DISTRICT_AGENT') ...[
+              _chip('MARKETING_OFFICER', userRole == 'DISTRICT_AGENT' ? '🏢 জেলা প্রধান এজেন্ট' : (userRole == 'UPAZILA_AGENT' ? '🏬 উপজেলা এজেন্ট' : '📊 মার্কেটিং অফিসার')),
               const SizedBox(width: 6),
             ],
             _chip('BUYER', '🛒 ক্রেতা ($requirementsCount)'),

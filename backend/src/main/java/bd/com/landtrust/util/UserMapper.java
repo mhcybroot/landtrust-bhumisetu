@@ -29,6 +29,12 @@ public class UserMapper {
         m.put("transactionId", u.getTransactionId());
         m.put("totalEarnedCommission", u.getTotalEarnedCommission());
         m.put("totalPaidCommission", u.getTotalPaidCommission());
+        m.put("agentTier", u.getAgentTier());
+        m.put("assignedDistrict", u.getAssignedDistrict());
+        m.put("assignedUpazila", u.getAssignedUpazila());
+        m.put("assignedSubArea", u.getAssignedSubArea());
+        m.put("supervisorAgentId", u.getSupervisorAgentId());
+        m.put("supervisorAgentName", u.getSupervisorAgentName());
         m.put("adminNote", u.getAdminNote());
         m.put("createdAt", u.getCreatedAt());
         return m;

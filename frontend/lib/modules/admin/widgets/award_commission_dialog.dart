@@ -7,9 +7,9 @@ class AwardCommissionDialog {
     required bool isMobile,
     required Future<void> Function(Map<String, dynamic> payload) onSubmit,
   }) {
-    final officers = users.where((u) => u['role'] == 'MARKETING_OFFICER').toList();
+    final officers = users.where((u) => u['role'] == 'MARKETING_OFFICER' || u['role'] == 'UPAZILA_AGENT' || u['role'] == 'DISTRICT_AGENT').toList();
     if (officers.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('কোনো মার্কেটিং অফিসার খুঁজে পাওয়া যায়নি।')));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('কোনো মার্কেটিং অফিসার বা এজেন্ট পাওয়া যায়নি।')));
       return;
     }
 

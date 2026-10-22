@@ -81,7 +81,7 @@ public class AuthController {
         if (password.length() < 6) {
             return ResponseEntity.badRequest().body(Map.of("message", "পাসওয়ার্ড ন্যূনতম ৬ অক্ষরের হতে হবে।"));
         }
-        if (!List.of("BUYER", "SELLER", "MARKETING_OFFICER").contains(role)) {
+        if (!List.of("BUYER", "SELLER", "MARKETING_OFFICER", "UPAZILA_AGENT", "DISTRICT_AGENT").contains(role)) {
             return ResponseEntity.badRequest().body(Map.of("message", "সঠিক সদস্যের ধরন নির্বাচন করুন।"));
         }
         if (userRepository.findByPhoneNumber(phoneNumber).isPresent()) {
@@ -89,22 +89,27 @@ public class AuthController {
         }
 
         SystemSettingEntity settings = getSettings();
+        boolean isPourashava = false;
+        List<LocationEntity> locs = locationRepository.findByDistrictNameBnAndUpazilaNameBn(district, upazila);
+        if (!locs.isEmpty()) {
+            isPourashava = locs.stream().anyMatch(l -> "POURASHAVA".equalsIgnoreCase(l.getAreaType()));
+        }
+        if (!isPourashava && upazila != null) {
+            String uLower = upazila.toLowerCase();
+            if (uLower.contains("পৌরসভা") || uLower.contains("সিটি কর্পোরেশন") || uLower.contains("pourashava")) {
+                isPourashava = true;
+            }
+        }
+
         BigDecimal feeAmount;
-        if ("SELLER".equals(role)) {
-            boolean isPourashava = false;
-            List<LocationEntity> locs = locationRepository.findByDistrictNameBnAndUpazilaNameBn(district, upazila);
-            if (!locs.isEmpty()) {
-                isPourashava = locs.stream().anyMatch(l -> "POURASHAVA".equalsIgnoreCase(l.getAreaType()));
-            }
-            if (!isPourashava && upazila != null) {
-                String uLower = upazila.toLowerCase();
-                if (uLower.contains("পৌরসভা") || uLower.contains("সিটি কর্পোরেশন") || uLower.contains("pourashava")) {
-                    isPourashava = true;
-                }
-            }
-            feeAmount = isPourashava ? settings.getSellerRegistrationFeePourashava() : settings.getSellerRegistrationFeeUnion();
+        if ("DISTRICT_AGENT".equals(role)) {
+            feeAmount = settings.getDistrictAgentRegistrationFee();
+        } else if ("UPAZILA_AGENT".equals(role)) {
+            feeAmount = settings.getUpazilaAgentRegistrationFee();
         } else if ("MARKETING_OFFICER".equals(role)) {
-            feeAmount = settings.getOfficerRegistrationFee();
+            feeAmount = isPourashava ? settings.getOfficerRegistrationFeePourashava() : settings.getOfficerRegistrationFeeUnion();
+        } else if ("SELLER".equals(role)) {
+            feeAmount = isPourashava ? settings.getSellerRegistrationFeePourashava() : settings.getSellerRegistrationFeeUnion();
         } else {
             feeAmount = settings.getBuyerRegistrationFee();
         }
@@ -134,12 +139,47 @@ public class AuthController {
             user.setReferredByOfficerName(officer.getFullName());
         }
 
-        if ("MARKETING_OFFICER".equals(role)) {
-            long count = userRepository.findByRoleOrderByCreatedAtDesc("MARKETING_OFFICER").size() + 1001;
-            String code = "LT-NOA-" + count;
+        if ("DISTRICT_AGENT".equals(role)) {
+            user.setAgentTier("DISTRICT");
+            user.setAssignedDistrict(district);
+            long count = userRepository.findByRoleOrderByCreatedAtDesc("DISTRICT_AGENT").size() + 101;
+            String code = "LT-DIST-" + count;
             while (userRepository.findByMyReferralCodeIgnoreCase(code).isPresent()) {
                 count++;
-                code = "LT-NOA-" + count;
+                code = "LT-DIST-" + count;
+            }
+            user.setMyReferralCode(code);
+        } else if ("UPAZILA_AGENT".equals(role)) {
+            user.setAgentTier("UPAZILA");
+            user.setAssignedDistrict(district);
+            user.setAssignedUpazila(upazila);
+            Optional<UserEntity> distAgent = userRepository.findFirstByRoleAndDistrictAndAccountStatus("DISTRICT_AGENT", district, "ACTIVE");
+            if (distAgent.isPresent()) {
+                user.setSupervisorAgentId(distAgent.get().getId());
+                user.setSupervisorAgentName(distAgent.get().getFullName());
+            }
+            long count = userRepository.findByRoleOrderByCreatedAtDesc("UPAZILA_AGENT").size() + 501;
+            String code = "LT-UPZ-" + count;
+            while (userRepository.findByMyReferralCodeIgnoreCase(code).isPresent()) {
+                count++;
+                code = "LT-UPZ-" + count;
+            }
+            user.setMyReferralCode(code);
+        } else if ("MARKETING_OFFICER".equals(role)) {
+            user.setAgentTier(isPourashava ? "POURASHAVA" : "UNION");
+            user.setAssignedDistrict(district);
+            user.setAssignedUpazila(upazila);
+            user.setAssignedSubArea(address);
+            Optional<UserEntity> upzAgent = userRepository.findFirstByRoleAndDistrictAndUpazilaAndAccountStatus("UPAZILA_AGENT", district, upazila, "ACTIVE");
+            if (upzAgent.isPresent()) {
+                user.setSupervisorAgentId(upzAgent.get().getId());
+                user.setSupervisorAgentName(upzAgent.get().getFullName());
+            }
+            long count = userRepository.findByRoleOrderByCreatedAtDesc("MARKETING_OFFICER").size() + 1001;
+            String code = "LT-OFF-" + count;
+            while (userRepository.findByMyReferralCodeIgnoreCase(code).isPresent()) {
+                count++;
+                code = "LT-OFF-" + count;
             }
             user.setMyReferralCode(code);
         }

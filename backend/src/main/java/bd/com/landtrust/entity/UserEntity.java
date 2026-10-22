@@ -50,6 +50,14 @@ public class UserEntity {
     private BigDecimal totalEarnedCommission = BigDecimal.ZERO;
     private BigDecimal totalPaidCommission = BigDecimal.ZERO;
 
+    // Tiered Representative Network (DISTRICT_AGENT, UPAZILA_AGENT, MARKETING_OFFICER)
+    private String agentTier; // DISTRICT, UPAZILA, POURASHAVA, UNION
+    private String assignedDistrict;
+    private String assignedUpazila;
+    private String assignedSubArea;
+    private Long supervisorAgentId;
+    private String supervisorAgentName;
+
     private String adminNote;
     private LocalDateTime createdAt = LocalDateTime.now();
 
@@ -91,6 +99,18 @@ public class UserEntity {
     public void setTotalEarnedCommission(BigDecimal totalEarnedCommission) { this.totalEarnedCommission = totalEarnedCommission; }
     public BigDecimal getTotalPaidCommission() { return totalPaidCommission; }
     public void setTotalPaidCommission(BigDecimal totalPaidCommission) { this.totalPaidCommission = totalPaidCommission; }
+    public String getAgentTier() { return agentTier; }
+    public void setAgentTier(String agentTier) { this.agentTier = agentTier; }
+    public String getAssignedDistrict() { return assignedDistrict; }
+    public void setAssignedDistrict(String assignedDistrict) { this.assignedDistrict = assignedDistrict; }
+    public String getAssignedUpazila() { return assignedUpazila; }
+    public void setAssignedUpazila(String assignedUpazila) { this.assignedUpazila = assignedUpazila; }
+    public String getAssignedSubArea() { return assignedSubArea; }
+    public void setAssignedSubArea(String assignedSubArea) { this.assignedSubArea = assignedSubArea; }
+    public Long getSupervisorAgentId() { return supervisorAgentId; }
+    public void setSupervisorAgentId(Long supervisorAgentId) { this.supervisorAgentId = supervisorAgentId; }
+    public String getSupervisorAgentName() { return supervisorAgentName; }
+    public void setSupervisorAgentName(String supervisorAgentName) { this.supervisorAgentName = supervisorAgentName; }
     public String getAdminNote() { return adminNote; }
     public void setAdminNote(String adminNote) { this.adminNote = adminNote; }
     public LocalDateTime getCreatedAt() { return createdAt; }
