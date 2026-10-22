@@ -17,7 +17,8 @@ docs/playstore/
 ├── assets/                                # গ্রাফিক্যাল অ্যাসেটস ও টেকনিক্যাল স্পেসিফিকেশন
 │   ├── README.md                          # গ্রাফিক্স গাইডলাইন ও স্টোর রিকোয়ারমেন্ট
 │   ├── app_icon_spec.md                   # ৫১২x৫১২ ৩২-বিট পিএনজি আইকন স্পেসিফিকেশন ও পাথ
-│   └── feature_graphic_spec.md            # ১০২৪x৫০০ জেপিজি/পিএনজি ব্যানার স্পেসিফিকেশন
+│   ├── feature_graphic_spec.md            # ১০২৪x৫০০ জেপিজি/পিএনজি ব্যানার স্পেসিফিকেশন
+│   └── screenshots_spec.md                # ফোন ও ট্যাবলেট স্ক্রিনশট স্পেক ও তালিকা
 │
 ├── policies/                              # গুগল প্লে পলিসি ও রিজেকশন প্রতিরোধ ডকুমেন্টেশন
 │   ├── privacy_policy.md                  # পূর্ণাঙ্গ প্রাইভেসি পলিসি (ইন-অ্যাপ ও ওয়েব)
@@ -37,9 +38,10 @@ docs/playstore/
 1. **স্টোর লিস্টিং টেক্সট কপি করতে:** [store_listing_metadata.md](file:///home/mhcybroot/Work/LandApp/docs/playstore/metadata/store_listing_metadata.md)
 2. **আইকন ফাইল দেখতে ও পেতে:** [app_icon_spec.md](file:///home/mhcybroot/Work/LandApp/docs/playstore/assets/app_icon_spec.md)
 3. **ফিচার গ্রাফিক দেখতে ও পেতে:** [feature_graphic_spec.md](file:///home/mhcybroot/Work/LandApp/docs/playstore/assets/feature_graphic_spec.md)
-4. **গুগল রিভিউয়ার অ্যাকাউন্ট দিতে:** [app_access_credentials.md](file:///home/mhcybroot/Work/LandApp/docs/playstore/metadata/app_access_credentials.md)
-5. **১৪ দিনের টেস্টিং পাস করার কৌশল:** [closed_testing_guide.md](file:///home/mhcybroot/Work/LandApp/docs/playstore/testing/closed_testing_guide.md)
-6. **চূড়ান্ত চেকলিস্ট:** [pre_launch_checklist.md](file:///home/mhcybroot/Work/LandApp/docs/playstore/testing/pre_launch_checklist.md)
+4. **ফোন ও ট্যাবলেট স্ক্রিনশট পেতে:** [screenshots_spec.md](file:///home/mhcybroot/Work/LandApp/docs/playstore/assets/screenshots_spec.md)
+5. **গুগল রিভিউয়ার অ্যাকাউন্ট দিতে:** [app_access_credentials.md](file:///home/mhcybroot/Work/LandApp/docs/playstore/metadata/app_access_credentials.md)
+6. **১৪ দিনের টেস্টিং পাস করার কৌশল:** [closed_testing_guide.md](file:///home/mhcybroot/Work/LandApp/docs/playstore/testing/closed_testing_guide.md)
+7. **চূড়ান্ত চেকলিস্ট:** [pre_launch_checklist.md](file:///home/mhcybroot/Work/LandApp/docs/playstore/testing/pre_launch_checklist.md)
 
 ---
 

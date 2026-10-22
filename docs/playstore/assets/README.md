@@ -17,3 +17,4 @@
 ## 📂 ফাইল রেফারেন্স নির্দেশিকা
 * **অ্যাপ আইকন স্পেক ও ভ্যারিয়েন্ট:** দেখুন [app_icon_spec.md](file:///home/mhcybroot/Work/LandApp/docs/playstore/assets/app_icon_spec.md)
 * **ফিচার গ্রাফিক স্পেক ও ভ্যারিয়েন্ট:** দেখুন [feature_graphic_spec.md](file:///home/mhcybroot/Work/LandApp/docs/playstore/assets/feature_graphic_spec.md)
+* **ফোন ও ট্যাবলেট স্ক্রিনশট স্পেক ও তালিকা:** দেখুন [screenshots_spec.md](file:///home/mhcybroot/Work/LandApp/docs/playstore/assets/screenshots_spec.md)

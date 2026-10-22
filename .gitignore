@@ -14,3 +14,4 @@ frontend/.flutter-plugins-dependencies
 .idea/
 .vscode/
 .DS_Store
+node_modules/
