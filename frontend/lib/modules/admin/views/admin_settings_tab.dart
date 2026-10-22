@@ -20,7 +20,7 @@ class AdminSettingsTab extends StatefulWidget {
 }
 
 class _AdminSettingsTabState extends State<AdminSettingsTab> {
-  late final TextEditingController _buyerFeeCtrl, _sellerFeeCtrl, _officerFeeCtrl;
+  late final TextEditingController _buyerFeeCtrl, _sellerFeePourashavaCtrl, _sellerFeeUnionCtrl, _officerFeeCtrl;
   late final TextEditingController _phoneCtrl, _whatsappCtrl, _emailCtrl, _addrCtrl;
   bool _saving = false;
 
@@ -28,9 +28,10 @@ class _AdminSettingsTabState extends State<AdminSettingsTab> {
   void initState() {
     super.initState();
     final s = (widget.viewModel.dashboard['settings'] as Map<String, dynamic>?) ?? {};
-    _buyerFeeCtrl = TextEditingController(text: '${s['buyerRegistrationFee'] ?? 500}');
-    _sellerFeeCtrl = TextEditingController(text: '${s['sellerRegistrationFee'] ?? 500}');
-    _officerFeeCtrl = TextEditingController(text: '${s['officerRegistrationFee'] ?? 300}');
+    _buyerFeeCtrl = TextEditingController(text: '${s['buyerRegistrationFee'] ?? 1000}');
+    _sellerFeePourashavaCtrl = TextEditingController(text: '${s['sellerRegistrationFeePourashava'] ?? 2000}');
+    _sellerFeeUnionCtrl = TextEditingController(text: '${s['sellerRegistrationFeeUnion'] ?? 1000}');
+    _officerFeeCtrl = TextEditingController(text: '${s['officerRegistrationFee'] ?? 1000}');
     _phoneCtrl = TextEditingController(text: s['supportPhone'] ?? '01711-889900');
     _whatsappCtrl = TextEditingController(text: s['supportWhatsapp'] ?? s['supportPhone'] ?? '01711-889900');
     _emailCtrl = TextEditingController(text: s['supportEmail'] ?? 'support@landtrust.com.bd');
@@ -59,7 +60,7 @@ class _AdminSettingsTabState extends State<AdminSettingsTab> {
   @override
   void dispose() {
     widget.viewModel.removeListener(_syncSettings);
-    for (final c in [_buyerFeeCtrl, _sellerFeeCtrl, _officerFeeCtrl, _phoneCtrl, _whatsappCtrl, _emailCtrl, _addrCtrl]) {
+    for (final c in [_buyerFeeCtrl, _sellerFeePourashavaCtrl, _sellerFeeUnionCtrl, _officerFeeCtrl, _phoneCtrl, _whatsappCtrl, _emailCtrl, _addrCtrl]) {
       c.dispose();
     }
     super.dispose();
@@ -69,9 +70,11 @@ class _AdminSettingsTabState extends State<AdminSettingsTab> {
     setState(() => _saving = true);
     try {
       await widget.viewModel.updateSettings({
-        'buyerRegistrationFee': double.tryParse(_buyerFeeCtrl.text.trim()) ?? 500,
-        'sellerRegistrationFee': double.tryParse(_sellerFeeCtrl.text.trim()) ?? 500,
-        'officerRegistrationFee': double.tryParse(_officerFeeCtrl.text.trim()) ?? 300,
+        'buyerRegistrationFee': double.tryParse(_buyerFeeCtrl.text.trim()) ?? 1000,
+        'sellerRegistrationFee': double.tryParse(_sellerFeeUnionCtrl.text.trim()) ?? 1000,
+        'sellerRegistrationFeePourashava': double.tryParse(_sellerFeePourashavaCtrl.text.trim()) ?? 2000,
+        'sellerRegistrationFeeUnion': double.tryParse(_sellerFeeUnionCtrl.text.trim()) ?? 1000,
+        'officerRegistrationFee': double.tryParse(_officerFeeCtrl.text.trim()) ?? 1000,
         'supportPhone': _phoneCtrl.text.trim(),
         'supportWhatsapp': _whatsappCtrl.text.trim(),
         'supportEmail': _emailCtrl.text.trim(),
@@ -117,7 +120,8 @@ class _AdminSettingsTabState extends State<AdminSettingsTab> {
               runSpacing: 10,
               children: [
                 _w(TextField(controller: _buyerFeeCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'ক্রেতা নিবন্ধন ফি (৳)', isDense: true))),
-                _w(TextField(controller: _sellerFeeCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'বিক্রেতা নিবন্ধন ফি (৳)', isDense: true))),
+                _w(TextField(controller: _sellerFeePourashavaCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'শহর/পৌরসভা বিক্রেতা ফি (৳)', isDense: true))),
+                _w(TextField(controller: _sellerFeeUnionCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'ইউনিয়ন বিক্রেতা ফি (৳)', isDense: true))),
                 _w(TextField(controller: _officerFeeCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'মার্কেটিং অফিসার ফি (৳)', isDense: true))),
                 _w(TextField(controller: _phoneCtrl, decoration: const InputDecoration(labelText: 'হেল্পলাইন মোবাইল', isDense: true))),
                 _w(TextField(controller: _whatsappCtrl, decoration: const InputDecoration(labelText: 'সাপোর্ট WhatsApp নম্বর', isDense: true))),

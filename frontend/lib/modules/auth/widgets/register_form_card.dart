@@ -42,13 +42,9 @@ class _RegisterFormCardState extends State<RegisterFormCard> {
 
   @override
   void dispose() {
-    _fullNameCtrl.dispose();
-    _phoneCtrl.dispose();
-    _passCtrl.dispose();
-    _addressCtrl.dispose();
-    _referralCodeCtrl.dispose();
-    _senderPhoneCtrl.dispose();
-    _trxIdCtrl.dispose();
+    for (final c in [_fullNameCtrl, _phoneCtrl, _passCtrl, _addressCtrl, _referralCodeCtrl, _senderPhoneCtrl, _trxIdCtrl]) {
+      c.dispose();
+    }
     super.dispose();
   }
 
@@ -70,7 +66,7 @@ class _RegisterFormCardState extends State<RegisterFormCard> {
         .toList();
     final upazilaList = upazilas.isNotEmpty
         ? upazilas
-        : ['নোয়াখালী সদর', 'বেগমগঞ্জ', 'চাটখিল', 'কোম্পানীগঞ্জ', 'সেনবাগ', 'সোনাইমুড়ী', 'কবিরহাট', 'সুবর্ণচর', 'হাতিয়া'];
+        : ['নোয়াখালী সদর', 'বেগমগঞ্জ', 'চৌমুহনী পৌরসভা'];
     if (!upazilaList.contains(_upazila)) _upazila = upazilaList.first;
 
     final paymentOptions = paymentMethods.isNotEmpty
@@ -78,10 +74,19 @@ class _RegisterFormCardState extends State<RegisterFormCard> {
         : ['বিকাশ (bKash)', 'নগদ (Nagad)', 'ইসলামী ব্যাংক পিএলসি'];
     if (!paymentOptions.contains(_selectedPaymentMethod)) _selectedPaymentMethod = paymentOptions.first;
 
+    final isPourashava = locations.any((l) =>
+        l['districtNameBn'] == _district &&
+        l['upazilaNameBn'] == _upazila &&
+        l['areaType'] == 'POURASHAVA') ||
+        _upazila.contains('পৌরসভা') ||
+        _upazila.contains('সিটি কর্পোরেশন');
+
     final roleFee = switch (_selectedRole) {
-      'SELLER' => settings['sellerRegistrationFee'] ?? 500,
-      'MARKETING_OFFICER' => settings['officerRegistrationFee'] ?? 300,
-      _ => settings['buyerRegistrationFee'] ?? 500,
+      'SELLER' => isPourashava
+          ? (settings['sellerRegistrationFeePourashava'] ?? 2000)
+          : (settings['sellerRegistrationFeeUnion'] ?? 1000),
+      'MARKETING_OFFICER' => settings['officerRegistrationFee'] ?? 1000,
+      _ => settings['buyerRegistrationFee'] ?? 1000,
     };
 
     return Card(
@@ -94,11 +99,7 @@ class _RegisterFormCardState extends State<RegisterFormCard> {
           children: [
             Text(
               'সদস্য নিবন্ধন ফর্ম',
-              style: TextStyle(
-                fontSize: widget.isMobile ? 17 : 20,
-                fontWeight: FontWeight.bold,
-                color: const Color(0xFF0B4F32),
-              ),
+              style: TextStyle(fontSize: widget.isMobile ? 17 : 20, fontWeight: FontWeight.bold, color: const Color(0xFF0B4F32)),
             ),
             const SizedBox(height: 12),
             RoleSelectorWidget(
@@ -113,11 +114,7 @@ class _RegisterFormCardState extends State<RegisterFormCard> {
               const SizedBox(height: 10),
               TextField(
                 controller: _referralCodeCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'রেফারেল কোড (ঐচ্ছিক, যেমন: LT-NOA-1001)',
-                  prefixIcon: Icon(Icons.card_giftcard, size: 18),
-                  isDense: true,
-                ),
+                decoration: const InputDecoration(labelText: 'রেফারেল কোড (ঐচ্ছিক, যেমন: LT-NOA-1001)', prefixIcon: Icon(Icons.card_giftcard, size: 18), isDense: true),
               ),
             ],
             const SizedBox(height: 14),
@@ -136,10 +133,7 @@ class _RegisterFormCardState extends State<RegisterFormCard> {
                 ),
                 onPressed: widget.isLoading ? null : _handleRegister,
                 icon: const Icon(Icons.check_circle_outline, size: 18),
-                label: Text(
-                  'নিবন্ধন সম্পন্ন করুন (ফি: ৳$roleFee)',
-                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-                ),
+                label: Text('নিবন্ধন সম্পন্ন করুন (ফি: ৳$roleFee)', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
               ),
             ),
           ],

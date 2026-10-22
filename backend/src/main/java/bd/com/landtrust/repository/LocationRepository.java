@@ -6,4 +6,5 @@ import java.util.List;
 
 public interface LocationRepository extends JpaRepository<LocationEntity, Long> {
     List<LocationEntity> findByActiveTrueOrderByDistrictNameBnAscUpazilaNameBnAsc();
+    List<LocationEntity> findByDistrictNameBnAndUpazilaNameBn(String districtNameBn, String upazilaNameBn);
 }

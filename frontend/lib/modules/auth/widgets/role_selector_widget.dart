@@ -16,6 +16,11 @@ class RoleSelectorWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final buyerFee = settings['buyerRegistrationFee'] ?? 1000;
+    final sPourashava = settings['sellerRegistrationFeePourashava'] ?? 2000;
+    final sUnion = settings['sellerRegistrationFeeUnion'] ?? 1000;
+    final officerFee = settings['officerRegistrationFee'] ?? 1000;
+
     return LayoutBuilder(builder: (ctx, constraints) {
       final cardWidth = isMobile ? constraints.maxWidth : (constraints.maxWidth - 16) / 3;
       return Wrap(
@@ -27,7 +32,7 @@ class RoleSelectorWidget extends StatelessWidget {
             child: _roleCard(
               'BUYER',
               '১. জমির ক্রেতা',
-              'ফি: ৳${settings['buyerRegistrationFee'] ?? 500}',
+              'ফি: ৳$buyerFee',
               Icons.person_search,
             ),
           ),
@@ -36,7 +41,7 @@ class RoleSelectorWidget extends StatelessWidget {
             child: _roleCard(
               'SELLER',
               '২. জমির বিক্রেতা',
-              'ফি: ৳${settings['sellerRegistrationFee'] ?? 500}',
+              'ফি: ৳$sUnion - $sPourashava',
               Icons.landscape,
             ),
           ),
@@ -45,7 +50,7 @@ class RoleSelectorWidget extends StatelessWidget {
             child: _roleCard(
               'MARKETING_OFFICER',
               '৩. মার্কেটিং অফিসার',
-              'ফি: ৳${settings['officerRegistrationFee'] ?? 300}',
+              'ফি: ৳$officerFee',
               Icons.share,
             ),
           ),

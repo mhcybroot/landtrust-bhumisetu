@@ -12,10 +12,12 @@ public class SystemSettingEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Dynamic Registration Fees decided by Admin
-    private BigDecimal buyerRegistrationFee = new BigDecimal("500");
-    private BigDecimal sellerRegistrationFee = new BigDecimal("500");
-    private BigDecimal officerRegistrationFee = new BigDecimal("300");
+    // Dynamic Registration Fees decided by Admin (Minimum 1000 BDT policy)
+    private BigDecimal buyerRegistrationFee = new BigDecimal("1000");
+    private BigDecimal sellerRegistrationFee = new BigDecimal("1000");
+    private BigDecimal sellerRegistrationFeePourashava = new BigDecimal("2000");
+    private BigDecimal sellerRegistrationFeeUnion = new BigDecimal("1000");
+    private BigDecimal officerRegistrationFee = new BigDecimal("1000");
 
     // Multi-Level Listing Fees per Property decided by Admin
     private BigDecimal listingFeeAgri = new BigDecimal("500");
@@ -44,6 +46,10 @@ public class SystemSettingEntity {
     public void setBuyerRegistrationFee(BigDecimal buyerRegistrationFee) { this.buyerRegistrationFee = buyerRegistrationFee; }
     public BigDecimal getSellerRegistrationFee() { return sellerRegistrationFee; }
     public void setSellerRegistrationFee(BigDecimal sellerRegistrationFee) { this.sellerRegistrationFee = sellerRegistrationFee; }
+    public BigDecimal getSellerRegistrationFeePourashava() { return sellerRegistrationFeePourashava; }
+    public void setSellerRegistrationFeePourashava(BigDecimal sellerRegistrationFeePourashava) { this.sellerRegistrationFeePourashava = sellerRegistrationFeePourashava; }
+    public BigDecimal getSellerRegistrationFeeUnion() { return sellerRegistrationFeeUnion; }
+    public void setSellerRegistrationFeeUnion(BigDecimal sellerRegistrationFeeUnion) { this.sellerRegistrationFeeUnion = sellerRegistrationFeeUnion; }
     public BigDecimal getOfficerRegistrationFee() { return officerRegistrationFee; }
     public void setOfficerRegistrationFee(BigDecimal officerRegistrationFee) { this.officerRegistrationFee = officerRegistrationFee; }
     public BigDecimal getListingFeeAgri() { return listingFeeAgri; }

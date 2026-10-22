@@ -44,6 +44,8 @@ public class AdminSettingsController {
         SystemSettingEntity s = getSettings();
         if (body.containsKey("buyerRegistrationFee")) s.setBuyerRegistrationFee(CommonUtils.parseDecimal(body.get("buyerRegistrationFee"), s.getBuyerRegistrationFee()));
         if (body.containsKey("sellerRegistrationFee")) s.setSellerRegistrationFee(CommonUtils.parseDecimal(body.get("sellerRegistrationFee"), s.getSellerRegistrationFee()));
+        if (body.containsKey("sellerRegistrationFeePourashava")) s.setSellerRegistrationFeePourashava(CommonUtils.parseDecimal(body.get("sellerRegistrationFeePourashava"), s.getSellerRegistrationFeePourashava()));
+        if (body.containsKey("sellerRegistrationFeeUnion")) s.setSellerRegistrationFeeUnion(CommonUtils.parseDecimal(body.get("sellerRegistrationFeeUnion"), s.getSellerRegistrationFeeUnion()));
         if (body.containsKey("officerRegistrationFee")) s.setOfficerRegistrationFee(CommonUtils.parseDecimal(body.get("officerRegistrationFee"), s.getOfficerRegistrationFee()));
         if (body.containsKey("listingFeeAgri")) s.setListingFeeAgri(CommonUtils.parseDecimal(body.get("listingFeeAgri"), s.getListingFeeAgri()));
         if (body.containsKey("listingFeeResidential")) s.setListingFeeResidential(CommonUtils.parseDecimal(body.get("listingFeeResidential"), s.getListingFeeResidential()));

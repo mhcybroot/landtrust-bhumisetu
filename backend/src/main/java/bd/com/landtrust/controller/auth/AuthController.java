@@ -1,10 +1,12 @@
 package bd.com.landtrust.controller.auth;
 
 import bd.com.landtrust.entity.FinancialTransactionEntity;
+import bd.com.landtrust.entity.LocationEntity;
 import bd.com.landtrust.entity.NotificationEntity;
 import bd.com.landtrust.entity.SystemSettingEntity;
 import bd.com.landtrust.entity.UserEntity;
 import bd.com.landtrust.repository.FinancialTransactionRepository;
+import bd.com.landtrust.repository.LocationRepository;
 import bd.com.landtrust.repository.NotificationRepository;
 import bd.com.landtrust.repository.SystemSettingRepository;
 import bd.com.landtrust.repository.UserRepository;
@@ -25,6 +27,7 @@ import java.util.Optional;
 public class AuthController {
 
     private final UserRepository userRepository;
+    private final LocationRepository locationRepository;
     private final SystemSettingRepository settingRepository;
     private final FinancialTransactionRepository transactionRepository;
     private final NotificationRepository notificationRepository;
@@ -33,12 +36,14 @@ public class AuthController {
 
     public AuthController(
             UserRepository userRepository,
+            LocationRepository locationRepository,
             SystemSettingRepository settingRepository,
             FinancialTransactionRepository transactionRepository,
             NotificationRepository notificationRepository,
             PasswordEncoder passwordEncoder,
             JwtService jwtService) {
         this.userRepository = userRepository;
+        this.locationRepository = locationRepository;
         this.settingRepository = settingRepository;
         this.transactionRepository = transactionRepository;
         this.notificationRepository = notificationRepository;
@@ -84,11 +89,25 @@ public class AuthController {
         }
 
         SystemSettingEntity settings = getSettings();
-        BigDecimal feeAmount = switch (role) {
-            case "SELLER" -> settings.getSellerRegistrationFee();
-            case "MARKETING_OFFICER" -> settings.getOfficerRegistrationFee();
-            default -> settings.getBuyerRegistrationFee();
-        };
+        BigDecimal feeAmount;
+        if ("SELLER".equals(role)) {
+            boolean isPourashava = false;
+            List<LocationEntity> locs = locationRepository.findByDistrictNameBnAndUpazilaNameBn(district, upazila);
+            if (!locs.isEmpty()) {
+                isPourashava = locs.stream().anyMatch(l -> "POURASHAVA".equalsIgnoreCase(l.getAreaType()));
+            }
+            if (!isPourashava && upazila != null) {
+                String uLower = upazila.toLowerCase();
+                if (uLower.contains("পৌরসভা") || uLower.contains("সিটি কর্পোরেশন") || uLower.contains("pourashava")) {
+                    isPourashava = true;
+                }
+            }
+            feeAmount = isPourashava ? settings.getSellerRegistrationFeePourashava() : settings.getSellerRegistrationFeeUnion();
+        } else if ("MARKETING_OFFICER".equals(role)) {
+            feeAmount = settings.getOfficerRegistrationFee();
+        } else {
+            feeAmount = settings.getBuyerRegistrationFee();
+        }
 
         UserEntity user = new UserEntity();
         user.setFullName(fullName);
