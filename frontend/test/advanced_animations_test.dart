@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:landtrust_app/core/animations/pulse_beacon_indicator.dart';
 import 'package:landtrust_app/core/animations/sheen_sweep_effect.dart';
 import 'package:landtrust_app/core/widgets/animated_success_dialog.dart';
+import 'package:landtrust_app/core/widgets/sliding_pill_bar.dart';
 import 'package:landtrust_app/core/widgets/status_badge.dart';
 
 void main() {
@@ -84,5 +85,33 @@ void main() {
     expect(find.byType(PulseBeaconIndicator), findsOneWidget);
     await tester.pump(const Duration(milliseconds: 300));
     expect(find.byType(PulseBeaconIndicator), findsOneWidget);
+  });
+
+  testWidgets('SlidingPillBar selects tab and updates index callback', (tester) async {
+    int selected = 0;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: StatefulBuilder(
+            builder: (context, setState) {
+              return SlidingPillBar(
+                tabs: const ['সব জমি', 'আবাসিক', 'বাণিজ্যিক'],
+                selectedIndex: selected,
+                onTabSelected: (idx) => setState(() => selected = idx),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('সব জমি'), findsOneWidget);
+    expect(find.text('আবাসিক'), findsOneWidget);
+    expect(find.text('বাণিজ্যিক'), findsOneWidget);
+
+    await tester.tap(find.text('আবাসিক'));
+    await tester.pumpAndSettle();
+
+    expect(selected, 1);
   });
 }

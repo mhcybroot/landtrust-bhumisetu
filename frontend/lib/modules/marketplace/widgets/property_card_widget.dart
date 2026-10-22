@@ -41,11 +41,14 @@ class PropertyCardWidget extends StatelessWidget {
               onTap: onDetailsClick,
               child: Stack(
                 children: [
-                  SmartImageViewer(
-                    url: listing['imageUrl'] as String?,
-                    height: isMobile ? 180 : 200,
-                    width: double.infinity,
-                    enableZoom: false,
+                  Hero(
+                    tag: 'listing-img-${listing['id'] ?? 'unknown'}',
+                    child: SmartImageViewer(
+                      url: listing['imageUrl'] as String?,
+                      height: isMobile ? 180 : 200,
+                      width: double.infinity,
+                      enableZoom: false,
+                    ),
                   ),
                   Positioned(top: 10, left: 10, child: VerificationBadge(status: vStatus)),
                   Positioned(
