@@ -5,7 +5,11 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "users")
+@Table(name = "users", indexes = {
+    @Index(name = "idx_users_role_status", columnList = "role, account_status"),
+    @Index(name = "idx_users_referral_code", columnList = "my_referral_code"),
+    @Index(name = "idx_users_referred_by", columnList = "referred_by_officer_id")
+})
 public class UserEntity {
 
     @Id
