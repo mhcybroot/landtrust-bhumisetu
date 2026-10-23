@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/animations/bouncing_pressable.dart';
 
 class HeroBannerWidget extends StatelessWidget {
   final bool isMobile;
@@ -76,52 +77,49 @@ class HeroBannerWidget extends StatelessWidget {
                   spacing: 8,
                   runSpacing: 8,
                   children: [
-                    ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.amber.shade600,
-                        foregroundColor: Colors.black,
-                        padding: EdgeInsets.symmetric(
-                          horizontal: isMobile ? 12 : 16,
-                          vertical: isMobile ? 10 : 12,
+                    BouncingPressable(
+                      onTap: onRoleRegisterClick,
+                      child: Container(
+                        decoration: BoxDecoration(color: Colors.amber.shade600, borderRadius: BorderRadius.circular(8)),
+                        padding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 16, vertical: isMobile ? 10 : 12),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.person_search, size: 16, color: Colors.black),
+                            const SizedBox(width: 6),
+                            Text('জমি কিনব (ফি ৳${(settings['buyerRegistrationFee'] as num?)?.toInt() ?? 500})', style: const TextStyle(fontSize: 12, color: Colors.black, fontWeight: FontWeight.bold)),
+                          ],
                         ),
-                      ),
-                      onPressed: onRoleRegisterClick,
-                      icon: const Icon(Icons.person_search, size: 16),
-                      label: Text(
-                        'জমি কিনব (ফি ৳${(settings['buyerRegistrationFee'] as num?)?.toInt() ?? 500})',
-                        style: const TextStyle(fontSize: 12),
                       ),
                     ),
-                    ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: const Color(0xFF0B4F32),
-                        padding: EdgeInsets.symmetric(
-                          horizontal: isMobile ? 12 : 16,
-                          vertical: isMobile ? 10 : 12,
+                    BouncingPressable(
+                      onTap: onRoleRegisterClick,
+                      child: Container(
+                        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
+                        padding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 16, vertical: isMobile ? 10 : 12),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.add_location_alt_outlined, size: 16, color: Color(0xFF0B4F32)),
+                            const SizedBox(width: 6),
+                            Text('জমি বিক্রি (ফি ৳${(settings['sellerRegistrationFee'] as num?)?.toInt() ?? 500})', style: const TextStyle(fontSize: 12, color: Color(0xFF0B4F32), fontWeight: FontWeight.bold)),
+                          ],
                         ),
-                      ),
-                      onPressed: onRoleRegisterClick,
-                      icon: const Icon(Icons.add_location_alt_outlined, size: 16),
-                      label: Text(
-                        'জমি বিক্রি (ফি ৳${(settings['sellerRegistrationFee'] as num?)?.toInt() ?? 500})',
-                        style: const TextStyle(fontSize: 12),
                       ),
                     ),
-                    OutlinedButton.icon(
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.white,
-                        side: const BorderSide(color: Colors.white70),
-                        padding: EdgeInsets.symmetric(
-                          horizontal: isMobile ? 12 : 16,
-                          vertical: isMobile ? 10 : 12,
+                    BouncingPressable(
+                      onTap: onRoleRegisterClick,
+                      child: Container(
+                        decoration: BoxDecoration(border: Border.all(color: Colors.white70), borderRadius: BorderRadius.circular(8)),
+                        padding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 16, vertical: isMobile ? 10 : 12),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.share, size: 16, color: Colors.white),
+                            const SizedBox(width: 6),
+                            Text('মার্কেটিং অফিসার (ফি ৳${(settings['officerRegistrationFee'] as num?)?.toInt() ?? 300})', style: const TextStyle(fontSize: 12, color: Colors.white, fontWeight: FontWeight.bold)),
+                          ],
                         ),
-                      ),
-                      onPressed: onRoleRegisterClick,
-                      icon: const Icon(Icons.share, size: 16),
-                      label: Text(
-                        'মার্কেটিং অফিসার (ফি ৳${(settings['officerRegistrationFee'] as num?)?.toInt() ?? 300})',
-                        style: const TextStyle(fontSize: 12),
                       ),
                     ),
                   ],
