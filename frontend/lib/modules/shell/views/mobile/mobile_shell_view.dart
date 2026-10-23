@@ -80,12 +80,10 @@ class MobileShellView extends StatelessWidget {
               ),
             ),
           Builder(
-            builder: (ctx) => BouncingPressable(
-              onTap: () => Scaffold.of(ctx).openEndDrawer(),
-              child: const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 6, vertical: 6),
-                child: Icon(Icons.menu_rounded, color: Colors.white, size: 22),
-              ),
+            builder: (ctx) => IconButton(
+              icon: const Icon(Icons.menu_rounded, color: Colors.white, size: 22),
+              tooltip: 'মেনু ড্রয়ার',
+              onPressed: () => Scaffold.of(ctx).openEndDrawer(),
             ),
           ),
           const SizedBox(width: 4),

@@ -43,19 +43,19 @@ class ShellDrawer extends StatelessWidget {
                   _drawerItem(2, Icons.info_rounded, context.tr('nav_rules'), context),
                   const Divider(height: 16, thickness: 1),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.language_rounded, color: Color(0xFF0B4F32), size: 22),
-                            const SizedBox(width: 12),
-                            Text(context.isBangla ? 'ভাষা পরিবর্তন' : 'Language', style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13.5)),
-                          ],
+                        const Icon(Icons.language_rounded, color: Color(0xFF0B4F32), size: 20),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            context.isBangla ? 'ভাষা পরিবর্তন' : 'Language',
+                            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                        const LanguageToggleButton(),
+                        const LanguageToggleButton(onLightBackground: true),
                       ],
                     ),
                   ),
@@ -118,6 +118,15 @@ class ShellDrawer extends StatelessWidget {
     );
   }
 
+  String _roleBangla(String? role) => switch (role) {
+    'ADMIN' => 'প্রধান পরিচালক (Admin)',
+    'DISTRICT_AGENT' => 'জেলা প্রধান প্রতিনিধি',
+    'UPAZILA_AGENT' => 'উপজেলা এজেন্ট',
+    'MARKETING_OFFICER' => 'মার্কেটিং অফিসার',
+    'SELLER' => 'জমির বিক্রেতা (Seller)',
+    _ => 'জমির ক্রেতা (Buyer)',
+  };
+
   Widget _buildDrawerHeader() {
     return Container(
       width: double.infinity,
@@ -150,10 +159,12 @@ class ShellDrawer extends StatelessWidget {
             ],
           ),
           if (isLoggedIn && user != null) ...[
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
             Text(
-              'মোবাইল: ${user?['phoneNumber'] ?? ''} • ভূমিকা: ${user?['role'] ?? ''}',
+              'মোবাইল: ${user?['phoneNumber'] ?? ''} • ভূমিকা: ${_roleBangla(user?['role']?.toString())}',
               style: const TextStyle(color: Colors.white70, fontSize: 11),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ],
