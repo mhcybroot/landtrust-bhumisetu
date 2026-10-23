@@ -43,11 +43,13 @@ class AuthWebView extends StatelessWidget {
                   ),
                   child: Text('রেফারেল কোড ($ref) যুক্ত হয়েছে।', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFF0B4F32))),
                 ),
-              DemoAccountsBar(
-                isLoading: viewModel.isLoading,
-                onDemoSelect: onLogin,
-              ),
-              const SizedBox(height: 16),
+              if (isLogin) ...[
+                DemoAccountsBar(
+                  isLoading: viewModel.isLoading,
+                  onDemoSelect: onLogin,
+                ),
+                const SizedBox(height: 16),
+              ],
               Row(
                 children: [
                   Expanded(

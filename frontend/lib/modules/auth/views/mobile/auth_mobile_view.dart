@@ -84,11 +84,13 @@ class AuthMobileView extends StatelessWidget {
             ],
           ),
         ),
-        const SizedBox(height: 12),
-        DemoAccountsBar(
-          isLoading: viewModel.isLoading,
-          onDemoSelect: onLogin,
-        ),
+        if (isLogin) ...[
+          const SizedBox(height: 12),
+          DemoAccountsBar(
+            isLoading: viewModel.isLoading,
+            onDemoSelect: onLogin,
+          ),
+        ],
         const SizedBox(height: 14),
         AnimatedFadeSwitcher(
           child: KeyedSubtree(

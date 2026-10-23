@@ -23,16 +23,11 @@ class RegisterFormCard extends StatefulWidget {
 
 class _RegisterFormCardState extends State<RegisterFormCard> {
   String _selectedRole = 'BUYER';
-  final _fullNameCtrl = TextEditingController();
-  final _phoneCtrl = TextEditingController();
-  final _passCtrl = TextEditingController();
-  String _district = 'নোয়াখালী';
-  String _upazila = 'নোয়াখালী সদর';
-  final _addressCtrl = TextEditingController();
+  final _fullNameCtrl = TextEditingController(), _phoneCtrl = TextEditingController(), _passCtrl = TextEditingController();
+  final _addressCtrl = TextEditingController(), _senderPhoneCtrl = TextEditingController(), _trxIdCtrl = TextEditingController();
   late final TextEditingController _referralCodeCtrl;
-  String _selectedPaymentMethod = 'বিকাশ (bKash)';
-  final _senderPhoneCtrl = TextEditingController();
-  final _trxIdCtrl = TextEditingController();
+  String _district = 'নোয়াখালী', _upazila = 'নোয়াখালী সদর', _selectedPaymentMethod = 'বিকাশ (bKash)';
+  bool _obscurePass = true;
 
   @override
   void initState() {
@@ -107,13 +102,10 @@ class _RegisterFormCardState extends State<RegisterFormCard> {
               onRoleSelected: (r) => setState(() => _selectedRole = r),
             ),
             const SizedBox(height: 14),
-            _buildInputs(districts, upazilaList),
+            _buildInputs(districts, upazilaList, locations),
             if (isOrdinaryUser) ...[
               const SizedBox(height: 10),
-              TextField(
-                controller: _referralCodeCtrl,
-                decoration: const InputDecoration(labelText: 'রেফারেল কোড (ঐচ্ছিক, যেমন: LT-OFF-1001)', prefixIcon: Icon(Icons.card_giftcard, size: 18), isDense: true),
-              ),
+              TextField(controller: _referralCodeCtrl, decoration: const InputDecoration(labelText: 'রেফারেল কোড (ঐচ্ছিক, যেমন: LT-OFF-1001)', prefixIcon: Icon(Icons.card_giftcard, size: 18), isDense: true)),
             ],
             const SizedBox(height: 14),
             PaymentInfoBox(fee: roleFee, paymentMethods: paymentMethods),
@@ -130,27 +122,25 @@ class _RegisterFormCardState extends State<RegisterFormCard> {
               ),
             ),
             const SizedBox(height: 8),
-            const Center(
-              child: Text(
-                'নিবন্ধন করার মাধ্যমে আপনি আমাদের গোপনীয়তা ও শর্তাবলীতে সম্মত হচ্ছেন।',
-                style: TextStyle(fontSize: 10.5, color: Colors.grey),
-                textAlign: TextAlign.center,
-              ),
-            ),
+            const Center(child: Text('নিবন্ধন করার মাধ্যমে আপনি আমাদের গোপনীয়তা ও শর্তাবলীতে সম্মত হচ্ছেন।', style: TextStyle(fontSize: 10.5, color: Colors.grey), textAlign: TextAlign.center)),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildInputs(List<String> districts, List<String> upazilas) {
+  Widget _buildInputs(List<String> districts, List<String> upazilas, List<dynamic> locations) {
     return LayoutBuilder(builder: (ctx, constraints) {
       final half = widget.isMobile ? constraints.maxWidth : (constraints.maxWidth - 10) / 2;
       return Wrap(spacing: 10, runSpacing: 10, children: [
         SizedBox(width: half, child: TextField(controller: _fullNameCtrl, decoration: const InputDecoration(labelText: 'পূর্ণ নাম *', isDense: true))),
-        SizedBox(width: half, child: TextField(controller: _phoneCtrl, decoration: const InputDecoration(labelText: 'মোবাইল নম্বর (01XXXXXXXXX) *', isDense: true))),
-        SizedBox(width: half, child: TextField(controller: _passCtrl, obscureText: true, decoration: const InputDecoration(labelText: 'পাসওয়ার্ড দিন *', isDense: true))),
-        SizedBox(width: half, child: DropdownButtonFormField<String>(key: ValueKey('reg_dist_$_district'), initialValue: _district, isExpanded: true, decoration: const InputDecoration(labelText: 'জেলা', isDense: true), items: districts.map((d) => DropdownMenuItem(value: d, child: Text(d, overflow: TextOverflow.ellipsis))).toList(), onChanged: (v) => setState(() => _district = v!))),
+        SizedBox(width: half, child: TextField(controller: _phoneCtrl, keyboardType: TextInputType.phone, decoration: const InputDecoration(labelText: 'মোবাইল নম্বর (01XXXXXXXXX) *', isDense: true))),
+        SizedBox(width: half, child: TextField(controller: _passCtrl, obscureText: _obscurePass, decoration: InputDecoration(labelText: 'পাসওয়ার্ড (কমপক্ষে ৬ অক্ষর) *', isDense: true, suffixIcon: IconButton(icon: Icon(_obscurePass ? Icons.visibility_off : Icons.visibility, size: 18), onPressed: () => setState(() => _obscurePass = !_obscurePass))))),
+        SizedBox(width: half, child: DropdownButtonFormField<String>(key: ValueKey('reg_dist_$_district'), initialValue: _district, isExpanded: true, decoration: const InputDecoration(labelText: 'জেলা', isDense: true), items: districts.map((d) => DropdownMenuItem(value: d, child: Text(d, overflow: TextOverflow.ellipsis))).toList(), onChanged: (v) {
+          if (v == null) return;
+          final newUpz = locations.where((l) => l['districtNameBn'] == v).map((l) => l['upazilaNameBn'].toString()).toSet().toList();
+          setState(() { _district = v; _upazila = newUpz.isNotEmpty ? newUpz.first : ''; });
+        })),
         SizedBox(width: half, child: DropdownButtonFormField<String>(key: ValueKey('reg_upz_${_district}_$_upazila'), initialValue: _upazila, isExpanded: true, decoration: const InputDecoration(labelText: 'উপজেলা / পৌরসভা', isDense: true), items: upazilas.map((u) => DropdownMenuItem(value: u, child: Text(u, overflow: TextOverflow.ellipsis))).toList(), onChanged: (v) => setState(() => _upazila = v!))),
         SizedBox(width: half, child: TextField(controller: _addressCtrl, decoration: const InputDecoration(labelText: 'বর্তমান ঠিকানা / ইউনিয়ন / ওয়ার্ড', isDense: true))),
       ]);
@@ -162,34 +152,47 @@ class _RegisterFormCardState extends State<RegisterFormCard> {
       final half = widget.isMobile ? constraints.maxWidth : (constraints.maxWidth - 10) / 2;
       return Wrap(spacing: 10, runSpacing: 10, children: [
         SizedBox(width: half, child: DropdownButtonFormField<String>(key: ValueKey('reg_pm_$_selectedPaymentMethod'), initialValue: _selectedPaymentMethod, isExpanded: true, decoration: const InputDecoration(labelText: 'পেমেন্টের মাধ্যম', isDense: true), items: options.map((p) => DropdownMenuItem(value: p, child: Text(p, overflow: TextOverflow.ellipsis))).toList(), onChanged: (v) => setState(() => _selectedPaymentMethod = v!))),
-        SizedBox(width: half, child: TextField(controller: _senderPhoneCtrl, decoration: const InputDecoration(labelText: 'প্রেরক মোবাইল নম্বর *', isDense: true))),
+        SizedBox(width: half, child: TextField(controller: _senderPhoneCtrl, keyboardType: TextInputType.phone, decoration: const InputDecoration(labelText: 'প্রেরক মোবাইল নম্বর *', isDense: true))),
         SizedBox(width: constraints.maxWidth, child: OtpDigitBoxPulseTransition(isFocused: _trxIdCtrl.text.isNotEmpty, child: TextField(controller: _trxIdCtrl, decoration: const InputDecoration(labelText: 'ট্রানজ্যাকশন আইডি (TrxID) *', isDense: true)))),
       ]);
     });
   }
 
   void _handleRegister() {
-    if (_phoneCtrl.text.trim().isEmpty || _passCtrl.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('অনুগ্রহ করে মোবাইল নম্বর ও পাসওয়ার্ড দিন।')));
+    final name = _fullNameCtrl.text.trim();
+    final cleanPhone = _phoneCtrl.text.trim().replaceAll(RegExp(r'[\s\-]'), '');
+    final pass = _passCtrl.text;
+    final trx = _trxIdCtrl.text.trim();
+
+    if (name.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('অনুগ্রহ করে পূর্ণ নাম লিখুন।')));
       return;
     }
-    if (_trxIdCtrl.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('অনুগ্রহ করে পেমেন্টের ট্রানজ্যাকশন আইডি (TrxID) প্রদান করুন।')));
+    if (!RegExp(r'^01[3-9]\d{8}$').hasMatch(cleanPhone)) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('সঠিক ১১ ডিজিটের মোবাইল নম্বর দিন (যেমন: 017xxxxxxxx)')));
       return;
     }
-    final isOrdinaryUser = _selectedRole == 'BUYER' || _selectedRole == 'SELLER';
+    if (pass.length < 6) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('পাসওয়ার্ড ন্যূনতম ৬ অক্ষরের হতে হবে।')));
+      return;
+    }
+    if (trx.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('অনুগ্রহ করে পেমেন্টের TrxID প্রদান করুন।')));
+      return;
+    }
+    final isOrdinary = _selectedRole == 'BUYER' || _selectedRole == 'SELLER';
     widget.onSubmit({
-      'fullName': _fullNameCtrl.text.trim(),
-      'phoneNumber': _phoneCtrl.text.trim(),
-      'password': _passCtrl.text,
+      'fullName': name,
+      'phoneNumber': cleanPhone,
+      'password': pass,
       'role': _selectedRole,
       'district': _district,
       'upazila': _upazila,
       'address': _addressCtrl.text.trim(),
-      'referralCode': isOrdinaryUser ? _referralCodeCtrl.text.trim() : '',
+      'referralCode': isOrdinary ? _referralCodeCtrl.text.trim() : '',
       'paymentMethod': _selectedPaymentMethod,
-      'senderPhone': _senderPhoneCtrl.text.trim().isEmpty ? _phoneCtrl.text.trim() : _senderPhoneCtrl.text.trim(),
-      'transactionId': _trxIdCtrl.text.trim(),
+      'senderPhone': _senderPhoneCtrl.text.trim().isEmpty ? cleanPhone : _senderPhoneCtrl.text.trim(),
+      'transactionId': trx,
     });
   }
 }

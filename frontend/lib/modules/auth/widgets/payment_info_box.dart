@@ -14,6 +14,14 @@ class PaymentInfoBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final methods = paymentMethods.isNotEmpty
+        ? paymentMethods
+        : [
+            {'providerName': 'বিকাশ (bKash)', 'accountNumber': '01711-889900', 'accountType': 'Personal'},
+            {'providerName': 'নগদ (Nagad)', 'accountNumber': '01819-556677', 'accountType': 'Personal'},
+            {'providerName': 'ইসলামী ব্যাংক পিএলসি', 'accountNumber': '205019802004512', 'accountType': 'Bank'},
+          ];
+
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -34,7 +42,7 @@ class PaymentInfoBox extends StatelessWidget {
             style: TextStyle(fontSize: 11, color: Colors.black54),
           ),
           const SizedBox(height: 6),
-          ...paymentMethods.map((pm) => Padding(
+          ...methods.map((pm) => Padding(
                 padding: const EdgeInsets.only(bottom: 4),
                 child: Row(
                   children: [
