@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:landtrust_app/core/animations/transitions/finance_payment_transitions.dart';
 
 class ListingPaymentSection extends StatelessWidget {
   final double feeAmount;
@@ -101,9 +102,12 @@ class ListingPaymentSection extends StatelessWidget {
               ),
               const SizedBox(width: 10),
               Expanded(
-                child: TextField(
-                  controller: trxIdCtrl,
-                  decoration: const InputDecoration(labelText: 'ট্রানজেকশন আইডি (TrxID) *', isDense: true),
+                child: OtpDigitBoxPulseTransition(
+                  isFocused: trxIdCtrl.text.isNotEmpty,
+                  child: TextField(
+                    controller: trxIdCtrl,
+                    decoration: const InputDecoration(labelText: 'ট্রানজেকশন আইডি (TrxID) *', isDense: true),
+                  ),
                 ),
               ),
             ],

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:landtrust_app/core/animations/bouncing_pressable.dart';
+import 'package:landtrust_app/core/animations/transitions/state_micro_transitions.dart';
 
 class MemberNotificationsDialog {
   static void show(
@@ -19,12 +21,7 @@ class MemberNotificationsDialog {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text('নোটিফিকেশনসমূহ (${list.length})', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-            if (unreadCount > 0)
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(color: Colors.red, borderRadius: BorderRadius.circular(10)),
-                child: Text('$unreadCount নতুন', style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
-              ),
+            BadgeCountPopTransition(count: unreadCount),
           ],
         ),
         content: SizedBox(
@@ -48,13 +45,19 @@ class MemberNotificationsDialog {
                       subtitle: Text(n['message'] ?? '', style: const TextStyle(fontSize: 11)),
                       trailing: isRead
                           ? null
-                          : IconButton(
-                              icon: const Icon(Icons.check, size: 16, color: Colors.green),
-                              tooltip: 'পঠিত হিসেবে চিহ্নিত করুন',
-                              onPressed: () async {
+                          : BouncingPressable(
+                              onTap: () async {
                                 await onMarkRead(n['id'] as int);
                                 if (context.mounted) Navigator.pop(ctx);
                               },
+                              child: IconButton(
+                                icon: const Icon(Icons.check, size: 16, color: Colors.green),
+                                tooltip: 'পঠিত হিসেবে চিহ্নিত করুন',
+                                onPressed: () async {
+                                  await onMarkRead(n['id'] as int);
+                                  if (context.mounted) Navigator.pop(ctx);
+                                },
+                              ),
                             ),
                     );
                   },
@@ -62,15 +65,24 @@ class MemberNotificationsDialog {
         ),
         actions: [
           if (unreadCount > 0 && onMarkAllRead != null)
-            TextButton.icon(
-              icon: const Icon(Icons.done_all, size: 16),
-              label: const Text('সব পঠিত করুন'),
-              onPressed: () async {
+            BouncingPressable(
+              onTap: () async {
                 await onMarkAllRead();
                 if (context.mounted) Navigator.pop(ctx);
               },
+              child: TextButton.icon(
+                icon: const Icon(Icons.done_all, size: 16),
+                label: const Text('সব পঠিত করুন'),
+                onPressed: () async {
+                  await onMarkAllRead();
+                  if (context.mounted) Navigator.pop(ctx);
+                },
+              ),
             ),
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('বন্ধ করুন')),
+          BouncingPressable(
+            onTap: () => Navigator.pop(ctx),
+            child: TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('বন্ধ করুন')),
+          ),
         ],
       ),
     );
