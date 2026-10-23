@@ -26,8 +26,11 @@ class AdminOverviewTab extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        Wrap(
+          alignment: WrapAlignment.spaceBetween,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: 8,
+          runSpacing: 8,
           children: [
             const Text('কেন্দ্রীয় রিয়েল-টাইম ওভারভিউ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
             BouncingPressable(

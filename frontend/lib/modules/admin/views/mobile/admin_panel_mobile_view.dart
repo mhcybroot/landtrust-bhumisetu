@@ -44,7 +44,9 @@ class AdminPanelMobileView extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('অ্যাডমিন ড্যাশবোর্ড', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                  const Expanded(
+                    child: Text('অ্যাডমিন ড্যাশবোর্ড', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis),
+                  ),
                   IconButton(icon: const Icon(Icons.refresh, color: Colors.white, size: 20), onPressed: viewModel.loadAllData),
                 ],
               ),

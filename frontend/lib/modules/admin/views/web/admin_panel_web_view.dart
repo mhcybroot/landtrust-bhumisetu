@@ -44,13 +44,15 @@ class AdminPanelWebView extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('কেন্দ্রীয় অ্যাডমিন প্যানেল — bdHousing', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
-                        SizedBox(height: 4),
-                        Text('সদস্য অনুমোদন, নথি যাচাই, ইনকোয়ারি ও ৩-খাত আর্থিক ব্যবস্থাপনা', style: TextStyle(color: Colors.white70, fontSize: 13)),
-                      ],
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('কেন্দ্রীয় অ্যাডমিন প্যানেল — bdHousing', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+                          SizedBox(height: 4),
+                          Text('সদস্য অনুমোদন, নথি যাচাই, ইনকোয়ারি ও ৩-খাত আর্থিক ব্যবস্থাপনা', style: TextStyle(color: Colors.white70, fontSize: 13)),
+                        ],
+                      ),
                     ),
                     IconButton(icon: const Icon(Icons.refresh, color: Colors.white), onPressed: viewModel.loadAllData, tooltip: 'রিফ্রেশ'),
                   ],

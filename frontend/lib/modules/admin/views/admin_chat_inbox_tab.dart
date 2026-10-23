@@ -30,9 +30,15 @@ class _AdminChatInboxTabState extends State<AdminChatInboxTab> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text('সাপোর্ট ইনবক্স (লাইভ মেসেজিং)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            const Expanded(
+              child: Text(
+                'সাপোর্ট ইনবক্স (লাইভ মেসেজিং)',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const SizedBox(width: 8),
             BouncingPressable(
               onTap: () => _vm.loadAdminThreads(),
               child: const Icon(Icons.refresh, color: Color(0xFF0B4F32)),
