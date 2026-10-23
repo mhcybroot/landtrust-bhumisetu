@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:landtrust_app/core/animations/transitions/transitions.dart';
 import 'package:landtrust_app/modules/admin/views/admin_panel_screen.dart';
 import 'package:landtrust_app/modules/auth/views/auth_screen.dart';
 import 'package:landtrust_app/modules/marketplace/view_models/marketplace_view_model.dart';
@@ -47,7 +48,8 @@ class _MainShellScreenState extends State<MainShellScreen> {
         final isLoggedIn = _shellVm.isLoggedIn;
         final isAdmin = _shellVm.isAdmin;
 
-        final activeView = _buildActiveView(isMobile, selectedTab, isLoggedIn, isAdmin);
+        final rawView = _buildActiveView(isMobile, selectedTab, isLoggedIn, isAdmin);
+        final activeView = MultiTabSlideFadeTransition(activeTab: selectedTab, child: rawView);
 
         return isMobile
             ? MobileShellView(shellVm: _shellVm, activeView: activeView, config: _marketplaceVm.config)

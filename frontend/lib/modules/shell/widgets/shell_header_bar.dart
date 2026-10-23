@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/animations/bouncing_pressable.dart';
 import '../../../../core/localization/app_strings.dart';
 import '../../../../core/localization/language_toggle_button.dart';
 import '../../../../core/widgets/horizontal_scroll_fade_view.dart';
@@ -145,16 +146,24 @@ class ShellHeaderBar extends StatelessWidget {
     final active = selectedIndex == index;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4),
-      child: TextButton.icon(
-        style: TextButton.styleFrom(
-          backgroundColor: active ? Colors.white : Colors.transparent,
-          foregroundColor: active ? const Color(0xFF0B4F32) : Colors.white,
+      child: BouncingPressable(
+        onTap: () => onTabSelected(index),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          decoration: BoxDecoration(
+            color: active ? Colors.white : Colors.transparent,
+            borderRadius: BorderRadius.circular(10),
+          ),
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 18, color: active ? const Color(0xFF0B4F32) : Colors.white),
+              const SizedBox(width: 6),
+              Text(label, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: active ? const Color(0xFF0B4F32) : Colors.white)),
+            ],
+          ),
         ),
-        onPressed: () => onTabSelected(index),
-        icon: Icon(icon, size: 18),
-        label: Text(label, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
       ),
     );
   }

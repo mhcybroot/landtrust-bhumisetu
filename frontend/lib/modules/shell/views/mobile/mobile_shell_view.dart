@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/animations/animated_fade_switcher.dart';
+import '../../../../core/animations/bouncing_pressable.dart';
 import '../../../../core/localization/app_strings.dart';
 import '../../../../core/localization/language_toggle_button.dart';
 import '../../view_models/shell_view_model.dart';
@@ -62,31 +63,29 @@ class MobileShellView extends StatelessWidget {
         actions: [
           const LanguageToggleButton(compact: true),
           if (!isLoggedIn)
-            TextButton(
-              onPressed: () => shellVm.setTabIndex(3),
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.white,
-                backgroundColor: Colors.white.withValues(alpha: 0.15),
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            BouncingPressable(
+              onTap: () => shellVm.setTabIndex(3),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(8)),
+                child: Text(context.tr('nav_login'), style: const TextStyle(color: Colors.white, fontSize: 11.5, fontWeight: FontWeight.bold)),
               ),
-              child: Text(context.tr('nav_login'), style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold)),
             )
           else
-            IconButton(
-              icon: const Icon(Icons.account_circle, color: Colors.white, size: 22),
-              tooltip: 'আমার পোর্টাল',
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(minWidth: 32),
-              onPressed: () => shellVm.setTabIndex(3),
+            BouncingPressable(
+              onTap: () => shellVm.setTabIndex(3),
+              child: const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+                child: Icon(Icons.account_circle, color: Colors.white, size: 22),
+              ),
             ),
           Builder(
-            builder: (ctx) => IconButton(
-              icon: const Icon(Icons.menu_rounded, color: Colors.white, size: 22),
-              tooltip: 'মেনু',
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(minWidth: 36),
-              onPressed: () => Scaffold.of(ctx).openEndDrawer(),
+            builder: (ctx) => BouncingPressable(
+              onTap: () => Scaffold.of(ctx).openEndDrawer(),
+              child: const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+                child: Icon(Icons.menu_rounded, color: Colors.white, size: 22),
+              ),
             ),
           ),
           const SizedBox(width: 4),
