@@ -51,11 +51,17 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
     final text = _inputCtrl.text.trim();
     if (text.isEmpty || _sending) return;
     setState(() => _sending = true);
-    _inputCtrl.clear();
     final success = widget.isAdmin ? await widget.viewModel.adminReply(text) : await widget.viewModel.sendMessage(text);
     if (mounted) {
       setState(() => _sending = false);
-      if (success) _scrollToBottom();
+      if (success) {
+        _inputCtrl.clear();
+        _scrollToBottom();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('বার্তা পাঠানো যায়নি। নেটওয়ার্ক বা সার্ভার চেক করুন।')),
+        );
+      }
     }
   }
 
