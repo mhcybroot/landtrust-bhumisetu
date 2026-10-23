@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:landtrust_app/core/animations/bouncing_pressable.dart';
 import 'package:landtrust_app/core/network/api_client.dart';
 import 'package:landtrust_app/core/widgets/status_badge.dart';
 import 'package:landtrust_app/modules/member_portal/widgets/digital_id_card_dialog.dart';
@@ -45,8 +44,8 @@ class MarketingOfficerView extends StatelessWidget {
       child: Padding(
         padding: EdgeInsets.all(isMobile ? 12 : 16),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-            const Text('আপনার ইউনিক রেফারেল কোড ও লিংক', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF0B4F32))),
+          Wrap(spacing: 8, runSpacing: 6, alignment: WrapAlignment.spaceBetween, crossAxisAlignment: WrapCrossAlignment.center, children: [
+            const Text('আপনার ইউনিক রেফারেল কোড ও লিংক', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5, color: Color(0xFF0B4F32))),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
               decoration: BoxDecoration(color: const Color(0xFFE8F5E9), borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.green.shade300)),
@@ -75,14 +74,11 @@ class MarketingOfficerView extends StatelessWidget {
           const SizedBox(height: 8),
           SizedBox(
             width: double.infinity,
-            child: BouncingPressable(
-              onTap: () => DigitalIdCardDialog.show(context, officerData: officerData, isMobile: isMobile),
-              child: OutlinedButton.icon(
-                style: OutlinedButton.styleFrom(foregroundColor: const Color(0xFF0B4F32), side: const BorderSide(color: Color(0xFF0B4F32)), padding: const EdgeInsets.symmetric(vertical: 8)),
-                icon: const Icon(Icons.badge_outlined, size: 16),
-                label: const Text('অফিসিয়াল ডিজিটাল আইডি কার্ড দেখুন', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                onPressed: () => DigitalIdCardDialog.show(context, officerData: officerData, isMobile: isMobile),
-              ),
+            child: OutlinedButton.icon(
+              style: OutlinedButton.styleFrom(foregroundColor: const Color(0xFF0B4F32), side: const BorderSide(color: Color(0xFF0B4F32)), padding: const EdgeInsets.symmetric(vertical: 8)),
+              icon: const Icon(Icons.badge_outlined, size: 16),
+              label: const Text('অফিসিয়াল ডিজিটাল আইডি কার্ড দেখুন', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+              onPressed: () => DigitalIdCardDialog.show(context, officerData: officerData, isMobile: isMobile),
             ),
           ),
         ]),
@@ -92,7 +88,9 @@ class MarketingOfficerView extends StatelessWidget {
 
   Widget _buildOfficerStats(dynamic totalRef, dynamic verRef, dynamic earned, dynamic pending) {
     return LayoutBuilder(builder: (ctx, constraints) {
-      final cardWidth = isMobile ? (constraints.maxWidth - 10) / 2 : (constraints.maxWidth - 36) / 4;
+      final cardWidth = isMobile
+          ? (constraints.maxWidth < 340 ? constraints.maxWidth : (constraints.maxWidth - 10) / 2)
+          : (constraints.maxWidth - 36) / 4;
       return Wrap(spacing: 10, runSpacing: 10, children: [
         StatCardWidget(title: 'মোট রেফারেল', value: '$totalRef জন', subtitle: 'নিবন্ধনকারী সদস্য', color: const Color(0xFF0B4F32), width: cardWidth),
         StatCardWidget(title: 'যাচাইকৃত রেফারেল', value: '$verRef জন', subtitle: 'অ্যাক্টিভ সদস্য', color: const Color(0xFF1B5E20), width: cardWidth),
@@ -124,16 +122,13 @@ class MarketingOfficerView extends StatelessWidget {
 
   Widget _buildCommissionsLedger(List<dynamic> commissions) {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-        Text('কমিশন হিসেব ও লেজার (${commissions.length})', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-        BouncingPressable(
-          onTap: onPayoutRequest,
-          child: ElevatedButton.icon(
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
-            onPressed: onPayoutRequest,
-            icon: const Icon(Icons.payments_outlined, size: 16),
-            label: const Text('উইথড্র রিকোয়েস্ট', style: TextStyle(fontSize: 12)),
-          ),
+      Wrap(spacing: 8, runSpacing: 8, alignment: WrapAlignment.spaceBetween, crossAxisAlignment: WrapCrossAlignment.center, children: [
+        Text('কমিশন হিসেব ও লেজার (${commissions.length})', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+        ElevatedButton.icon(
+          style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
+          onPressed: onPayoutRequest,
+          icon: const Icon(Icons.payments_outlined, size: 16),
+          label: const Text('উইথড্র রিকোয়েস্ট', style: TextStyle(fontSize: 12)),
         ),
       ]),
       const SizedBox(height: 8),

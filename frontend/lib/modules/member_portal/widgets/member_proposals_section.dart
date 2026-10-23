@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:landtrust_app/core/animations/bouncing_pressable.dart';
 import 'package:landtrust_app/core/widgets/status_badge.dart';
 
 class MemberProposalsSection extends StatelessWidget {
@@ -68,21 +67,15 @@ class MemberProposalsSection extends StatelessWidget {
                               const SizedBox(height: 6),
                               Row(
                                 children: [
-                                  BouncingPressable(
-                                    onTap: () => onRespondProposal!(p['id'] as int, 'ACCEPT'),
-                                    child: ElevatedButton(
-                                      style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
-                                      onPressed: () => onRespondProposal!(p['id'] as int, 'ACCEPT'),
-                                      child: const Text('পাল্টা প্রস্তাবে সম্মত', style: TextStyle(fontSize: 11)),
-                                    ),
+                                  ElevatedButton(
+                                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
+                                    onPressed: () => onRespondProposal!(p['id'] as int, 'ACCEPT'),
+                                    child: const Text('পাল্টা প্রস্তাবে সম্মত', style: TextStyle(fontSize: 11)),
                                   ),
                                   const SizedBox(width: 8),
-                                  BouncingPressable(
-                                    onTap: () => onRespondProposal!(p['id'] as int, 'REJECT'),
-                                    child: OutlinedButton(
-                                      onPressed: () => onRespondProposal!(p['id'] as int, 'REJECT'),
-                                      child: const Text('প্রত্যাখ্যান', style: TextStyle(fontSize: 11)),
-                                    ),
+                                  OutlinedButton(
+                                    onPressed: () => onRespondProposal!(p['id'] as int, 'REJECT'),
+                                    child: const Text('প্রত্যাখ্যান', style: TextStyle(fontSize: 11)),
                                   ),
                                 ],
                               ),
@@ -93,13 +86,10 @@ class MemberProposalsSection extends StatelessWidget {
                     ],
                     if (isAgreed) ...[
                       const SizedBox(height: 8),
-                      BouncingPressable(
-                        onTap: () => onShowCertificate(p as Map<String, dynamic>),
-                        child: OutlinedButton.icon(
-                          onPressed: () => onShowCertificate(p as Map<String, dynamic>),
-                          icon: const Icon(Icons.verified_outlined, size: 15),
-                          label: const Text('চুক্তিপত্র সনদ দেখুন', style: TextStyle(fontSize: 11)),
-                        ),
+                      OutlinedButton.icon(
+                        onPressed: () => onShowCertificate(p as Map<String, dynamic>),
+                        icon: const Icon(Icons.verified_outlined, size: 15),
+                        label: const Text('চুক্তিপত্র সনদ দেখুন', style: TextStyle(fontSize: 11)),
                       ),
                     ],
                   ],

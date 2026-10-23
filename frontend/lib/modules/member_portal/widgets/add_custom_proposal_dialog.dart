@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:landtrust_app/core/animations/bouncing_pressable.dart';
 import 'package:landtrust_app/core/network/api_client.dart';
 
 class AddCustomProposalDialog {
@@ -50,7 +49,7 @@ class AddCustomProposalDialog {
               Text('নতুন বিশেষ সেবা চুক্তি প্রস্তাব', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
             ]),
             content: SizedBox(
-              width: isMobile ? double.infinity : 460,
+              width: isMobile ? null : 460,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -63,17 +62,11 @@ class AddCustomProposalDialog {
               ),
             ),
             actions: [
-              BouncingPressable(
-                onTap: () => Navigator.pop(ctx),
-                child: TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('বাতিল')),
-              ),
-              BouncingPressable(
-                onTap: submitting ? null : submit,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
-                  onPressed: submitting ? null : submit,
-                  child: submitting ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) : const Text('প্রস্তাব পাঠান'),
-                ),
+              TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('বাতিল')),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
+                onPressed: submitting ? null : submit,
+                child: submitting ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) : const Text('প্রস্তাব পাঠান'),
               ),
             ],
           );

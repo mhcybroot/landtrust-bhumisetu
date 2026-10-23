@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:landtrust_app/core/animations/bouncing_pressable.dart';
 import 'package:landtrust_app/core/animations/legal_verification_animations.dart';
 
 class AgreementCertificateDialog extends StatelessWidget {
@@ -43,30 +42,21 @@ class AgreementCertificateDialog extends StatelessWidget {
         const TrustSealStamp(size: 32),
       ]),
       content: SizedBox(
-        width: isMobile ? double.infinity : 600,
+        width: isMobile ? null : 600,
         child: SingleChildScrollView(
           child: SelectableText(certText, style: const TextStyle(fontFamily: 'monospace', fontSize: 12)),
         ),
       ),
       actions: [
-        BouncingPressable(
-          onTap: () => Navigator.pop(context),
-          child: TextButton(onPressed: () => Navigator.pop(context), child: const Text('বন্ধ করুন')),
-        ),
-        BouncingPressable(
-          onTap: () {
+        TextButton(onPressed: () => Navigator.pop(context), child: const Text('বন্ধ করুন')),
+        ElevatedButton.icon(
+          style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
+          onPressed: () {
             Clipboard.setData(ClipboardData(text: certText));
             ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('চুক্তিপত্র সনদ কপি হয়েছে!')));
           },
-          child: ElevatedButton.icon(
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
-            onPressed: () {
-              Clipboard.setData(ClipboardData(text: certText));
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('চুক্তিপত্র সনদ কপি হয়েছে!')));
-            },
-            icon: const Icon(Icons.copy, size: 16),
-            label: const Text('কপি করুন (Copy)'),
-          ),
+          icon: const Icon(Icons.copy, size: 16),
+          label: const Text('কপি করুন (Copy)'),
         ),
       ],
     );

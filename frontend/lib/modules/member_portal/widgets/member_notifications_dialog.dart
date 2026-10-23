@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:landtrust_app/core/animations/bouncing_pressable.dart';
 import 'package:landtrust_app/core/animations/transitions/state_micro_transitions.dart';
 
 class MemberNotificationsDialog {
@@ -25,7 +24,7 @@ class MemberNotificationsDialog {
           ],
         ),
         content: SizedBox(
-          width: isMobile ? double.infinity : 500,
+          width: isMobile ? null : 500,
           child: list.isEmpty
               ? const Padding(padding: EdgeInsets.all(24), child: Center(child: Text('কোনো নোটিফিকেশন নেই।')))
               : ListView.separated(
@@ -45,19 +44,13 @@ class MemberNotificationsDialog {
                       subtitle: Text(n['message'] ?? '', style: const TextStyle(fontSize: 11)),
                       trailing: isRead
                           ? null
-                          : BouncingPressable(
-                              onTap: () async {
+                          : IconButton(
+                              icon: const Icon(Icons.check, size: 16, color: Colors.green),
+                              tooltip: 'পঠিত হিসেবে চিহ্নিত করুন',
+                              onPressed: () async {
                                 await onMarkRead(n['id'] as int);
                                 if (context.mounted) Navigator.pop(ctx);
                               },
-                              child: IconButton(
-                                icon: const Icon(Icons.check, size: 16, color: Colors.green),
-                                tooltip: 'পঠিত হিসেবে চিহ্নিত করুন',
-                                onPressed: () async {
-                                  await onMarkRead(n['id'] as int);
-                                  if (context.mounted) Navigator.pop(ctx);
-                                },
-                              ),
                             ),
                     );
                   },
@@ -65,24 +58,15 @@ class MemberNotificationsDialog {
         ),
         actions: [
           if (unreadCount > 0 && onMarkAllRead != null)
-            BouncingPressable(
-              onTap: () async {
+            TextButton.icon(
+              icon: const Icon(Icons.done_all, size: 16),
+              label: const Text('সব পঠিত করুন'),
+              onPressed: () async {
                 await onMarkAllRead();
                 if (context.mounted) Navigator.pop(ctx);
               },
-              child: TextButton.icon(
-                icon: const Icon(Icons.done_all, size: 16),
-                label: const Text('সব পঠিত করুন'),
-                onPressed: () async {
-                  await onMarkAllRead();
-                  if (context.mounted) Navigator.pop(ctx);
-                },
-              ),
             ),
-          BouncingPressable(
-            onTap: () => Navigator.pop(ctx),
-            child: TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('বন্ধ করুন')),
-          ),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('বন্ধ করুন')),
         ],
       ),
     );

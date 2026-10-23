@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:landtrust_app/core/animations/bouncing_pressable.dart';
 import 'package:landtrust_app/core/animations/legal_verification_animations.dart';
 import 'package:landtrust_app/core/animations/transitions/finance_payment_transitions.dart';
+import 'package:landtrust_app/core/constants/app_constants.dart';
 import 'package:landtrust_app/core/network/api_client.dart';
 
 class DigitalIdCardDialog extends StatefulWidget {
@@ -42,6 +42,7 @@ class _DigitalIdCardDialogState extends State<DigitalIdCardDialog> {
     };
 
     return Dialog(
+      insetPadding: EdgeInsets.symmetric(horizontal: widget.isMobile ? 12 : 24, vertical: 16),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       elevation: 10,
       child: ConstrainedBox(
@@ -85,12 +86,12 @@ class _DigitalIdCardDialogState extends State<DigitalIdCardDialog> {
         const Text('আবাসন খাতের বিশেষায়িত মার্কেটপ্লেস', style: TextStyle(color: Colors.white70, fontSize: 10)),
         const SizedBox(height: 5),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
           decoration: BoxDecoration(color: Colors.amber.shade700, borderRadius: BorderRadius.circular(12)),
           child: const Row(mainAxisSize: MainAxisSize.min, children: [
-            Icon(Icons.verified, color: Colors.white, size: 11),
-            SizedBox(width: 4),
-            Text('LIFETIME CERTIFIED PARTNER', style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold)),
+            Icon(Icons.verified, color: Colors.white, size: 10),
+            SizedBox(width: 3),
+            Flexible(child: Text('LIFETIME CERTIFIED PARTNER', style: TextStyle(color: Colors.white, fontSize: 8.5, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis)),
           ]),
         ),
       ]),
@@ -108,11 +109,11 @@ class _DigitalIdCardDialogState extends State<DigitalIdCardDialog> {
         if (area.isNotEmpty) Text(area, style: const TextStyle(fontSize: 11, color: Colors.black54)),
         const SizedBox(height: 10),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
           decoration: BoxDecoration(color: const Color(0xFFF1F8F5), borderRadius: BorderRadius.circular(8), border: Border.all(color: Colors.green.shade200)),
-          child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-            const Text('পার্টনার কোড:', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.black87)),
-            Text(code, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF0B4F32))),
+          child: Row(children: [
+            const Text('পার্টনার কোড: ', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.black87)),
+            Expanded(child: Text(code, textAlign: TextAlign.right, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF0B4F32)))),
           ]),
         ),
         const SizedBox(height: 8),
@@ -135,7 +136,7 @@ class _DigitalIdCardDialogState extends State<DigitalIdCardDialog> {
         Container(
           padding: const EdgeInsets.all(6),
           decoration: BoxDecoration(color: const Color(0xFFFAFAFA), borderRadius: BorderRadius.circular(8)),
-          child: const Text('অনুমোদিত মাঠ প্রতিনিধি • hotline: 01700-000000', textAlign: TextAlign.center, style: TextStyle(fontSize: 9, color: Colors.black54)),
+          child: Text('অনুমোদিত মাঠ প্রতিনিধি • hotline: ${AppConstants.defaultSupportPhone}', textAlign: TextAlign.center, style: const TextStyle(fontSize: 9, color: Colors.black54)),
         ),
         const SizedBox(height: 6),
         const Text('🔄 ট্যাপ করে আইডি কার্ডের সামনে ফিরুন', style: TextStyle(fontSize: 10, color: Colors.teal, fontWeight: FontWeight.w600)),
@@ -148,30 +149,21 @@ class _DigitalIdCardDialogState extends State<DigitalIdCardDialog> {
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
       child: Row(children: [
         Expanded(
-          child: BouncingPressable(
-            onTap: () {
+          child: OutlinedButton.icon(
+            icon: const Icon(Icons.copy, size: 14),
+            label: const Text('লিংক কপি', style: TextStyle(fontSize: 11)),
+            onPressed: () {
               Clipboard.setData(ClipboardData(text: shareLink));
               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('অফিসারের ডিজিটাল কার্ড ও রেফারেল লিংক কপি হয়েছে!')));
             },
-            child: OutlinedButton.icon(
-              icon: const Icon(Icons.copy, size: 14),
-              label: const Text('লিংক কপি', style: TextStyle(fontSize: 11)),
-              onPressed: () {
-                Clipboard.setData(ClipboardData(text: shareLink));
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('অফিসারের ডিজিটাল কার্ড ও রেফারেল লিংক কপি হয়েছে!')));
-              },
-            ),
           ),
         ),
         const SizedBox(width: 8),
         Expanded(
-          child: BouncingPressable(
-            onTap: () => Navigator.pop(context),
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
-              onPressed: () => Navigator.pop(context),
-              child: const Text('বন্ধ করুন', style: TextStyle(fontSize: 11)),
-            ),
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
+            onPressed: () => Navigator.pop(context),
+            child: const Text('বন্ধ করুন', style: TextStyle(fontSize: 11)),
           ),
         ),
       ]),

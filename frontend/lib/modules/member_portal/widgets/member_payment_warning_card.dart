@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:landtrust_app/core/animations/bouncing_pressable.dart';
 
 class MemberPaymentWarningCard extends StatelessWidget {
   final Map<String, dynamic> user;
@@ -51,18 +50,15 @@ class MemberPaymentWarningCard extends StatelessWidget {
           const SizedBox(height: 8),
           Align(
             alignment: Alignment.centerRight,
-            child: BouncingPressable(
-              onTap: onResubmitPaymentClick,
-              child: ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF0B4F32),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                ),
-                onPressed: onResubmitPaymentClick,
-                icon: const Icon(Icons.edit_note, size: 16),
-                label: const Text('সঠিক TrxID পুনরায় জমা দিন', style: TextStyle(fontSize: 12)),
+            child: ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF0B4F32),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               ),
+              onPressed: onResubmitPaymentClick,
+              icon: const Icon(Icons.edit_note, size: 16),
+              label: const Text('সঠিক TrxID পুনরায় জমা দিন', style: TextStyle(fontSize: 12)),
             ),
           ),
         ],
