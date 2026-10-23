@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../../../core/animations/transitions/app_dialog_transition.dart';
+import '../../../../core/animations/transitions/finance_payment_transitions.dart';
+import '../../../../core/animations/transitions/media_gallery_transitions.dart';
 import '../../../../core/localization/app_strings.dart';
 import '../../../../core/utils/whatsapp_helper.dart';
 import '../../../../core/widgets/smart_image_viewer.dart';
@@ -22,7 +25,7 @@ class PropertyDetailsDialog {
     final videoUrl = (listing['videoUrl'] ?? '').toString().trim();
     final mapLink = (listing['mapLink'] ?? '').toString().trim();
 
-    showDialog(
+    AppDialogTransition.show(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) => AlertDialog(
@@ -52,8 +55,8 @@ class PropertyDetailsDialog {
                   if (allImages.isNotEmpty) ...[
                     ClipRRect(
                       borderRadius: BorderRadius.circular(10),
-                      child: Hero(
-                        tag: 'property_img_${listing['id'] ?? 'unknown'}',
+                      child: FilmstripSlideCrossfade(
+                        index: activeImgIndex,
                         child: SmartImageViewer(
                           url: allImages[activeImgIndex],
                           height: isMobile ? 210 : 280,
@@ -141,7 +144,13 @@ class PropertyDetailsDialog {
       decoration: BoxDecoration(color: const Color(0xFFF3F8F5), borderRadius: BorderRadius.circular(10), border: Border.all(color: const Color(0xFF0B4F32).withValues(alpha: 0.2))),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Wrap(spacing: 12, runSpacing: 4, alignment: WrapAlignment.spaceBetween, children: [
-          Text('মোট মূল্য: ৳${l['expectedPriceBdt']}', style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Color(0xFF0B4F32))),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('মোট মূল্য: ', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF0B4F32))),
+              TkCurrencyRollingOdometerTransition(amount: int.tryParse(l['expectedPriceBdt']?.toString().replaceAll(RegExp(r'[^0-9]'), '') ?? '') ?? 0),
+            ],
+          ),
           Text('প্রতি শতাংশ: ৳${l['pricePerDecimalBdt'] ?? '-'} (${l['areaDecimal']} শতাংশ)', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
         ]),
         const Divider(height: 16),

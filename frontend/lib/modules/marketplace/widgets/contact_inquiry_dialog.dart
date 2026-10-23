@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../../../core/animations/transitions/app_dialog_transition.dart';
+import '../../../../core/animations/transitions/form_wizard_transitions.dart';
 
 class ContactInquiryDialog {
   static void show(
@@ -12,7 +14,7 @@ class ContactInquiryDialog {
     );
     bool submitting = false;
 
-    showDialog(
+    AppDialogTransition.show(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) => AlertDialog(
@@ -59,20 +61,15 @@ class ContactInquiryDialog {
               onPressed: () => Navigator.pop(ctx),
               child: const Text('বাতিল'),
             ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF0B4F32),
-                foregroundColor: Colors.white,
-              ),
-              onPressed: submitting
+            InkWell(
+              borderRadius: BorderRadius.circular(8),
+              onTap: submitting
                   ? null
                   : () async {
                       final b = double.tryParse(budgetCtrl.text.trim()) ?? 0;
                       final m = msgCtrl.text.trim();
                       if (b <= 0 || m.isEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('বাজেট এবং বার্তা সঠিকভাবে লিখুন।')),
-                        );
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('বাজেট এবং বার্তা সঠিকভাবে লিখুন।')));
                         return;
                       }
                       setDialogState(() => submitting = true);
@@ -80,9 +77,7 @@ class ContactInquiryDialog {
                         await onSubmit(b, m);
                         if (context.mounted) {
                           Navigator.pop(ctx);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('আগ্রহ প্রকাশের অনুরোধটি সফলভাবে পাঠানো হয়েছে!')),
-                          );
+                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('আগ্রহ প্রকাশের অনুরোধটি সফলভাবে পাঠানো হয়েছে!')));
                         }
                       } catch (e) {
                         if (context.mounted) {
@@ -92,13 +87,11 @@ class ContactInquiryDialog {
                         setDialogState(() => submitting = false);
                       }
                     },
-              child: submitting
-                  ? const SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                    )
-                  : const Text('অনুরোধ পাঠান'),
+              child: SubmitButtonLoaderToSuccess(
+                isLoading: submitting,
+                isSuccess: false,
+                label: 'অনুরোধ পাঠান',
+              ),
             ),
           ],
         ),

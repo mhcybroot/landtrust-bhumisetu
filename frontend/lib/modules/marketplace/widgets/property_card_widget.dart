@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/animations/hover_lift_card.dart';
 import '../../../../core/animations/pulse_beacon_indicator.dart';
+import '../../../../core/animations/transitions/finance_payment_transitions.dart';
 import '../../../../core/localization/app_strings.dart';
 import '../../../../core/utils/whatsapp_helper.dart';
 import '../../../../core/widgets/smart_image_viewer.dart';
@@ -121,7 +122,7 @@ class PropertyCardWidget extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
                               const Text('মূল্য', style: TextStyle(fontSize: 10.5, color: Colors.black54)),
-                              Text('৳${listing['expectedPriceBdt']}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14.5, color: Color(0xFF0B4F32))),
+                              TkCurrencyRollingOdometerTransition(amount: int.tryParse(listing['expectedPriceBdt']?.toString().replaceAll(RegExp(r'[^0-9]'), '') ?? '') ?? 0),
                               if (listing['pricePerDecimalBdt'] != null)
                                 Text('(৳${listing['pricePerDecimalBdt']}/শতাংশ)', style: const TextStyle(fontSize: 10, color: Colors.black54, fontWeight: FontWeight.w600)),
                             ],
@@ -144,10 +145,7 @@ class PropertyCardWidget extends StatelessWidget {
                       ),
                       Expanded(
                         child: OutlinedButton(
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 10),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                          ),
+                          style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 10), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
                           onPressed: onDetailsClick,
                           child: Text(context.tr('details'), style: const TextStyle(fontSize: 12)),
                         ),
@@ -155,12 +153,7 @@ class PropertyCardWidget extends StatelessWidget {
                       const SizedBox(width: 8),
                       Expanded(
                         child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF0B4F32),
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 10),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                          ),
+                          style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 10), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
                           onPressed: onInquiryClick,
                           child: Text(context.tr('contact'), style: const TextStyle(fontSize: 12)),
                         ),

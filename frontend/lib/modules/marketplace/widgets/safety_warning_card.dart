@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../../../core/animations/transitions/app_dialog_transition.dart';
+import '../../../../core/animations/transitions/finance_payment_transitions.dart';
 
 class SafetyWarningCard extends StatelessWidget {
   final bool isMobile;
@@ -32,7 +34,7 @@ class SafetyWarningCard extends StatelessWidget {
                   color: const Color(0xFFFF8F00),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(Icons.security_rounded, color: Colors.white, size: 18),
+                child: const SecurityShieldLockSnap(isLocked: true),
               ),
               const SizedBox(width: 8),
               const Expanded(
@@ -118,7 +120,7 @@ class SafetyWarningCard extends StatelessWidget {
   }
 
   void _openEPorchaGuidance(BuildContext context) {
-    showDialog(
+    AppDialogTransition.show(
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),

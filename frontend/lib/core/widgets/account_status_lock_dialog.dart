@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../animations/transitions/admin_auth_transitions.dart';
+import '../animations/transitions/app_dialog_transition.dart';
 import '../utils/whatsapp_helper.dart';
 
 class AccountStatusLockDialog extends StatelessWidget {
@@ -16,7 +18,7 @@ class AccountStatusLockDialog extends StatelessWidget {
     required Map<String, dynamic> user,
     VoidCallback? onResubmitRequested,
   }) {
-    return showDialog(
+    return AppDialogTransition.show(
       context: context,
       barrierDismissible: true,
       builder: (ctx) => AccountStatusLockDialog(
@@ -73,6 +75,7 @@ class AccountStatusLockDialog extends StatelessWidget {
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: primaryColor),
             ),
           ),
+          UserStatusBadgeMorphTransition(status: status),
         ],
       ),
       content: Column(

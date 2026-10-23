@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../../../core/animations/transitions/app_dialog_transition.dart';
+import '../../../../core/animations/transitions/form_wizard_transitions.dart';
 
 class SellerOfferDialog {
   static void show(
@@ -13,7 +15,7 @@ class SellerOfferDialog {
     final feeCtrl = TextEditingController(text: '50000');
     bool submitting = false;
 
-    showDialog(
+    AppDialogTransition.show(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) => AlertDialog(
@@ -56,21 +58,16 @@ class SellerOfferDialog {
               onPressed: () => Navigator.pop(ctx),
               child: const Text('বাতিল'),
             ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF0B4F32),
-                foregroundColor: Colors.white,
-              ),
-              onPressed: submitting
+            InkWell(
+              borderRadius: BorderRadius.circular(8),
+              onTap: submitting
                   ? null
                   : () async {
                       final p = double.tryParse(priceCtrl.text.trim()) ?? 0;
                       final f = double.tryParse(feeCtrl.text.trim()) ?? 0;
                       final d = detailsCtrl.text.trim();
                       if (d.isEmpty || p <= 0) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('বিবরণ ও মূল্য সঠিকভাবে লিখুন।')),
-                        );
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('বিবরণ ও মূল্য সঠিকভাবে লিখুন।')));
                         return;
                       }
                       setDialogState(() => submitting = true);
@@ -78,9 +75,7 @@ class SellerOfferDialog {
                         await onSubmit(d, p, f);
                         if (context.mounted) {
                           Navigator.pop(ctx);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('আপনার জমির প্রস্তাবটি সফলভাবে প্রেরণ করা হয়েছে!')),
-                          );
+                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('আপনার জমির প্রস্তাবটি সফলভাবে প্রেরণ করা হয়েছে!')));
                         }
                       } catch (e) {
                         if (context.mounted) {
@@ -90,13 +85,11 @@ class SellerOfferDialog {
                         setDialogState(() => submitting = false);
                       }
                     },
-              child: submitting
-                  ? const SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                    )
-                  : const Text('প্রস্তাব পাঠান'),
+              child: SubmitButtonLoaderToSuccess(
+                isLoading: submitting,
+                isSuccess: false,
+                label: 'প্রস্তাব পাঠান',
+              ),
             ),
           ],
         ),

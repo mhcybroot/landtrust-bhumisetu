@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:landtrust_app/core/animations/transitions/admin_auth_transitions.dart';
 import 'package:landtrust_app/core/widgets/status_badge.dart';
 import '../view_models/admin_view_model.dart';
 import 'admin_nrb_dialog.dart';
@@ -84,19 +85,23 @@ class AdminOverviewTab extends StatelessWidget {
   }
 
   Widget _buildMetricsGrid(Map<String, dynamic> dash) {
+    final items = [
+      ('মোট নিবন্ধিত সদস্য', '${dash['totalUsers'] ?? 0} জন', 'ক্রেতা, বিক্রেতা ও অফিসার', const Color(0xFF0B4F32)),
+      ('যাচাইকৃত সক্রিয় সদস্য', '${dash['activeUsers'] ?? 0} জন', 'অনুমোদিত একাউন্ট', const Color(0xFF1B5E20)),
+      ('মোট জমির বিজ্ঞাপন', '${dash['totalListings'] ?? 0} টি', 'যাচাই ও প্রকাশিত', const Color(0xFF1565C0)),
+      ('সরাসরি ক্রেতার চাহিদা', '${dash['totalRequirements'] ?? 0} টি', 'জমির ক্রয়ের আগ্রহ', const Color(0xFF6A1B9A)),
+      ('আগ্রহ প্রকাশ (Inquiries)', '${dash['totalInquiries'] ?? 0} টি', 'ক্রেতা-বিক্রেতা সংযোগ', const Color(0xFF00695C)),
+      ('মোট কমিশন পরিশোধিত', '৳${dash['totalCommissionsPaid'] ?? 0}', 'অফিসারদের বিতরণকৃত', const Color(0xFFAD1457)),
+    ];
     return LayoutBuilder(builder: (ctx, constraints) {
       final cardWidth = isMobile ? (constraints.maxWidth - 10) / 2 : (constraints.maxWidth - 36) / 4;
       return Wrap(
         spacing: 10,
         runSpacing: 10,
-        children: [
-          StatCardWidget(title: 'মোট নিবন্ধিত সদস্য', value: '${dash['totalUsers'] ?? 0} জন', subtitle: 'ক্রেতা, বিক্রেতা ও অফিসার', color: const Color(0xFF0B4F32), width: cardWidth),
-          StatCardWidget(title: 'যাচাইকৃত সক্রিয় সদস্য', value: '${dash['activeUsers'] ?? 0} জন', subtitle: 'অনুমোদিত একাউন্ট', color: const Color(0xFF1B5E20), width: cardWidth),
-          StatCardWidget(title: 'মোট জমির বিজ্ঞাপন', value: '${dash['totalListings'] ?? 0} টি', subtitle: 'যাচাই ও প্রকাশিত', color: const Color(0xFF1565C0), width: cardWidth),
-          StatCardWidget(title: 'সরাসরি ক্রেতার চাহিদা', value: '${dash['totalRequirements'] ?? 0} টি', subtitle: 'জমির ক্রয়ের আগ্রহ', color: const Color(0xFF6A1B9A), width: cardWidth),
-          StatCardWidget(title: 'আগ্রহ প্রকাশ (Inquiries)', value: '${dash['totalInquiries'] ?? 0} টি', subtitle: 'ক্রেতা-বিক্রেতা সংযোগ', color: const Color(0xFF00695C), width: cardWidth),
-          StatCardWidget(title: 'মোট কমিশন পরিশোধিত', value: '৳${dash['totalCommissionsPaid'] ?? 0}', subtitle: 'অফিসারদের বিতরণকৃত', color: const Color(0xFFAD1457), width: cardWidth),
-        ],
+        children: List.generate(items.length, (i) => AdminDashboardCardStaggerSlide(
+          index: i,
+          child: StatCardWidget(title: items[i].$1, value: items[i].$2, subtitle: items[i].$3, color: items[i].$4, width: cardWidth),
+        )),
       );
     });
   }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/animations/bouncing_pressable.dart';
+import '../../../../core/animations/transitions/finance_payment_transitions.dart';
 import '../../../../core/localization/app_strings.dart';
 import '../../../../core/utils/whatsapp_helper.dart';
 import '../../../../core/widgets/smart_image_viewer.dart';
@@ -83,7 +84,7 @@ class MobilePropertyDetailsSheet extends StatelessWidget {
                         decoration: BoxDecoration(color: const Color(0xFFE8F5E9), borderRadius: BorderRadius.circular(8)),
                         child: Text(landType, style: const TextStyle(color: Color(0xFF0B4F32), fontWeight: FontWeight.bold, fontSize: 12)),
                       ),
-                      Text('৳$price', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF0B4F32))),
+                      TkCurrencyRollingOdometerTransition(amount: int.tryParse(price.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0),
                     ],
                   ),
                   const SizedBox(height: 10),

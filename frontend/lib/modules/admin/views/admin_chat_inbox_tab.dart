@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/animations/transitions/route_navigation_transitions.dart';
 import '../../chat/view_models/chat_view_model.dart';
 import '../../chat/views/chat_conversation_screen.dart';
 
@@ -104,9 +105,7 @@ class _AdminChatInboxTabState extends State<AdminChatInboxTab> {
                     onTap: () async {
                       await Navigator.push(
                         context,
-                        MaterialPageRoute(
-                          builder: (_) => ChatConversationScreen(viewModel: _vm, thread: thread, isAdmin: true),
-                        ),
+                        SharedAxisSlideRoute(page: ChatConversationScreen(viewModel: _vm, thread: thread, isAdmin: true)),
                       );
                       _vm.loadAdminThreads();
                     },

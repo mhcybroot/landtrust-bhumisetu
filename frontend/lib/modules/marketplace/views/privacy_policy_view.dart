@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import '../../../core/animations/transitions/route_navigation_transitions.dart';
 
 class PrivacyPolicyView extends StatelessWidget {
   const PrivacyPolicyView({super.key});
 
   static void show(BuildContext context) {
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const PrivacyPolicyView()),
+      SharedAxisSlideRoute(page: const PrivacyPolicyView()),
     );
   }
 

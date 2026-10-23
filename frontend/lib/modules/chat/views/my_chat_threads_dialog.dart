@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/animations/transitions/route_navigation_transitions.dart';
 import '../repositories/chat_repository.dart';
 import '../view_models/chat_view_model.dart';
 import 'chat_conversation_screen.dart';
@@ -79,7 +80,7 @@ class MyChatThreadsDialog {
                         : const Icon(Icons.chevron_right, size: 18),
                     onTap: () {
                       Navigator.pop(ctx);
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => ChatConversationScreen(viewModel: vm, thread: t, isAdmin: false)));
+                      Navigator.push(context, SharedAxisSlideRoute(page: ChatConversationScreen(viewModel: vm, thread: t, isAdmin: false)));
                     },
                   );
                 },
@@ -127,7 +128,7 @@ class MyChatThreadsDialog {
               Navigator.pop(ctx);
               final res = await ChatRepository().startThread(subject: sub, listingId: listingId, initialMessage: msg);
               if (res.isNotEmpty && context.mounted) {
-                Navigator.push(context, MaterialPageRoute(builder: (_) => ChatConversationScreen(viewModel: vm, thread: res, isAdmin: false)));
+                Navigator.push(context, SharedAxisSlideRoute(page: ChatConversationScreen(viewModel: vm, thread: res, isAdmin: false)));
               }
             },
             child: const Text('পাঠান'),
