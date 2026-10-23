@@ -1,15 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:landtrust_app/core/animations/bouncing_pressable.dart';
 import '../view_models/admin_view_model.dart';
 
 class AdminListingFeesCard extends StatefulWidget {
-  final AdminViewModel viewModel;
+  final AdminViewModel? viewModel;
+  final Map<String, dynamic>? fees;
+  final ValueChanged<Map<String, dynamic>>? onSave;
   final bool isMobile;
   final VoidCallback? onSaved;
 
   const AdminListingFeesCard({
     super.key,
-    required this.viewModel,
-    required this.isMobile,
+    this.viewModel,
+    this.fees,
+    this.onSave,
+    this.isMobile = false,
     this.onSaved,
   });
 
@@ -28,25 +33,23 @@ class _AdminListingFeesCardState extends State<AdminListingFeesCard> {
   @override
   void initState() {
     super.initState();
-    final s = (widget.viewModel.dashboard['settings'] as Map<String, dynamic>?) ?? {};
+    final s = (widget.viewModel?.dashboard['settings'] as Map<String, dynamic>?) ?? widget.fees ?? {};
     _feeAgriCtrl = TextEditingController(text: '${s['listingFeeAgri'] ?? 500}');
     _feeResCtrl = TextEditingController(text: '${s['listingFeeResidential'] ?? 1000}');
     _feeFlatCtrl = TextEditingController(text: '${s['listingFeeFlat'] ?? 1500}');
     _feeCommCtrl = TextEditingController(text: '${s['listingFeeCommercial'] ?? 2000}');
     _feeFeaturedCtrl = TextEditingController(text: '${s['listingFeeFeaturedExtra'] ?? 1000}');
-    widget.viewModel.addListener(_syncFees);
+    widget.viewModel?.addListener(_syncFees);
   }
 
   void _syncField(TextEditingController ctrl, dynamic val, String baseline) {
     if (val == null) return;
-    if (ctrl.text.isEmpty || ctrl.text == baseline) {
-      ctrl.text = '$val';
-    }
+    if (ctrl.text.isEmpty || ctrl.text == baseline) ctrl.text = '$val';
   }
 
   void _syncFees() {
-    if (_saving || !mounted) return;
-    final s = (widget.viewModel.dashboard['settings'] as Map<String, dynamic>?) ?? {};
+    if (_saving || !mounted || widget.viewModel == null) return;
+    final s = (widget.viewModel!.dashboard['settings'] as Map<String, dynamic>?) ?? {};
     if (s.isEmpty) return;
     _syncField(_feeAgriCtrl, s['listingFeeAgri'], '500');
     _syncField(_feeResCtrl, s['listingFeeResidential'], '1000');
@@ -57,7 +60,7 @@ class _AdminListingFeesCardState extends State<AdminListingFeesCard> {
 
   @override
   void dispose() {
-    widget.viewModel.removeListener(_syncFees);
+    widget.viewModel?.removeListener(_syncFees);
     for (final c in [_feeAgriCtrl, _feeResCtrl, _feeFlatCtrl, _feeCommCtrl, _feeFeaturedCtrl]) {
       c.dispose();
     }
@@ -67,18 +70,18 @@ class _AdminListingFeesCardState extends State<AdminListingFeesCard> {
   Future<void> _saveFees() async {
     setState(() => _saving = true);
     try {
-      await widget.viewModel.updateSettings({
+      final payload = {
         'listingFeeAgri': double.tryParse(_feeAgriCtrl.text.trim()) ?? 500,
         'listingFeeResidential': double.tryParse(_feeResCtrl.text.trim()) ?? 1000,
         'listingFeeFlat': double.tryParse(_feeFlatCtrl.text.trim()) ?? 1500,
         'listingFeeCommercial': double.tryParse(_feeCommCtrl.text.trim()) ?? 2000,
         'listingFeeFeaturedExtra': double.tryParse(_feeFeaturedCtrl.text.trim()) ?? 1000,
-      });
+      };
+      if (widget.viewModel != null) await widget.viewModel!.updateSettings(payload);
+      widget.onSave?.call(payload);
       widget.onSaved?.call();
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('মাল্টি-লেভেল বিজ্ঞাপন ফি সফলভাবে সংরক্ষিত হয়েছে!')),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('মাল্টি-লেভেল বিজ্ঞাপন ফি সফলভাবে সংরক্ষিত হয়েছে!')));
       }
     } catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
@@ -101,10 +104,7 @@ class _AdminListingFeesCardState extends State<AdminListingFeesCard> {
                 const Icon(Icons.price_change, color: Color(0xFF0B4F32), size: 22),
                 const SizedBox(width: 8),
                 const Expanded(
-                  child: Text(
-                    'মাল্টি-লেভেল লিস্টিং ও বিজ্ঞাপন ফি কনফিগারেশন',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF0A2E1F)),
-                  ),
+                  child: Text('মাল্টি-লেভেল লিস্টিং ও বিজ্ঞাপন ফি কনফিগারেশন', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF0A2E1F))),
                 ),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
@@ -114,14 +114,10 @@ class _AdminListingFeesCardState extends State<AdminListingFeesCard> {
               ],
             ),
             const SizedBox(height: 6),
-            const Text(
-              'জমি, ফ্ল্যাট ও বাণিজ্যিক বিজ্ঞাপনের ক্যাটাগরিভিত্তিক রেজিস্ট্রেশন ফি নির্ধারণ করুন। এটি পরিবর্তন করলে নতুন লিস্টিংয়ে প্রযোজ্য হবে।',
-              style: TextStyle(fontSize: 12, color: Colors.black54),
-            ),
+            const Text('জমি, ফ্ল্যাট ও বাণিজ্যিক বিজ্ঞাপনের ক্যাটাগরিভিত্তিক রেজিস্ট্রেশন ফি নির্ধারণ করুন। এটি পরিবর্তন করলে নতুন লিস্টিংয়ে প্রযোজ্য হবে।', style: TextStyle(fontSize: 12, color: Colors.black54)),
             const SizedBox(height: 14),
             Wrap(
-              spacing: 10,
-              runSpacing: 10,
+              spacing: 10, runSpacing: 10,
               children: [
                 _w(TextField(controller: _feeAgriCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: '🌾 কৃষি জমি ফি (৳)', isDense: true))),
                 _w(TextField(controller: _feeResCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: '🏡 আবাসিক জমি / প্লট ফি (৳)', isDense: true))),
@@ -131,11 +127,14 @@ class _AdminListingFeesCardState extends State<AdminListingFeesCard> {
               ],
             ),
             const SizedBox(height: 14),
-            ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
-              onPressed: _saving ? null : _saveFees,
-              icon: _saving ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) : const Icon(Icons.save, size: 16),
-              label: const Text('লিস্টিং ফি আপডেট করুন'),
+            BouncingPressable(
+              onTap: _saving ? null : _saveFees,
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
+                onPressed: _saving ? null : _saveFees,
+                icon: _saving ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) : const Icon(Icons.save, size: 16),
+                label: const Text('লিস্টিং ফি আপডেট করুন'),
+              ),
             ),
           ],
         ),
@@ -143,10 +142,5 @@ class _AdminListingFeesCardState extends State<AdminListingFeesCard> {
     );
   }
 
-  Widget _w(Widget child) {
-    return LayoutBuilder(builder: (ctx, constraints) {
-      final width = widget.isMobile ? constraints.maxWidth : (constraints.maxWidth - 20) / 3;
-      return SizedBox(width: width, child: child);
-    });
-  }
+  Widget _w(Widget child) => LayoutBuilder(builder: (ctx, constraints) => SizedBox(width: widget.isMobile ? constraints.maxWidth : (constraints.maxWidth - 20) / 3, child: child));
 }

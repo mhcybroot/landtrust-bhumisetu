@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:landtrust_app/core/animations/bouncing_pressable.dart';
 import 'package:landtrust_app/core/widgets/status_badge.dart';
 import '../../chat/views/my_chat_threads_dialog.dart';
 import '../../nrb/widgets/my_nrb_requests_dialog.dart';
@@ -24,14 +25,12 @@ class MemberHeaderBanner extends StatelessWidget {
     required this.onResubmitPaymentClick,
   });
 
-  String _roleBangla(String role) {
-    return switch (role) {
-      'ADMIN' => 'প্রধান পরিচালক (Admin)',
-      'MARKETING_OFFICER' => 'মার্কেটিং অফিসার',
-      'SELLER' => 'জমির বিক্রেতা (Seller)',
-      _ => 'জমির ক্রেতা (Buyer)',
-    };
-  }
+  String _roleBangla(String role) => switch (role) {
+    'ADMIN' => 'প্রধান পরিচালক (Admin)',
+    'MARKETING_OFFICER' => 'মার্কেটিং অফিসার',
+    'SELLER' => 'জমির বিক্রেতা (Seller)',
+    _ => 'জমির ক্রেতা (Buyer)',
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -62,11 +61,7 @@ class MemberHeaderBanner extends StatelessWidget {
                         Flexible(
                           child: Text(
                             user['fullName'] ?? '',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: isMobile ? 18 : 22,
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: TextStyle(color: Colors.white, fontSize: isMobile ? 18 : 22, fontWeight: FontWeight.bold),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
@@ -93,59 +88,58 @@ class MemberHeaderBanner extends StatelessWidget {
                 spacing: 8,
                 runSpacing: 8,
                 children: [
-                  ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white24,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  BouncingPressable(
+                    onTap: onProfileClick,
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(backgroundColor: Colors.white24, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8)),
+                      onPressed: onProfileClick,
+                      icon: const Icon(Icons.manage_accounts_outlined, size: 16),
+                      label: const Text('প্রোফাইল ও পাসওয়ার্ড', style: TextStyle(fontSize: 12)),
                     ),
-                    onPressed: onProfileClick,
-                    icon: const Icon(Icons.manage_accounts_outlined, size: 16),
-                    label: const Text('প্রোফাইল ও পাসওয়ার্ড', style: TextStyle(fontSize: 12)),
                   ),
-                  ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: unreadCount > 0 ? Colors.amber.shade600 : Colors.white24,
-                      foregroundColor: unreadCount > 0 ? Colors.black : Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  BouncingPressable(
+                    onTap: onNotificationsClick,
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: unreadCount > 0 ? Colors.amber.shade600 : Colors.white24,
+                        foregroundColor: unreadCount > 0 ? Colors.black : Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      ),
+                      onPressed: onNotificationsClick,
+                      icon: Badge(
+                        isLabelVisible: unreadCount > 0,
+                        label: Text('$unreadCount'),
+                        child: const Icon(Icons.notifications_active_outlined, size: 16),
+                      ),
+                      label: Text('নোটিফিকেশন ($unreadCount)', style: const TextStyle(fontSize: 12)),
                     ),
-                    onPressed: onNotificationsClick,
-                    icon: Badge(
-                      isLabelVisible: unreadCount > 0,
-                      label: Text('$unreadCount'),
-                      child: const Icon(Icons.notifications_active_outlined, size: 16),
-                    ),
-                    label: Text('নোটিফিকেশন ($unreadCount)', style: const TextStyle(fontSize: 12)),
                   ),
-                  ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white24,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  BouncingPressable(
+                    onTap: () => MyChatThreadsDialog.show(context, isMobile: isMobile),
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(backgroundColor: Colors.white24, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8)),
+                      onPressed: () => MyChatThreadsDialog.show(context, isMobile: isMobile),
+                      icon: const Icon(Icons.chat_bubble_outline_rounded, size: 16),
+                      label: const Text('লাইভ চ্যাট', style: TextStyle(fontSize: 12)),
                     ),
-                    onPressed: () => MyChatThreadsDialog.show(context, isMobile: isMobile),
-                    icon: const Icon(Icons.chat_bubble_outline_rounded, size: 16),
-                    label: const Text('লাইভ চ্যাট', style: TextStyle(fontSize: 12)),
                   ),
-                  ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFE8F5E9),
-                      foregroundColor: const Color(0xFF0B4F32),
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  BouncingPressable(
+                    onTap: () => MyNrbRequestsDialog.show(context, isMobile: isMobile),
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE8F5E9), foregroundColor: const Color(0xFF0B4F32), padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8)),
+                      onPressed: () => MyNrbRequestsDialog.show(context, isMobile: isMobile),
+                      icon: const Icon(Icons.flight_takeoff, size: 16, color: Color(0xFF0B4F32)),
+                      label: const Text('প্রবাসী সেবা ও PoA', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
                     ),
-                    onPressed: () => MyNrbRequestsDialog.show(context, isMobile: isMobile),
-                    icon: const Icon(Icons.flight_takeoff, size: 16, color: Color(0xFF0B4F32)),
-                    label: const Text('প্রবাসী সেবা ও PoA', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
                   ),
-                  ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: const Color(0xFF0B4F32),
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  BouncingPressable(
+                    onTap: onRefresh,
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(backgroundColor: Colors.white, foregroundColor: const Color(0xFF0B4F32), padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8)),
+                      onPressed: onRefresh,
+                      icon: const Icon(Icons.refresh, size: 16),
+                      label: const Text('রিফ্রেশ', style: TextStyle(fontSize: 12)),
                     ),
-                    onPressed: onRefresh,
-                    icon: const Icon(Icons.refresh, size: 16),
-                    label: const Text('রিফ্রেশ', style: TextStyle(fontSize: 12)),
                   ),
                 ],
               ),

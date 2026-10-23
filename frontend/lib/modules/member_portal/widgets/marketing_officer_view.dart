@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:landtrust_app/core/animations/bouncing_pressable.dart';
 import 'package:landtrust_app/core/network/api_client.dart';
 import 'package:landtrust_app/core/widgets/status_badge.dart';
 import 'package:landtrust_app/modules/member_portal/widgets/digital_id_card_dialog.dart';
@@ -27,18 +28,15 @@ class MarketingOfficerView extends StatelessWidget {
     final referredUsers = (officerData['referredUsers'] as List<dynamic>?) ?? [];
     final commissions = (officerData['commissions'] as List<dynamic>?) ?? [];
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildReferralCard(context, code, shareLink),
-        const SizedBox(height: 14),
-        _buildOfficerStats(totalReferred, verifiedReferred, totalEarned, pendingPayable),
-        const SizedBox(height: 18),
-        _buildReferredUsers(referredUsers),
-        const SizedBox(height: 18),
-        _buildCommissionsLedger(commissions),
-      ],
-    );
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      _buildReferralCard(context, code, shareLink),
+      const SizedBox(height: 14),
+      _buildOfficerStats(totalReferred, verifiedReferred, totalEarned, pendingPayable),
+      const SizedBox(height: 18),
+      _buildReferredUsers(referredUsers),
+      const SizedBox(height: 18),
+      _buildCommissionsLedger(commissions),
+    ]);
   }
 
   Widget _buildReferralCard(BuildContext context, String code, String link) {
@@ -46,57 +44,48 @@ class MarketingOfficerView extends StatelessWidget {
       elevation: 2,
       child: Padding(
         padding: EdgeInsets.all(isMobile ? 12 : 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text('আপনার ইউনিক রেফারেল কোড ও লিংক', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF0B4F32))),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                  decoration: BoxDecoration(color: const Color(0xFFE8F5E9), borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.green.shade300)),
-                  child: const Row(mainAxisSize: MainAxisSize.min, children: [
-                    Icon(Icons.verified, color: Colors.green, size: 13),
-                    SizedBox(width: 4),
-                    Text('আজীবন সদস্যপদ', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 10.5)),
-                  ]),
-                ),
-              ],
-            ),
-            const SizedBox(height: 6),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+            const Text('আপনার ইউনিক রেফারেল কোড ও লিংক', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF0B4F32))),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(color: const Color(0xFFE8F5E9), borderRadius: BorderRadius.circular(8)),
-              child: Row(
-                children: [
-                  Expanded(child: SelectableText(link, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
-                  IconButton(
-                    icon: const Icon(Icons.copy, size: 18, color: Color(0xFF0B4F32)),
-                    onPressed: () {
-                      Clipboard.setData(ClipboardData(text: link));
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('রেফারেল লিংক ক্লিপবোর্ডে কপি হয়েছে!')));
-                    },
-                  ),
-                ],
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(color: const Color(0xFFE8F5E9), borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.green.shade300)),
+              child: const Row(mainAxisSize: MainAxisSize.min, children: [
+                Icon(Icons.verified, color: Colors.green, size: 13),
+                SizedBox(width: 4),
+                Text('আজীবন সদস্যপদ', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 10.5)),
+              ]),
             ),
-            const SizedBox(height: 8),
-            SizedBox(
-              width: double.infinity,
+          ]),
+          const SizedBox(height: 6),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(color: const Color(0xFFE8F5E9), borderRadius: BorderRadius.circular(8)),
+            child: Row(children: [
+              Expanded(child: SelectableText(link, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
+              IconButton(
+                icon: const Icon(Icons.copy, size: 18, color: Color(0xFF0B4F32)),
+                onPressed: () {
+                  Clipboard.setData(ClipboardData(text: link));
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('রেফারেল লিংক ক্লিপবোর্ডে কপি হয়েছে!')));
+                },
+              ),
+            ]),
+          ),
+          const SizedBox(height: 8),
+          SizedBox(
+            width: double.infinity,
+            child: BouncingPressable(
+              onTap: () => DigitalIdCardDialog.show(context, officerData: officerData, isMobile: isMobile),
               child: OutlinedButton.icon(
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFF0B4F32),
-                  side: const BorderSide(color: Color(0xFF0B4F32)),
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                ),
+                style: OutlinedButton.styleFrom(foregroundColor: const Color(0xFF0B4F32), side: const BorderSide(color: Color(0xFF0B4F32)), padding: const EdgeInsets.symmetric(vertical: 8)),
                 icon: const Icon(Icons.badge_outlined, size: 16),
                 label: const Text('অফিসিয়াল ডিজিটাল আইডি কার্ড দেখুন', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
                 onPressed: () => DigitalIdCardDialog.show(context, officerData: officerData, isMobile: isMobile),
               ),
             ),
-          ],
-        ),
+          ),
+        ]),
       ),
     );
   }
@@ -114,82 +103,66 @@ class MarketingOfficerView extends StatelessWidget {
   }
 
   Widget _buildReferredUsers(List<dynamic> users) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('আমার রেফারেল সদস্যসমূহ (${users.length})', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-        const SizedBox(height: 8),
-        if (users.isEmpty)
-          const Card(child: Padding(padding: EdgeInsets.all(16), child: Text('এখনো আপনার কোড ব্যবহার করে কোনো সদস্য নিবন্ধন করেনি।')))
-        else
-          ...users.map((u) => Card(
-                margin: const EdgeInsets.only(bottom: 8),
-                child: ListTile(
-                  dense: true,
-                  leading: const CircleAvatar(radius: 16, backgroundColor: Color(0xFFE8F5E9), child: Icon(Icons.person, color: Color(0xFF0B4F32), size: 16)),
-                  title: Text(u['fullName'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5)),
-                  subtitle: Text('রোল: ${u['role']} • এলাকা: ${u['upazila']}, ${u['district']}', style: const TextStyle(fontSize: 11)),
-                  trailing: StatusBadge(status: u['accountStatus'] ?? 'PENDING'),
-                ),
-              )),
-      ],
-    );
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Text('আমার রেফারেল সদস্যসমূহ (${users.length})', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+      const SizedBox(height: 8),
+      if (users.isEmpty)
+        const Card(child: Padding(padding: EdgeInsets.all(16), child: Text('এখনো আপনার কোড ব্যবহার করে কোনো সদস্য নিবন্ধন করেনি।')))
+      else
+        ...users.map((u) => Card(
+              margin: const EdgeInsets.only(bottom: 8),
+              child: ListTile(
+                dense: true,
+                leading: const CircleAvatar(radius: 16, backgroundColor: Color(0xFFE8F5E9), child: Icon(Icons.person, color: Color(0xFF0B4F32), size: 16)),
+                title: Text(u['fullName'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5)),
+                subtitle: Text('রোল: ${u['role']} • এলাকা: ${u['upazila']}, ${u['district']}', style: const TextStyle(fontSize: 11)),
+                trailing: StatusBadge(status: u['accountStatus'] ?? 'PENDING'),
+              ),
+            )),
+    ]);
   }
 
   Widget _buildCommissionsLedger(List<dynamic> commissions) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text('কমিশন হিসেব ও লেজার (${commissions.length})', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
-              onPressed: onPayoutRequest,
-              icon: const Icon(Icons.payments_outlined, size: 16),
-              label: const Text('উইথড্র রিকোয়েস্ট', style: TextStyle(fontSize: 12)),
-            ),
-          ],
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+        Text('কমিশন হিসেব ও লেজার (${commissions.length})', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        BouncingPressable(
+          onTap: onPayoutRequest,
+          child: ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
+            onPressed: onPayoutRequest,
+            icon: const Icon(Icons.payments_outlined, size: 16),
+            label: const Text('উইথড্র রিকোয়েস্ট', style: TextStyle(fontSize: 12)),
+          ),
         ),
-        const SizedBox(height: 8),
-        if (commissions.isEmpty)
-          const Card(child: Padding(padding: EdgeInsets.all(16), child: Text('কোনো কমিশন এন্ট্রি পাওয়া যায়নি।')))
-        else
-          ...commissions.map((c) {
-            final isPaid = c['status'] == 'PAID';
-            final type = c['commissionType']?.toString() ?? '';
-            final typeLabel = type.contains('LISTING') ? 'লিস্টিং কমিশন' : (type.contains('DEAL') ? 'ডিল লভ্যাংশ' : (type.contains('OVERRIDE') ? 'ওভাররাইড' : 'নিবন্ধন কমিশন'));
-            return Card(
-              margin: const EdgeInsets.only(bottom: 8),
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Row(
-                  children: [
-                    Icon(isPaid ? Icons.check_circle : Icons.schedule, color: isPaid ? Colors.green : Colors.orange, size: 24),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('${c['referredUserName']} — $typeLabel', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                          Text(c['note'] ?? '', style: const TextStyle(fontSize: 11, color: Colors.black54)),
-                        ],
-                      ),
-                    ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text('৳${c['commissionAmountBdt']}', style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0B4F32))),
-                        Text(isPaid ? 'পরিশোধিত' : 'প্রাপ্য', style: TextStyle(fontSize: 10, color: isPaid ? Colors.green : Colors.deepOrange)),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }),
-      ],
-    );
+      ]),
+      const SizedBox(height: 8),
+      if (commissions.isEmpty)
+        const Card(child: Padding(padding: EdgeInsets.all(16), child: Text('কোনো কমিশন এন্ট্রি পাওয়া যায়নি।')))
+      else
+        ...commissions.map((c) {
+          final isPaid = c['status'] == 'PAID';
+          final type = c['commissionType']?.toString() ?? '';
+          final typeLabel = type.contains('LISTING') ? 'লিস্টিং কমিশন' : (type.contains('DEAL') ? 'ডিল লভ্যাংশ' : (type.contains('OVERRIDE') ? 'ওভাররাইড' : 'নিবন্ধন কমিশন'));
+          return Card(
+            margin: const EdgeInsets.only(bottom: 8),
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Row(children: [
+                Icon(isPaid ? Icons.check_circle : Icons.schedule, color: isPaid ? Colors.green : Colors.orange, size: 24),
+                const SizedBox(width: 10),
+                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text('${c['referredUserName']} — $typeLabel', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                  Text(c['note'] ?? '', style: const TextStyle(fontSize: 11, color: Colors.black54)),
+                ])),
+                Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
+                  Text('৳${c['commissionAmountBdt']}', style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0B4F32))),
+                  Text(isPaid ? 'পরিশোধিত' : 'প্রাপ্য', style: TextStyle(fontSize: 10, color: isPaid ? Colors.green : Colors.deepOrange)),
+                ]),
+              ]),
+            ),
+          );
+        }),
+    ]);
   }
 }

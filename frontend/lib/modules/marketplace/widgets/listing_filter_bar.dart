@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:landtrust_app/core/animations/transitions/transition_aliases.dart';
 import 'package:landtrust_app/core/widgets/horizontal_scroll_fade_view.dart';
 import 'advanced_filters_panel.dart';
 
@@ -161,16 +162,19 @@ class ListingFilterBar extends StatelessWidget {
   }
 
   Widget _chip(String label, bool sel, VoidCallback onTap) {
-    return ChoiceChip(
-      label: Text(label),
-      selected: sel,
-      selectedColor: const Color(0xFF0B4F32),
-      labelStyle: TextStyle(
-        color: sel ? Colors.white : Colors.black87,
-        fontSize: 12,
-        fontWeight: sel ? FontWeight.bold : FontWeight.normal,
+    return SearchFilterTagSlide(
+      isSelected: sel,
+      child: ChoiceChip(
+        label: Text(label),
+        selected: sel,
+        selectedColor: const Color(0xFF0B4F32),
+        labelStyle: TextStyle(
+          color: sel ? Colors.white : Colors.black87,
+          fontSize: 12,
+          fontWeight: sel ? FontWeight.bold : FontWeight.normal,
+        ),
+        onSelected: (_) => onTap(),
       ),
-      onSelected: (_) => onTap(),
     );
   }
 }

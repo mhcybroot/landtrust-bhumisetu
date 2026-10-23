@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:landtrust_app/core/animations/bouncing_pressable.dart';
 import 'package:landtrust_app/core/utils/location_hierarchy_helper.dart';
 
 class RequirementFormDialog {
@@ -61,7 +62,7 @@ class RequirementFormDialog {
                         )),
                         _w(isMobile, DropdownButtonFormField<String>(
                           key: ValueKey('req_dist_$district'), initialValue: district, isExpanded: true,
-                          decoration: const InputDecoration(labelText: 'পছন্দের জেলা', isDense: true),
+                          decoration: const InputDecoration(labelText: 'পছন্দের জেলা *', isDense: true),
                           items: districts.map((d) => DropdownMenuItem(value: d, child: Text(d, overflow: TextOverflow.ellipsis))).toList(),
                           onChanged: (v) => setDialogState(() {
                             district = v!;
@@ -73,7 +74,7 @@ class RequirementFormDialog {
                         )),
                         _w(isMobile, DropdownButtonFormField<String>(
                           key: ValueKey('req_upz_${district}_$upazila'), initialValue: upazila, isExpanded: true,
-                          decoration: const InputDecoration(labelText: 'পছন্দের উপজেলা / পৌরসভা *', isDense: true),
+                          decoration: const InputDecoration(labelText: 'পছন্দের উপজেলা *', isDense: true),
                           items: areas.map((u) => DropdownMenuItem(value: u, child: Text(u, overflow: TextOverflow.ellipsis))).toList(),
                           onChanged: (v) => setDialogState(() {
                             upazila = v!;
@@ -84,59 +85,66 @@ class RequirementFormDialog {
                         if (subAreas.isNotEmpty)
                           _w(isMobile, DropdownButtonFormField<String>(
                             key: ValueKey('req_sub_${upazila}_$subArea'), initialValue: subArea.isNotEmpty ? subArea : subAreas.first, isExpanded: true,
-                            decoration: InputDecoration(labelText: subAreaLabel, isDense: true),
+                            decoration: InputDecoration(labelText: '$subAreaLabel (পছন্দের এলাকা)', isDense: true),
                             items: subAreas.map((s) => DropdownMenuItem(value: s, child: Text(s, overflow: TextOverflow.ellipsis))).toList(),
                             onChanged: (v) => setDialogState(() => subArea = v!),
-                          )),
-                        _w(isMobile, TextField(controller: areaCtrl, decoration: const InputDecoration(labelText: 'নির্দিষ্ট গ্রাম / পাড়া / এলাকা', isDense: true))),
-                        _w(isMobile, TextField(controller: minAreaCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'ন্যূনতম শতাংশ *', isDense: true))),
-                        _w(isMobile, TextField(controller: maxAreaCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'সর্বোচ্চ শতাংশ *', isDense: true))),
+                          ))
+                        else
+                          _w(isMobile, TextField(controller: areaCtrl, onChanged: (v) => subArea = v, decoration: InputDecoration(labelText: '$subAreaLabel (যদি নির্দিষ্ট থাকে)', isDense: true))),
+                        _w(isMobile, TextField(controller: minAreaCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'সর্বনিম্ন পরিমাণ (শতাংশ/স্কয়ার ফিট) *', isDense: true))),
+                        _w(isMobile, TextField(controller: maxAreaCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'সর্বোচ্চ পরিমাণ (শতাংশ/স্কয়ার ফিট) *', isDense: true))),
                         _w(isMobile, TextField(controller: minBudCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'সর্বনিম্ন বাজেট (৳) *', isDense: true))),
                         _w(isMobile, TextField(controller: maxBudCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'সর্বোচ্চ বাজেট (৳) *', isDense: true))),
                         _w(isMobile, DropdownButtonFormField<String>(
-                          key: ValueKey('req_time_$timeline'), initialValue: timeline, isExpanded: true,
+                          key: ValueKey('timeline_$timeline'), initialValue: timeline, isExpanded: true,
                           decoration: const InputDecoration(labelText: 'ক্রয়ের সময়সীমা', isDense: true),
-                          items: ['জরুরি (৭ দিন)', '১ মাসের মধ্যে', '৩ মাসের মধ্যে', 'বাজেট অনুকূলে এলে'].map((t) => DropdownMenuItem(value: t, child: Text(t, overflow: TextOverflow.ellipsis))).toList(),
+                          items: ['জরুরি (৭ দিনের মধ্যে)', '১ মাসের মধ্যে', '৩ মাসের মধ্যে', '৬ মাসের মধ্যে'].map((t) => DropdownMenuItem(value: t, child: Text(t, overflow: TextOverflow.ellipsis))).toList(),
                           onChanged: (v) => setDialogState(() => timeline = v!),
                         )),
                         _w(isMobile, TextField(controller: purposeCtrl, decoration: const InputDecoration(labelText: 'ব্যবহারের উদ্দেশ্য', isDense: true))),
                       ],
                     ),
                     const SizedBox(height: 10),
-                    TextField(controller: reqsCtrl, maxLines: 2, decoration: const InputDecoration(labelText: 'বিশেষ শর্তাবলী বা চাহিদা', isDense: true)),
+                    TextField(controller: reqsCtrl, maxLines: 2, decoration: const InputDecoration(labelText: 'বিশেষ কোনো চাহিদা বা শর্ত', isDense: true)),
                   ],
                 ),
               ),
             ),
             actions: [
-              TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('বাতিল')),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
-                onPressed: submitting ? null : () async {
-                  if (minAreaCtrl.text.trim().isEmpty || maxBudCtrl.text.trim().isEmpty) return;
-                  setDialogState(() => submitting = true);
-                  try {
-                    await onSubmit({
-                      'landType': landType,
-                      'preferredDistrict': district,
-                      'preferredUpazila': upazila,
-                      'preferredArea': areaCtrl.text.trim().isNotEmpty ? (subArea.isNotEmpty ? '$subArea, ${areaCtrl.text.trim()}' : areaCtrl.text.trim()) : subArea,
-                      'minAreaDecimal': double.tryParse(minAreaCtrl.text.trim()) ?? 1,
-                      'maxAreaDecimal': double.tryParse(maxAreaCtrl.text.trim()) ?? 10,
-                      'minBudgetBdt': double.tryParse(minBudCtrl.text.trim()) ?? 500000,
-                      'maxBudgetBdt': double.tryParse(maxBudCtrl.text.trim()) ?? 2000000,
-                      'purchaseTimeline': timeline,
-                      'purpose': purposeCtrl.text.trim(),
-                      'specialRequirements': reqsCtrl.text.trim(),
-                    });
-                    if (context.mounted) Navigator.pop(ctx);
-                  } catch (e) {
-                    if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
-                  } finally {
-                    setDialogState(() => submitting = false);
-                  }
-                },
-                child: submitting ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) : const Text('নিবন্ধন করুন'),
+              BouncingPressable(onTap: () => Navigator.pop(ctx), child: TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('বাতিল'))),
+              BouncingPressable(
+                onTap: submitting ? null : () {},
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
+                  onPressed: submitting ? null : () async {
+                    if (minBudCtrl.text.trim().isEmpty || maxBudCtrl.text.trim().isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('বাজেটের তথ্য পূরণ করুন।')));
+                      return;
+                    }
+                    setDialogState(() => submitting = true);
+                    try {
+                      await onSubmit({
+                        'landType': landType,
+                        'preferredDistrict': district,
+                        'preferredUpazila': upazila,
+                        'preferredArea': areaCtrl.text.trim().isNotEmpty ? (subArea.isNotEmpty ? '$subArea, ${areaCtrl.text.trim()}' : areaCtrl.text.trim()) : subArea,
+                        'minAreaDecimal': double.tryParse(minAreaCtrl.text.trim()) ?? 1,
+                        'maxAreaDecimal': double.tryParse(maxAreaCtrl.text.trim()) ?? 10,
+                        'minBudgetBdt': double.tryParse(minBudCtrl.text.trim()) ?? 500000,
+                        'maxBudgetBdt': double.tryParse(maxBudCtrl.text.trim()) ?? 2000000,
+                        'purchaseTimeline': timeline,
+                        'purpose': purposeCtrl.text.trim(),
+                        'specialRequirements': reqsCtrl.text.trim(),
+                      });
+                      if (context.mounted) Navigator.pop(ctx);
+                    } catch (e) {
+                      if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+                    } finally {
+                      setDialogState(() => submitting = false);
+                    }
+                  },
+                  child: submitting ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) : const Text('নিবন্ধন করুন'),
+                ),
               ),
             ],
           );

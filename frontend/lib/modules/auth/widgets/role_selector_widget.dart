@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/animations/bouncing_pressable.dart';
 
 class RoleSelectorWidget extends StatelessWidget {
   final String selectedRole;
@@ -57,10 +58,10 @@ class RoleSelectorWidget extends StatelessWidget {
 
   Widget _roleCard(String role, String title, String sub, IconData icon) {
     final sel = selectedRole == role;
-    return InkWell(
+    return BouncingPressable(
       onTap: () => onRoleSelected(role),
-      borderRadius: BorderRadius.circular(10),
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         decoration: BoxDecoration(
           color: sel ? const Color(0xFFE8F5E9) : Colors.white,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/animations/transitions/finance_payment_transitions.dart';
 import 'payment_info_box.dart';
 import 'role_selector_widget.dart';
 
@@ -162,7 +163,7 @@ class _RegisterFormCardState extends State<RegisterFormCard> {
       return Wrap(spacing: 10, runSpacing: 10, children: [
         SizedBox(width: half, child: DropdownButtonFormField<String>(key: ValueKey('reg_pm_$_selectedPaymentMethod'), initialValue: _selectedPaymentMethod, isExpanded: true, decoration: const InputDecoration(labelText: 'পেমেন্টের মাধ্যম', isDense: true), items: options.map((p) => DropdownMenuItem(value: p, child: Text(p, overflow: TextOverflow.ellipsis))).toList(), onChanged: (v) => setState(() => _selectedPaymentMethod = v!))),
         SizedBox(width: half, child: TextField(controller: _senderPhoneCtrl, decoration: const InputDecoration(labelText: 'প্রেরক মোবাইল নম্বর *', isDense: true))),
-        SizedBox(width: constraints.maxWidth, child: TextField(controller: _trxIdCtrl, decoration: const InputDecoration(labelText: 'ট্রানজ্যাকশন আইডি (TrxID) *', isDense: true))),
+        SizedBox(width: constraints.maxWidth, child: OtpDigitBoxPulseTransition(isFocused: _trxIdCtrl.text.isNotEmpty, child: TextField(controller: _trxIdCtrl, decoration: const InputDecoration(labelText: 'ট্রানজ্যাকশন আইডি (TrxID) *', isDense: true)))),
       ]);
     });
   }

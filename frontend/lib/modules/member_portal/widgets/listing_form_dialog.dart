@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:landtrust_app/core/animations/bouncing_pressable.dart';
 import 'package:landtrust_app/core/utils/location_hierarchy_helper.dart';
 import 'listing_payment_section.dart';
 
@@ -134,51 +135,54 @@ class ListingFormDialog {
               ),
             ),
             actions: [
-              TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('বাতিল')),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
-                onPressed: submitting ? null : () async {
-                  if (titleCtrl.text.trim().isEmpty || areaDecCtrl.text.trim().isEmpty || priceCtrl.text.trim().isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('শিরোনাম, পরিমাণ ও মূল্য পূরণ করুন।')));
-                    return;
-                  }
-                  if (existing == null && (senderPhoneCtrl.text.trim().isEmpty || trxIdCtrl.text.trim().isEmpty)) {
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('লিস্টিং ফি প্রেরক নম্বর ও TrxID প্রদান করুন।')));
-                    return;
-                  }
-                  setDialogState(() => submitting = true);
-                  try {
-                    await onSubmit({
-                      'title': titleCtrl.text.trim(),
-                      'landType': landType,
-                      'district': district,
-                      'upazila': upazila,
-                      'subArea': subArea,
-                      'areaName': areaNameCtrl.text.trim(),
-                      'mouzaName': mouzaCtrl.text.trim(),
-                      'areaDecimal': double.tryParse(areaDecCtrl.text.trim()) ?? 0,
-                      'expectedPriceBdt': double.tryParse(priceCtrl.text.trim()) ?? 0,
-                      'roadAccessInfo': roadCtrl.text.trim(),
-                      'description': descCtrl.text.trim(),
-                      'imageUrl': imgCtrl.text.trim(),
-                      'additionalImageUrls': extraImgsCtrl.text.trim(),
-                      'videoUrl': videoCtrl.text.trim(),
-                      'mapLink': mapCtrl.text.trim(),
-                      'privateDocumentUrl': docCtrl.text.trim(),
-                      'isFeatured': isFeatured,
-                      'listingFeeChargedBdt': fee,
-                      'paymentMethod': selectedMethod,
-                      'senderPhone': senderPhoneCtrl.text.trim(),
-                      'transactionId': trxIdCtrl.text.trim(),
-                    });
-                    if (context.mounted) Navigator.pop(ctx);
-                  } catch (e) {
-                    if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
-                  } finally {
-                    setDialogState(() => submitting = false);
-                  }
-                },
-                child: submitting ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) : const Text('জমা দিন'),
+              BouncingPressable(onTap: () => Navigator.pop(ctx), child: TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('বাতিল'))),
+              BouncingPressable(
+                onTap: submitting ? null : () {},
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
+                  onPressed: submitting ? null : () async {
+                    if (titleCtrl.text.trim().isEmpty || areaDecCtrl.text.trim().isEmpty || priceCtrl.text.trim().isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('শিরোনাম, পরিমাণ ও মূল্য পূরণ করুন।')));
+                      return;
+                    }
+                    if (existing == null && (senderPhoneCtrl.text.trim().isEmpty || trxIdCtrl.text.trim().isEmpty)) {
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('লিস্টিং ফি প্রেরক নম্বর ও TrxID প্রদান করুন।')));
+                      return;
+                    }
+                    setDialogState(() => submitting = true);
+                    try {
+                      await onSubmit({
+                        'title': titleCtrl.text.trim(),
+                        'landType': landType,
+                        'district': district,
+                        'upazila': upazila,
+                        'subArea': subArea,
+                        'areaName': areaNameCtrl.text.trim(),
+                        'mouzaName': mouzaCtrl.text.trim(),
+                        'areaDecimal': double.tryParse(areaDecCtrl.text.trim()) ?? 0,
+                        'expectedPriceBdt': double.tryParse(priceCtrl.text.trim()) ?? 0,
+                        'roadAccessInfo': roadCtrl.text.trim(),
+                        'description': descCtrl.text.trim(),
+                        'imageUrl': imgCtrl.text.trim(),
+                        'additionalImageUrls': extraImgsCtrl.text.trim(),
+                        'videoUrl': videoCtrl.text.trim(),
+                        'mapLink': mapCtrl.text.trim(),
+                        'privateDocumentUrl': docCtrl.text.trim(),
+                        'isFeatured': isFeatured,
+                        'listingFeeChargedBdt': fee,
+                        'paymentMethod': selectedMethod,
+                        'senderPhone': senderPhoneCtrl.text.trim(),
+                        'transactionId': trxIdCtrl.text.trim(),
+                      });
+                      if (context.mounted) Navigator.pop(ctx);
+                    } catch (e) {
+                      if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+                    } finally {
+                      setDialogState(() => submitting = false);
+                    }
+                  },
+                  child: submitting ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) : const Text('জমা দিন'),
+                ),
               ),
             ],
           );
@@ -187,10 +191,5 @@ class ListingFormDialog {
     );
   }
 
-  static Widget _w(bool isMobile, Widget child) {
-    return LayoutBuilder(builder: (ctx, constraints) {
-      final width = isMobile ? constraints.maxWidth : (constraints.maxWidth - 10) / 2;
-      return SizedBox(width: width, child: child);
-    });
-  }
+  static Widget _w(bool isMobile, Widget child) => LayoutBuilder(builder: (ctx, constraints) => SizedBox(width: isMobile ? constraints.maxWidth : (constraints.maxWidth - 10) / 2, child: child));
 }

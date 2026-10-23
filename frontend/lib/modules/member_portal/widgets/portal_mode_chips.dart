@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:landtrust_app/core/animations/bouncing_pressable.dart';
 import 'package:landtrust_app/core/widgets/horizontal_scroll_fade_view.dart';
 
 class PortalModeChips extends StatelessWidget {
@@ -31,11 +32,7 @@ class PortalModeChips extends StatelessWidget {
           children: [
             const Text(
               'মোড: ',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 12,
-                color: Color(0xFF0B4F32),
-              ),
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFF0B4F32)),
             ),
             if (userRole == 'MARKETING_OFFICER' || userRole == 'UPAZILA_AGENT' || userRole == 'DISTRICT_AGENT') ...[
               _chip('MARKETING_OFFICER', userRole == 'DISTRICT_AGENT' ? '🏢 জেলা প্রধান এজেন্ট' : (userRole == 'UPAZILA_AGENT' ? '🏬 উপজেলা এজেন্ট' : '📊 মার্কেটিং অফিসার')),
@@ -52,16 +49,19 @@ class PortalModeChips extends StatelessWidget {
 
   Widget _chip(String mode, String label) {
     final sel = currentMode == mode;
-    return ChoiceChip(
-      selected: sel,
-      selectedColor: const Color(0xFF0B4F32),
-      labelStyle: TextStyle(
-        color: sel ? Colors.white : Colors.black87,
-        fontWeight: FontWeight.bold,
-        fontSize: 12,
+    return BouncingPressable(
+      onTap: () => onModeChanged(mode),
+      child: ChoiceChip(
+        selected: sel,
+        selectedColor: const Color(0xFF0B4F32),
+        labelStyle: TextStyle(
+          color: sel ? Colors.white : Colors.black87,
+          fontWeight: FontWeight.bold,
+          fontSize: 12,
+        ),
+        label: Text(label),
+        onSelected: (_) => onModeChanged(mode),
       ),
-      label: Text(label),
-      onSelected: (_) => onModeChanged(mode),
     );
   }
 }

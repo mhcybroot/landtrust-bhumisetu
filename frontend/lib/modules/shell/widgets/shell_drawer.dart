@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/animations/transitions/transition_aliases.dart';
 import '../../../../core/localization/app_strings.dart';
 import '../../../../core/localization/language_toggle_button.dart';
 import '../../chat/views/my_chat_threads_dialog.dart';
@@ -162,17 +163,20 @@ class ShellDrawer extends StatelessWidget {
 
   Widget _drawerItem(int index, IconData icon, String title, BuildContext context) {
     final active = selectedIndex == index;
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-      decoration: BoxDecoration(color: active ? const Color(0xFFE8F5E9) : Colors.transparent, borderRadius: BorderRadius.circular(10)),
-      child: ListTile(
-        leading: Icon(icon, color: active ? const Color(0xFF0B4F32) : Colors.grey.shade700),
-        title: Text(title, style: TextStyle(color: active ? const Color(0xFF0B4F32) : Colors.black87, fontWeight: active ? FontWeight.bold : FontWeight.w500)),
-        trailing: active ? const Icon(Icons.check_circle, color: Color(0xFF0B4F32), size: 18) : null,
-        onTap: () {
-          Navigator.pop(context);
-          onTabSelected(index);
-        },
+    return StaggeredSheetItemsSlide(
+      index: index,
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+        decoration: BoxDecoration(color: active ? const Color(0xFFE8F5E9) : Colors.transparent, borderRadius: BorderRadius.circular(10)),
+        child: ListTile(
+          leading: Icon(icon, color: active ? const Color(0xFF0B4F32) : Colors.grey.shade700),
+          title: Text(title, style: TextStyle(color: active ? const Color(0xFF0B4F32) : Colors.black87, fontWeight: active ? FontWeight.bold : FontWeight.w500)),
+          trailing: active ? const Icon(Icons.check_circle, color: Color(0xFF0B4F32), size: 18) : null,
+          onTap: () {
+            Navigator.pop(context);
+            onTabSelected(index);
+          },
+        ),
       ),
     );
   }

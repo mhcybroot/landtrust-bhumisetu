@@ -1,10 +1,27 @@
 import 'package:flutter/material.dart';
+import '../../../core/animations/bouncing_pressable.dart';
 import '../../../core/animations/transitions/route_navigation_transitions.dart';
+import '../../../core/animations/transitions/state_micro_transitions.dart';
 import '../repositories/chat_repository.dart';
 import '../view_models/chat_view_model.dart';
 import 'chat_conversation_screen.dart';
 
-class MyChatThreadsDialog {
+class MyChatThreadsDialog extends StatelessWidget {
+  final bool isMobile;
+  final ChatViewModel? viewModel;
+  final List<dynamic>? threads;
+  final int? listingId;
+  final String? listingTitle;
+
+  const MyChatThreadsDialog({
+    super.key,
+    required this.isMobile,
+    this.viewModel,
+    this.threads,
+    this.listingId,
+    this.listingTitle,
+  });
+
   static void show(
     BuildContext context, {
     required bool isMobile,
@@ -13,91 +30,117 @@ class MyChatThreadsDialog {
   }) {
     final vm = ChatViewModel();
     vm.loadMyThreads();
-
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        insetPadding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 24, vertical: 16),
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      builder: (_) => MyChatThreadsDialog(
+        isMobile: isMobile,
+        viewModel: vm,
+        listingId: listingId,
+        listingTitle: listingTitle,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final vm = viewModel;
+    return Dialog(
+      insetPadding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 24, vertical: 16),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Container(
+        width: isMobile ? double.infinity : 480,
+        height: 480,
+        padding: const EdgeInsets.all(16),
+        child: Column(
           children: [
-            const Text('লাইভ সাপোর্ট ও ইনবক্স', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-            IconButton(
-              icon: const Icon(Icons.add_comment, color: Color(0xFF0B4F32)),
-              tooltip: 'নতুন মেসেজ শুরু করুন',
-              onPressed: () => _showNewThreadDialog(context, vm, isMobile, listingId: listingId, listingTitle: listingTitle),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('লাইভ সাপোর্ট ও ইনবক্স', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                BouncingPressable(
+                  child: IconButton(
+                    icon: const Icon(Icons.add_comment, color: Color(0xFF0B4F32)),
+                    tooltip: 'নতুন মেসেজ শুরু করুন',
+                    onPressed: () => _showNewThreadDialog(context, vm, isMobile, listingId: listingId, listingTitle: listingTitle),
+                  ),
+                ),
+              ],
+            ),
+            const Divider(),
+            Expanded(
+              child: vm != null
+                  ? ListenableBuilder(listenable: vm, builder: (ctx, _) => _buildList(ctx, vm.threads, vm.isLoading, vm))
+                  : _buildList(context, threads ?? const [], false, null),
+            ),
+            Align(
+              alignment: Alignment.centerRight,
+              child: BouncingPressable(
+                child: TextButton(onPressed: () => Navigator.pop(context), child: const Text('বন্ধ করুন')),
+              ),
             ),
           ],
         ),
-        content: SizedBox(
-          width: isMobile ? double.infinity : 480,
-          height: 400,
-          child: ListenableBuilder(
-            listenable: vm,
-            builder: (ctx, _) {
-              if (vm.isLoading && vm.threads.isEmpty) {
-                return const Center(child: CircularProgressIndicator());
-              }
-              if (vm.threads.isEmpty) {
-                return Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.chat_bubble_outline, size: 48, color: Colors.grey),
-                      const SizedBox(height: 10),
-                      const Text('কোনো সক্রিয় বার্তা নেই'),
-                      const SizedBox(height: 12),
-                      ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
-                        onPressed: () => _showNewThreadDialog(context, vm, isMobile, listingId: listingId, listingTitle: listingTitle),
-                        icon: const Icon(Icons.edit, size: 16),
-                        label: const Text('মেসেজ পাঠান'),
-                      ),
-                    ],
-                  ),
-                );
-              }
-              return ListView.separated(
-                itemCount: vm.threads.length,
-                separatorBuilder: (_, _) => const Divider(height: 1),
-                itemBuilder: (ctx, i) {
-                  final t = vm.threads[i] as Map<String, dynamic>;
-                  final unread = (t['unreadUserCount'] as num?)?.toInt() ?? 0;
-                  return ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: CircleAvatar(
-                      backgroundColor: const Color(0xFF0B4F32).withValues(alpha: 0.12),
-                      child: const Icon(Icons.support_agent, color: Color(0xFF0B4F32)),
-                    ),
-                    title: Text(t['subject'] ?? 'সহায়তা', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5)),
-                    subtitle: Text(t['lastMessage'] ?? 'বার্তা নেই', maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12)),
-                    trailing: unread > 0
-                        ? Container(
-                            padding: const EdgeInsets.all(6),
-                            decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
-                            child: Text('$unread', style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
-                          )
-                        : const Icon(Icons.chevron_right, size: 18),
-                    onTap: () {
-                      Navigator.pop(ctx);
-                      Navigator.push(context, SharedAxisSlideRoute(page: ChatConversationScreen(viewModel: vm, thread: t, isAdmin: false)));
-                    },
-                  );
-                },
-              );
+      ),
+    );
+  }
+
+  Widget _buildList(BuildContext ctx, List<dynamic> threadList, bool isLoading, ChatViewModel? vm) {
+    if (isLoading && threadList.isEmpty) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (threadList.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.chat_bubble_outline, size: 48, color: Colors.grey),
+            const SizedBox(height: 10),
+            const Text('কোনো সক্রিয় বার্তা নেই'),
+            const SizedBox(height: 12),
+            BouncingPressable(
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
+                onPressed: () => _showNewThreadDialog(ctx, vm, isMobile, listingId: listingId, listingTitle: listingTitle),
+                icon: const Icon(Icons.edit, size: 16),
+                label: const Text('মেসেজ পাঠান'),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+    return ListView.separated(
+      itemCount: threadList.length,
+      separatorBuilder: (_, _) => const Divider(height: 1),
+      itemBuilder: (c, i) {
+        final t = threadList[i] as Map<String, dynamic>;
+        final unread = (t['unreadUserCount'] as num?)?.toInt() ?? 0;
+        return BouncingPressable(
+          scaleFactor: 0.99,
+          child: ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: CircleAvatar(
+              backgroundColor: const Color(0xFF0B4F32).withValues(alpha: 0.12),
+              child: const Icon(Icons.support_agent, color: Color(0xFF0B4F32)),
+            ),
+            title: Text(t['subject'] ?? 'সহায়তা', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5)),
+            subtitle: Text(t['lastMessage'] ?? 'বার্তা নেই', maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12)),
+            trailing: unread > 0
+                ? BadgeCountPopTransition(count: unread)
+                : const Icon(Icons.chevron_right, size: 18),
+            onTap: vm == null ? null : () {
+              Navigator.pop(ctx);
+              Navigator.push(ctx, SharedAxisSlideRoute(page: ChatConversationScreen(viewModel: vm, thread: t, isAdmin: false)));
             },
           ),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('বন্ধ করুন')),
-        ],
-      ),
+        );
+      },
     );
   }
 
   static void _showNewThreadDialog(
     BuildContext context,
-    ChatViewModel vm,
+    ChatViewModel? vm,
     bool isMobile, {
     int? listingId,
     String? listingTitle,
@@ -119,19 +162,21 @@ class MyChatThreadsDialog {
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('বাতিল')),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
-            onPressed: () async {
-              final sub = subCtrl.text.trim();
-              final msg = msgCtrl.text.trim();
-              if (msg.isEmpty) return;
-              Navigator.pop(ctx);
-              final res = await ChatRepository().startThread(subject: sub, listingId: listingId, initialMessage: msg);
-              if (res.isNotEmpty && context.mounted) {
-                Navigator.push(context, SharedAxisSlideRoute(page: ChatConversationScreen(viewModel: vm, thread: res, isAdmin: false)));
-              }
-            },
-            child: const Text('পাঠান'),
+          BouncingPressable(
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
+              onPressed: () async {
+                final sub = subCtrl.text.trim();
+                final msg = msgCtrl.text.trim();
+                if (msg.isEmpty) return;
+                Navigator.pop(ctx);
+                final res = await ChatRepository().startThread(subject: sub, listingId: listingId, initialMessage: msg);
+                if (res.isNotEmpty && context.mounted && vm != null) {
+                  Navigator.push(context, SharedAxisSlideRoute(page: ChatConversationScreen(viewModel: vm, thread: res, isAdmin: false)));
+                }
+              },
+              child: const Text('পাঠান'),
+            ),
           ),
         ],
       ),

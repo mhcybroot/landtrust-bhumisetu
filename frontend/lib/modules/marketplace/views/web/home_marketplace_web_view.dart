@@ -8,6 +8,7 @@ import '../../widgets/contact_inquiry_dialog.dart';
 import '../../widgets/hero_banner_widget.dart';
 import '../../widgets/home_stats_row.dart';
 import '../../widgets/listing_filter_bar.dart';
+import '../../widgets/marketplace_pagination_bar.dart';
 import '../../widgets/property_card_widget.dart';
 import '../../widgets/property_details_dialog.dart';
 
@@ -148,48 +149,46 @@ class _HomeMarketplaceWebViewState extends State<HomeMarketplaceWebView> {
     ]);
   }
 
-  Widget _buildEmptyCard() {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Center(
-          child: Column(children: [
-            const Icon(Icons.search_off, size: 48, color: Colors.grey),
-            const SizedBox(height: 10),
-            const Text('এই ফিল্টারে কোনো অনুমোদিত জমির বিজ্ঞাপন পাওয়া যায়নি।'),
-            const SizedBox(height: 10),
-            TextButton(onPressed: _resetSearch, child: const Text('সব ফিল্টার রিসেট করুন')),
-          ]),
-        ),
+  Widget _buildEmptyCard() => Card(
+    child: Padding(
+      padding: const EdgeInsets.all(32),
+      child: Center(
+        child: Column(children: [
+          const Icon(Icons.search_off, size: 48, color: Colors.grey),
+          const SizedBox(height: 10),
+          const Text('এই ফিল্টারে কোনো অনুমোদিত জমির বিজ্ঞাপন পাওয়া যায়নি।'),
+          const SizedBox(height: 10),
+          TextButton(onPressed: _resetSearch, child: const Text('সব ফিল্টার রিসেট করুন')),
+        ]),
       ),
-    );
-  }
+    ),
+  );
 
-  Widget _buildCardGrid(List<Widget> items) {
-    return LayoutBuilder(builder: (ctx, constraints) {
-      final cardWidth = constraints.maxWidth < 980 ? ((constraints.maxWidth - 14) / 2).floorToDouble() : ((constraints.maxWidth - 32) / 3).floorToDouble();
-      return Wrap(
-        spacing: 14,
-        runSpacing: 14,
-        children: items.map((w) => SizedBox(width: cardWidth, child: w)).toList(),
-      );
-    });
-  }
+  Widget _buildCardGrid(List<Widget> items) => LayoutBuilder(builder: (ctx, constraints) {
+    final w = constraints.maxWidth < 980 ? ((constraints.maxWidth - 14) / 2).floorToDouble() : ((constraints.maxWidth - 32) / 3).floorToDouble();
+    return Wrap(spacing: 14, runSpacing: 14, children: items.map((x) => SizedBox(width: w, child: x)).toList());
+  });
 
   Widget _buildSkeletonGrid() => _buildCardGrid(List.generate(6, (_) => const ShimmerCardPlaceholder()));
 
   Widget _buildGrid(List<dynamic> listings) {
-    return _buildCardGrid(List.generate(listings.length, (i) {
-      final map = listings[i] as Map<String, dynamic>;
-      return StaggeredSlideFade(
-        index: i,
-        child: PropertyCardWidget(
-          listing: map,
-          isMobile: false,
-          onDetailsClick: () => PropertyDetailsDialog.show(context, listing: map, isMobile: false, onInquiryClick: () => _handleInquiry(map)),
-          onInquiryClick: () => _handleInquiry(map),
-        ),
-      );
-    }));
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _buildCardGrid(List.generate(listings.length, (i) {
+          final map = listings[i] as Map<String, dynamic>;
+          return StaggeredSlideFade(
+            index: i,
+            child: PropertyCardWidget(
+              listing: map,
+              isMobile: false,
+              onDetailsClick: () => PropertyDetailsDialog.show(context, listing: map, isMobile: false, onInquiryClick: () => _handleInquiry(map)),
+              onInquiryClick: () => _handleInquiry(map),
+            ),
+          );
+        })),
+        MarketplacePaginationBar(totalItems: listings.length, itemsPerPage: 12, currentPage: 1, onPageChanged: (_) {}),
+      ],
+    );
   }
 }

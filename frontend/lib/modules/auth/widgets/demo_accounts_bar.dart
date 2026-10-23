@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/animations/bouncing_pressable.dart';
+import '../../../../core/animations/sheen_sweep_effect.dart';
 
 class DemoAccountsBar extends StatelessWidget {
   final bool isLoading;
@@ -46,22 +47,23 @@ class DemoAccountsBar extends StatelessWidget {
   Widget _btn(String label, String phone, String pass, Color color, IconData icon) {
     return BouncingPressable(
       onTap: isLoading ? null : () => onDemoSelect(phone, pass),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-        decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 14, color: Colors.white),
-            const SizedBox(width: 4),
-            Text(label, style: const TextStyle(fontSize: 11, color: Colors.white, fontWeight: FontWeight.bold)),
-          ],
+      child: SheenSweepEffect(
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 14, color: Colors.white),
+              const SizedBox(width: 4),
+              Text(label, style: const TextStyle(fontSize: 11, color: Colors.white, fontWeight: FontWeight.bold)),
+            ],
+          ),
         ),
       ),
     );
   }
 }
-

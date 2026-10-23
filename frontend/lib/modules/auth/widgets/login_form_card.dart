@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/animations/bouncing_pressable.dart';
+import '../../../../core/animations/form_feedback_animations.dart';
 import '../../marketplace/views/privacy_policy_view.dart';
 
 class LoginFormCard extends StatefulWidget {
@@ -21,6 +22,7 @@ class LoginFormCard extends StatefulWidget {
 class _LoginFormCardState extends State<LoginFormCard> {
   final _phoneCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
+  bool _obscurePass = true;
 
   @override
   void dispose() {
@@ -66,10 +68,14 @@ class _LoginFormCardState extends State<LoginFormCard> {
             const SizedBox(height: 12),
             TextField(
               controller: _passCtrl,
-              obscureText: true,
-              decoration: const InputDecoration(
+              obscureText: _obscurePass,
+              decoration: InputDecoration(
                 labelText: 'পাসওয়ার্ড',
-                prefixIcon: Icon(Icons.lock_outline, size: 20),
+                prefixIcon: const Icon(Icons.lock_outline, size: 20),
+                suffixIcon: PasswordEyeMorph(
+                  isObscured: _obscurePass,
+                  onToggle: () => setState(() => _obscurePass = !_obscurePass),
+                ),
                 isDense: true,
               ),
             ),

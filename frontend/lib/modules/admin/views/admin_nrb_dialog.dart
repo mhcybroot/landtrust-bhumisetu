@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:landtrust_app/core/animations/bouncing_pressable.dart';
 import 'package:landtrust_app/core/network/api_client.dart';
 
 class AdminNrbDialog extends StatefulWidget {
@@ -86,14 +87,14 @@ class _AdminNrbDialogState extends State<AdminNrbDialog> {
             ],
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('বাতিল')),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
-              onPressed: () {
-                Navigator.pop(ctx);
-                _updateStatus(r, status, noteCtrl.text.trim());
-              },
-              child: const Text('সংরক্ষণ করুন'),
+            BouncingPressable(onTap: () => Navigator.pop(ctx), child: TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('বাতিল'))),
+            BouncingPressable(
+              onTap: () { Navigator.pop(ctx); _updateStatus(r, status, noteCtrl.text.trim()); },
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
+                onPressed: () { Navigator.pop(ctx); _updateStatus(r, status, noteCtrl.text.trim()); },
+                child: const Text('সংরক্ষণ করুন'),
+              ),
             ),
           ],
         ),
@@ -120,7 +121,7 @@ class _AdminNrbDialogState extends State<AdminNrbDialog> {
                     SizedBox(width: 8),
                     Text('প্রবাসী প্রতিনিধিত্ব ও PoA আবেদনসমূহ', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                   ]),
-                  IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close)),
+                  BouncingPressable(onTap: () => Navigator.pop(context), child: const Icon(Icons.close)),
                 ],
               ),
               const SizedBox(height: 10),
@@ -138,10 +139,13 @@ class _AdminNrbDialogState extends State<AdminNrbDialog> {
                                 child: ListTile(
                                   title: Text('${r['applicantName']} — ${r['countryOfResidence']}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5)),
                                   subtitle: Text('প্রপার্টি: ${r['upazila']}, ${r['district']} • সেবা: ${r['serviceType']}\nস্ট্যাটাস: ${r['poaStatus']}', style: const TextStyle(fontSize: 11)),
-                                  trailing: ElevatedButton(
-                                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
-                                    onPressed: () => _openManageSheet(r),
-                                    child: const Text('ব্যবস্থাপনা', style: TextStyle(fontSize: 11)),
+                                  trailing: BouncingPressable(
+                                    onTap: () => _openManageSheet(r),
+                                    child: ElevatedButton(
+                                      style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
+                                      onPressed: () => _openManageSheet(r),
+                                      child: const Text('ব্যবস্থাপনা', style: TextStyle(fontSize: 11)),
+                                    ),
                                   ),
                                 ),
                               );

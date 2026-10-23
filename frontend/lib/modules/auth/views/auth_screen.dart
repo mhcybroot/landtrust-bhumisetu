@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/animations/transitions/admin_auth_transitions.dart';
 import '../view_models/auth_view_model.dart';
 import 'mobile/auth_mobile_view.dart';
 import 'web/auth_web_view.dart';
@@ -66,19 +67,22 @@ class _AuthScreenState extends State<AuthScreen> {
     return ListenableBuilder(
       listenable: _viewModel,
       builder: (context, _) {
-        if (widget.isMobile) {
-          return AuthMobileView(
-            viewModel: _viewModel,
-            config: widget.config,
-            onLogin: _handleLogin,
-            onRegister: _handleRegister,
-          );
-        }
-        return AuthWebView(
-          viewModel: _viewModel,
-          config: widget.config,
-          onLogin: _handleLogin,
-          onRegister: _handleRegister,
+        final content = widget.isMobile
+            ? AuthMobileView(
+                viewModel: _viewModel,
+                config: widget.config,
+                onLogin: _handleLogin,
+                onRegister: _handleRegister,
+              )
+            : AuthWebView(
+                viewModel: _viewModel,
+                config: widget.config,
+                onLogin: _handleLogin,
+                onRegister: _handleRegister,
+              );
+        return RoleSwitchCrossfadeTransition(
+          roleName: _viewModel.isLogin ? 'login' : 'register',
+          child: content,
         );
       },
     );

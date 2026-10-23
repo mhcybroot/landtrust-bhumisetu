@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../../core/animations/bouncing_pressable.dart';
+import '../../../core/animations/delight_financial_animations.dart';
 import '../view_models/chat_view_model.dart';
 import '../widgets/chat_message_bubble.dart';
 
@@ -40,11 +42,7 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
   void _scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollCtrl.hasClients) {
-        _scrollCtrl.animateTo(
-          _scrollCtrl.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 250),
-          curve: Curves.easeOut,
-        );
+        _scrollCtrl.animateTo(_scrollCtrl.position.maxScrollExtent, duration: const Duration(milliseconds: 250), curve: Curves.easeOut);
       }
     });
   }
@@ -52,14 +50,9 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
   Future<void> _handleSend() async {
     final text = _inputCtrl.text.trim();
     if (text.isEmpty || _sending) return;
-
     setState(() => _sending = true);
     _inputCtrl.clear();
-
-    final success = widget.isAdmin
-        ? await widget.viewModel.adminReply(text)
-        : await widget.viewModel.sendMessage(text);
-
+    final success = widget.isAdmin ? await widget.viewModel.adminReply(text) : await widget.viewModel.sendMessage(text);
     if (mounted) {
       setState(() => _sending = false);
       if (success) _scrollToBottom();
@@ -106,12 +99,18 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
                       final m = msgs[i] as Map<String, dynamic>;
                       final role = m['senderRole']?.toString() ?? '';
                       final isMe = widget.isAdmin ? role == 'ADMIN' : role == 'USER';
-                      return ChatMessageBubble(message: m, isFromCurrentUser: isMe);
+                      final bubble = ChatMessageBubble(message: m, isFromCurrentUser: isMe);
+                      return i == msgs.length - 1 ? MessageFlightCurve(child: bubble) : bubble;
                     },
                   );
                 },
               ),
             ),
+            if (_sending)
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                child: Align(alignment: Alignment.centerLeft, child: ChatTypingWave()),
+              ),
             _buildInputBar(),
           ],
         ),
@@ -143,12 +142,14 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
               ),
             ),
             const SizedBox(width: 6),
-            IconButton.filled(
-              style: IconButton.styleFrom(backgroundColor: const Color(0xFF0B4F32)),
-              icon: _sending
-                  ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                  : const Icon(Icons.send_rounded, color: Colors.white, size: 20),
-              onPressed: _sending ? null : _handleSend,
+            BouncingPressable(
+              child: IconButton.filled(
+                style: IconButton.styleFrom(backgroundColor: const Color(0xFF0B4F32)),
+                icon: _sending
+                    ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                    : const Icon(Icons.send_rounded, color: Colors.white, size: 20),
+                onPressed: _sending ? null : _handleSend,
+              ),
             ),
           ],
         ),

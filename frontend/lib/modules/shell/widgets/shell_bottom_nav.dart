@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/animations/delight_financial_animations.dart';
 import '../../../../core/localization/app_strings.dart';
 
 class ShellBottomNav extends StatelessWidget {
@@ -16,12 +17,9 @@ class ShellBottomNav extends StatelessWidget {
   });
 
   Widget _buildAnimatedIcon(IconData icon, int index) {
-    final isSelected = selectedIndex == index;
-    return AnimatedScale(
-      scale: isSelected ? 1.15 : 1.0,
-      duration: const Duration(milliseconds: 180),
-      curve: Curves.easeOutBack,
-      child: Icon(icon),
+    return BottomNavBubbleJump(
+      icon: icon,
+      isSelected: selectedIndex == index,
     );
   }
 

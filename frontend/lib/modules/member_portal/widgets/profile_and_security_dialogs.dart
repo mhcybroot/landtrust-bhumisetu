@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:landtrust_app/core/animations/bouncing_pressable.dart';
+import 'package:landtrust_app/core/animations/transitions/admin_auth_transitions.dart';
 
 class ProfileAndSecurityDialog {
   static void show(
@@ -44,54 +46,51 @@ class ProfileAndSecurityDialog {
                   const SizedBox(height: 8),
                   Wrap(spacing: 8, runSpacing: 8, children: [
                     _w(isMobile, DropdownButtonFormField<String>(
-                      key: ValueKey('prof_dist_$district'),
-                      initialValue: district,
+                      key: ValueKey('prof_dist_$district'), initialValue: district,
                       decoration: const InputDecoration(labelText: 'জেলা', isDense: true),
                       items: districts.map((d) => DropdownMenuItem(value: d, child: Text(d))).toList(),
-                      onChanged: (v) {
-                        setDialogState(() {
-                          district = v!;
-                          upazilas = getUpazilas(district);
-                          upazila = upazilas.first;
-                        });
-                      },
+                      onChanged: (v) => setDialogState(() { district = v!; upazilas = getUpazilas(district); upazila = upazilas.first; }),
                     )),
                     _w(isMobile, DropdownButtonFormField<String>(
-                      key: ValueKey('prof_upz_${district}_$upazila'),
-                      initialValue: upazila,
+                      key: ValueKey('prof_upz_${district}_$upazila'), initialValue: upazila,
                       decoration: const InputDecoration(labelText: 'উপজেলা', isDense: true),
                       items: upazilas.map((u) => DropdownMenuItem(value: u, child: Text(u))).toList(),
                       onChanged: (v) => setDialogState(() => upazila = v!),
                     )),
                   ]),
                   const SizedBox(height: 8),
-                  TextField(controller: addrCtrl, decoration: const InputDecoration(labelText: 'বর্তমান ঠিকানা', isDense: true)),
+                  TextField(controller: addrCtrl, decoration: const InputDecoration(labelText: 'বিস্তারিত ঠিকানা', isDense: true)),
                   const SizedBox(height: 10),
                   Align(
                     alignment: Alignment.centerRight,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
-                      onPressed: savingProfile
-                          ? null
-                          : () async {
-                              setDialogState(() => savingProfile = true);
-                              try {
-                                await onUpdateProfile(nameCtrl.text.trim(), district, upazila, addrCtrl.text.trim());
-                                if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('প্রোফাইল তথ্য সফলভাবে সংরক্ষিত হয়েছে!')));
-                                  Navigator.pop(ctx);
-                                }
-                              } catch (e) {
-                                if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
-                              } finally {
-                                setDialogState(() => savingProfile = false);
-                              }
-                            },
-                      child: savingProfile ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) : const Text('তথ্য সংরক্ষণ'),
+                    child: BouncingPressable(
+                      onTap: savingProfile ? null : () {},
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
+                        onPressed: savingProfile ? null : () async {
+                          setDialogState(() => savingProfile = true);
+                          try {
+                            await onUpdateProfile(nameCtrl.text.trim(), district, upazila, addrCtrl.text.trim());
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('প্রোফাইল তথ্য সফলভাবে সংরক্ষিত হয়েছে!')));
+                              Navigator.pop(ctx);
+                            }
+                          } catch (e) {
+                            if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+                          } finally {
+                            setDialogState(() => savingProfile = false);
+                          }
+                        },
+                        child: savingProfile ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) : const Text('তথ্য সংরক্ষণ'),
+                      ),
                     ),
                   ),
                   const Divider(height: 24),
-                  const Text('পাসওয়ার্ড পরিবর্তন', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF0B4F32))),
+                  Row(children: [
+                    const Text('পাসওয়ার্ড পরিবর্তন', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF0B4F32))),
+                    const Spacer(),
+                    BiometricScanRippleTransition(isScanning: changingPass),
+                  ]),
                   const SizedBox(height: 8),
                   TextField(controller: currentPassCtrl, obscureText: true, decoration: const InputDecoration(labelText: 'বর্তমান পাসওয়ার্ড', isDense: true)),
                   const SizedBox(height: 8),
@@ -99,43 +98,46 @@ class ProfileAndSecurityDialog {
                   const SizedBox(height: 10),
                   Align(
                     alignment: Alignment.centerRight,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(backgroundColor: Colors.teal.shade800, foregroundColor: Colors.white),
-                      onPressed: changingPass
-                          ? null
-                          : () async {
-                              if (currentPassCtrl.text.isEmpty || newPassCtrl.text.isEmpty) {
-                                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('বর্তমান ও নতুন উভয় পাসওয়ার্ড লিখুন।')));
-                                return;
-                              }
-                              setDialogState(() => changingPass = true);
-                              try {
-                                await onChangePassword(currentPassCtrl.text, newPassCtrl.text);
-                                if (context.mounted) {
-                                  currentPassCtrl.clear();
-                                  newPassCtrl.clear();
-                                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('পাসওয়ার্ড সফলভাবে পরিবর্তিত হয়েছে!')));
-                                }
-                              } catch (e) {
-                                if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
-                              } finally {
-                                setDialogState(() => changingPass = false);
-                              }
-                            },
-                      child: changingPass ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) : const Text('পাসওয়ার্ড পরিবর্তন'),
+                    child: BouncingPressable(
+                      onTap: changingPass ? null : () {},
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.teal.shade800, foregroundColor: Colors.white),
+                        onPressed: changingPass ? null : () async {
+                          if (currentPassCtrl.text.isEmpty || newPassCtrl.text.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('উভয় পাসওয়ার্ড লিখুন।')));
+                            return;
+                          }
+                          setDialogState(() => changingPass = true);
+                          try {
+                            await onChangePassword(currentPassCtrl.text, newPassCtrl.text);
+                            if (context.mounted) {
+                              currentPassCtrl.clear(); newPassCtrl.clear();
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('পাসওয়ার্ড সফলভাবে পরিবর্তিত হয়েছে!')));
+                            }
+                          } catch (e) {
+                            if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+                          } finally {
+                            setDialogState(() => changingPass = false);
+                          }
+                        },
+                        child: changingPass ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) : const Text('পাসওয়ার্ড পরিবর্তন'),
+                      ),
                     ),
                   ),
                   if (onDeleteAccount != null) ...[
                     const Divider(height: 24),
                     const Text('অ্যাকাউন্ট ও ডেটা ডিলিট (Danger Zone)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.red)),
                     const SizedBox(height: 4),
-                    const Text('প্লে স্টোর নীতি অনুযায়ী আপনি যেকোনো সময় আপনার অ্যাকাউন্ট ও যাবতীয় ডেটা মুছে ফেলতে পারেন।', style: TextStyle(fontSize: 11, color: Colors.grey)),
+                    const Text('প্লে স্টোর নীতি অনুযায়ী আপনি যেকোনো সময় অ্যাকাউন্ট মুছে ফেলতে পারেন।', style: TextStyle(fontSize: 11, color: Colors.grey)),
                     const SizedBox(height: 8),
-                    OutlinedButton.icon(
-                      style: OutlinedButton.styleFrom(foregroundColor: Colors.red, side: const BorderSide(color: Colors.red)),
-                      icon: const Icon(Icons.delete_forever_rounded, size: 16),
-                      label: const Text('অ্যাকাউন্ট ডিলিট করুন', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                      onPressed: () => _confirmAccountDeletion(context, ctx, onDeleteAccount),
+                    BouncingPressable(
+                      onTap: () => _confirmAccountDeletion(context, ctx, onDeleteAccount),
+                      child: OutlinedButton.icon(
+                        style: OutlinedButton.styleFrom(foregroundColor: Colors.red, side: const BorderSide(color: Colors.red)),
+                        icon: const Icon(Icons.delete_forever_rounded, size: 16),
+                        label: const Text('অ্যাকাউন্ট ডিলিট করুন', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                        onPressed: () => _confirmAccountDeletion(context, ctx, onDeleteAccount),
+                      ),
                     ),
                   ],
                 ],
@@ -143,7 +145,7 @@ class ProfileAndSecurityDialog {
             ),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('বন্ধ করুন')),
+            BouncingPressable(onTap: () => Navigator.pop(ctx), child: TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('বন্ধ করুন'))),
           ],
         ),
       ),
@@ -155,34 +157,37 @@ class ProfileAndSecurityDialog {
       context: context,
       builder: (c) => AlertDialog(
         title: const Text('অ্যাকাউন্ট মুছে ফেলতে চান?', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
-        content: const Text('আপনার প্রোফাইল, ফোন নম্বর ও সমস্ত ডেটা সার্ভার থেকে স্থায়ীভাবে অপসারিত হবে। এই প্রক্রিয়াটি অপরিবর্তনীয়।'),
+        content: const Text('আপনার প্রোফাইল, ফোন নম্বর ও সমস্ত ডেটা সার্ভার থেকে স্থায়ীভাবে অপসারিত হবে।'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(c), child: const Text('বাতিল')),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
-            onPressed: () async {
-              Navigator.pop(c);
-              Navigator.pop(dialogCtx);
+          BouncingPressable(onTap: () => Navigator.pop(c), child: TextButton(onPressed: () => Navigator.pop(c), child: const Text('বাতিল'))),
+          BouncingPressable(
+            onTap: () async {
+              Navigator.pop(c); Navigator.pop(dialogCtx);
               try {
                 await onDelete();
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('অ্যাকাউন্ট সফলভাবে মুছে ফেলা হয়েছে।')));
-                }
+                if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('অ্যাকাউন্ট সফলভাবে মুছে ফেলা হয়েছে।')));
               } catch (e) {
                 if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
               }
             },
-            child: const Text('হ্যাঁ, মুছে ফেলুন'),
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
+              onPressed: () async {
+                Navigator.pop(c); Navigator.pop(dialogCtx);
+                try {
+                  await onDelete();
+                  if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('অ্যাকাউন্ট সফলভাবে মুছে ফেলা হয়েছে।')));
+                } catch (e) {
+                  if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+                }
+              },
+              child: const Text('হ্যাঁ, মুছে ফেলুন'),
+            ),
           ),
         ],
       ),
     );
   }
 
-  static Widget _w(bool isMobile, Widget child) {
-    return LayoutBuilder(builder: (ctx, constraints) {
-      final width = isMobile ? constraints.maxWidth : (constraints.maxWidth - 8) / 2;
-      return SizedBox(width: width, child: child);
-    });
-  }
+  static Widget _w(bool isMobile, Widget child) => LayoutBuilder(builder: (ctx, constraints) => SizedBox(width: isMobile ? constraints.maxWidth : (constraints.maxWidth - 8) / 2, child: child));
 }

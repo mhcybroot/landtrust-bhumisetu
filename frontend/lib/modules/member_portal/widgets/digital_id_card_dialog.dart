@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:landtrust_app/core/animations/bouncing_pressable.dart';
+import 'package:landtrust_app/core/animations/legal_verification_animations.dart';
+import 'package:landtrust_app/core/animations/transitions/finance_payment_transitions.dart';
 import 'package:landtrust_app/core/network/api_client.dart';
 
-class DigitalIdCardDialog extends StatelessWidget {
+class DigitalIdCardDialog extends StatefulWidget {
   final Map<String, dynamic> officerData;
   final bool isMobile;
 
@@ -13,11 +16,18 @@ class DigitalIdCardDialog extends StatelessWidget {
   }
 
   @override
+  State<DigitalIdCardDialog> createState() => _DigitalIdCardDialogState();
+}
+
+class _DigitalIdCardDialogState extends State<DigitalIdCardDialog> {
+  bool _showBack = false;
+
+  @override
   Widget build(BuildContext context) {
-    final officer = (officerData['officer'] as Map<String, dynamic>?) ?? {};
+    final officer = (widget.officerData['officer'] as Map<String, dynamic>?) ?? {};
     final name = officer['fullName'] ?? 'অফিসার নাম';
     final role = officer['role']?.toString() ?? 'MARKETING_OFFICER';
-    final code = officerData['referralCode'] ?? officer['myReferralCode'] ?? 'LT-OFF-XXXX';
+    final code = widget.officerData['referralCode'] ?? officer['myReferralCode'] ?? 'LT-OFF-XXXX';
     final district = officer['district'] ?? '';
     final upazila = officer['upazila'] ?? '';
     final area = [upazila, district].where((s) => s.isNotEmpty).join(', ');
@@ -35,23 +45,19 @@ class DigitalIdCardDialog extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       elevation: 10,
       child: ConstrainedBox(
-        constraints: BoxConstraints(maxWidth: isMobile ? 350 : 400),
+        constraints: BoxConstraints(maxWidth: widget.isMobile ? 350 : 400),
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               _buildHeader(),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-                child: Column(children: [
-                  _buildAvatarAndName(name, roleLabel, area),
-                  const SizedBox(height: 12),
-                  _buildIdRow(code),
-                  const SizedBox(height: 12),
-                  _buildQrSection(qrUrl),
-                  const SizedBox(height: 12),
-                  _buildNotice(),
-                ]),
+              GestureDetector(
+                onTap: () => setState(() => _showBack = !_showBack),
+                child: BankCardFlipCvvTransition(
+                  showBack: _showBack,
+                  front: _buildFront(name, roleLabel, area, code),
+                  back: _buildBack(qrUrl),
+                ),
               ),
               _buildActions(context, shareLink),
             ],
@@ -64,103 +70,108 @@ class DigitalIdCardDialog extends StatelessWidget {
   Widget _buildHeader() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
       decoration: const BoxDecoration(
         gradient: LinearGradient(colors: [Color(0xFF07301E), Color(0xFF0B4F32)], begin: Alignment.topLeft, end: Alignment.bottomRight),
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Column(children: [
         Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-          Container(padding: const EdgeInsets.all(4), decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)), child: const Icon(Icons.home_work_rounded, color: Color(0xFF0B4F32), size: 20)),
+          Container(padding: const EdgeInsets.all(4), decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)), child: const Icon(Icons.home_work_rounded, color: Color(0xFF0B4F32), size: 18)),
           const SizedBox(width: 8),
-          const Text('bdHousing', style: TextStyle(color: Colors.white, fontSize: 19, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
+          const Text('bdHousing', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
         ]),
         const SizedBox(height: 2),
-        const Text('আবাসন খাতের বিশেষায়িত মার্কেটপ্লেস', style: TextStyle(color: Colors.white70, fontSize: 10.5)),
-        const SizedBox(height: 6),
+        const Text('আবাসন খাতের বিশেষায়িত মার্কেটপ্লেস', style: TextStyle(color: Colors.white70, fontSize: 10)),
+        const SizedBox(height: 5),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2.5),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
           decoration: BoxDecoration(color: Colors.amber.shade700, borderRadius: BorderRadius.circular(12)),
           child: const Row(mainAxisSize: MainAxisSize.min, children: [
-            Icon(Icons.verified, color: Colors.white, size: 12),
+            Icon(Icons.verified, color: Colors.white, size: 11),
             SizedBox(width: 4),
-            Text('LIFETIME CERTIFIED PARTNER', style: TextStyle(color: Colors.white, fontSize: 9.5, fontWeight: FontWeight.bold)),
+            Text('LIFETIME CERTIFIED PARTNER', style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold)),
           ]),
         ),
       ]),
     );
   }
 
-  Widget _buildAvatarAndName(String name, String roleLabel, String area) {
-    return Column(children: [
-      CircleAvatar(radius: 28, backgroundColor: const Color(0xFF0B4F32), child: Text(name.isNotEmpty ? name[0] : 'U', style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold))),
-      const SizedBox(height: 6),
-      Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF0F2B48)), textAlign: TextAlign.center),
-      Text(roleLabel, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12.5, color: Color(0xFF0B4F32))),
-      if (area.isNotEmpty) Text(area, style: const TextStyle(fontSize: 11.5, color: Colors.black54)),
-    ]);
-  }
-
-  Widget _buildIdRow(String code) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-      decoration: BoxDecoration(color: const Color(0xFFF1F8F5), borderRadius: BorderRadius.circular(8), border: Border.all(color: Colors.green.shade200)),
-      child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-        const Text('অফিসিয়াল পার্টনার কোড:', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, color: Colors.black87)),
-        Text(code, style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold, color: Color(0xFF0B4F32))),
+  Widget _buildFront(String name, String roleLabel, String area, String code) {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(children: [
+        CircleAvatar(radius: 26, backgroundColor: const Color(0xFF0B4F32), child: Text(name.isNotEmpty ? name[0] : 'U', style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold))),
+        const SizedBox(height: 6),
+        Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Color(0xFF0F2B48))),
+        Text(roleLabel, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12, color: Color(0xFF0B4F32))),
+        if (area.isNotEmpty) Text(area, style: const TextStyle(fontSize: 11, color: Colors.black54)),
+        const SizedBox(height: 10),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(color: const Color(0xFFF1F8F5), borderRadius: BorderRadius.circular(8), border: Border.all(color: Colors.green.shade200)),
+          child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+            const Text('পার্টনার কোড:', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.black87)),
+            Text(code, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF0B4F32))),
+          ]),
+        ),
+        const SizedBox(height: 8),
+        const Text('🔄 ট্যাপ করে পেছনের কিউআর ও সিলমোহর দেখুন', style: TextStyle(fontSize: 10, color: Colors.teal, fontWeight: FontWeight.w600)),
       ]),
     );
   }
 
-  Widget _buildQrSection(String qrUrl) {
-    return Column(children: [
-      ClipRRect(
-        borderRadius: BorderRadius.circular(8),
-        child: Image.network(
-          qrUrl,
-          width: 110,
-          height: 110,
-          fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) => Container(width: 110, height: 110, color: Colors.grey.shade200, child: const Icon(Icons.qr_code_2, size: 60, color: Color(0xFF0B4F32))),
+  Widget _buildBack(String qrUrl) {
+    return Padding(
+      padding: const EdgeInsets.all(14),
+      child: Column(children: [
+        Stack(alignment: Alignment.topRight, children: [
+          ClipRRect(borderRadius: BorderRadius.circular(8), child: Image.network(qrUrl, width: 95, height: 95, fit: BoxFit.cover, errorBuilder: (_, _, _) => const Icon(Icons.qr_code_2, size: 60, color: Color(0xFF0B4F32)))),
+          const TrustSealStamp(size: 32),
+        ]),
+        const SizedBox(height: 6),
+        const Text('স্ক্যান করে প্রোফাইল ও রেফারেল নিশ্চিত করুন', style: TextStyle(fontSize: 10, color: Colors.black54)),
+        const SizedBox(height: 8),
+        Container(
+          padding: const EdgeInsets.all(6),
+          decoration: BoxDecoration(color: const Color(0xFFFAFAFA), borderRadius: BorderRadius.circular(8)),
+          child: const Text('অনুমোদিত মাঠ প্রতিনিধি • hotline: 01700-000000', textAlign: TextAlign.center, style: TextStyle(fontSize: 9, color: Colors.black54)),
         ),
-      ),
-      const SizedBox(height: 4),
-      const Text('স্ক্যান করে প্রোফাইল ও রেফারেল নিশ্চিত করুন', style: TextStyle(fontSize: 10.5, color: Colors.black54)),
-    ]);
-  }
-
-  Widget _buildNotice() {
-    return Container(
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(color: const Color(0xFFFAFAFA), borderRadius: BorderRadius.circular(8)),
-      child: const Text(
-        'এই পরিচয়পত্রধারী ব্যক্তি bdHousing-এর অনুমোদিত মাঠ প্রতিনিধি। জমি/ফ্ল্যাটের কাগজপত্র যাচাই ও সহায়তা প্রদানে তিনি আনুষ্ঠানিকভাবে ক্ষমতাপ্রাপ্ত।\nহটলাইন: ০১৭০০-০০০০০০ • bdhousing.com.bd',
-        textAlign: TextAlign.center,
-        style: TextStyle(fontSize: 9.5, color: Colors.black54, height: 1.3),
-      ),
+        const SizedBox(height: 6),
+        const Text('🔄 ট্যাপ করে আইডি কার্ডের সামনে ফিরুন', style: TextStyle(fontSize: 10, color: Colors.teal, fontWeight: FontWeight.w600)),
+      ]),
     );
   }
 
   Widget _buildActions(BuildContext context, String shareLink) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
       child: Row(children: [
         Expanded(
-          child: OutlinedButton.icon(
-            icon: const Icon(Icons.copy, size: 15),
-            label: const Text('লিংক কপি', style: TextStyle(fontSize: 11.5)),
-            onPressed: () {
+          child: BouncingPressable(
+            onTap: () {
               Clipboard.setData(ClipboardData(text: shareLink));
               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('অফিসারের ডিজিটাল কার্ড ও রেফারেল লিংক কপি হয়েছে!')));
             },
+            child: OutlinedButton.icon(
+              icon: const Icon(Icons.copy, size: 14),
+              label: const Text('লিংক কপি', style: TextStyle(fontSize: 11)),
+              onPressed: () {
+                Clipboard.setData(ClipboardData(text: shareLink));
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('অফিসারের ডিজিটাল কার্ড ও রেফারেল লিংক কপি হয়েছে!')));
+              },
+            ),
           ),
         ),
         const SizedBox(width: 8),
         Expanded(
-          child: ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
-            onPressed: () => Navigator.pop(context),
-            child: const Text('বন্ধ করুন', style: TextStyle(fontSize: 11.5)),
+          child: BouncingPressable(
+            onTap: () => Navigator.pop(context),
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
+              onPressed: () => Navigator.pop(context),
+              child: const Text('বন্ধ করুন', style: TextStyle(fontSize: 11)),
+            ),
           ),
         ),
       ]),
