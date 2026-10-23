@@ -29,12 +29,12 @@ class PropertyCardWidget extends StatelessWidget {
 
     return HoverLiftCard(
       onTap: onDetailsClick,
-      borderRadius: BorderRadius.circular(14),
+      borderRadius: BorderRadius.circular(16),
       child: Card(
         margin: EdgeInsets.zero,
         clipBehavior: Clip.antiAlias,
-        elevation: 2,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        elevation: 0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: const BorderSide(color: Color(0xFFE2E8F0))),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -44,11 +44,13 @@ class PropertyCardWidget extends StatelessWidget {
                 children: [
                   Hero(
                     tag: 'property_img_${listing['id'] ?? 'unknown'}',
-                    child: SmartImageViewer(
-                      url: listing['imageUrl'] as String?,
-                      height: isMobile ? 180 : 200,
-                      width: double.infinity,
-                      enableZoom: false,
+                    child: SmartImageViewer(url: listing['imageUrl'] as String?, height: isMobile ? 180 : 205, width: double.infinity, enableZoom: false),
+                  ),
+                  Positioned.fill(
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [Colors.transparent, Colors.black.withValues(alpha: 0.55)], stops: const [0.55, 1.0]),
+                      ),
                     ),
                   ),
                   Positioned(top: 10, left: 10, child: VerificationBadge(status: vStatus)),
@@ -56,8 +58,12 @@ class PropertyCardWidget extends StatelessWidget {
                     top: 10,
                     right: 10,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(color: const Color(0xFF0B4F32), borderRadius: BorderRadius.circular(20)),
+                      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.65),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
+                      ),
                       child: Text(listing['landType'] ?? 'আবাসিক', style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: Colors.white)),
                     ),
                   ),
@@ -103,17 +109,17 @@ class PropertyCardWidget extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(color: const Color(0xFFF3F8F5), borderRadius: BorderRadius.circular(8)),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    decoration: BoxDecoration(color: const Color(0xFFF0FDF4), borderRadius: BorderRadius.circular(10), border: Border.all(color: const Color(0xFFBBF7D0))),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Flexible(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                          child: Row(
                             children: [
-                              const Text('পরিমাণ', style: TextStyle(fontSize: 10.5, color: Colors.black54)),
-                              Text('${listing['areaDecimal']} শতাংশ', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5)),
+                              const Icon(Icons.straighten_rounded, size: 14, color: Color(0xFF166534)),
+                              const SizedBox(width: 4),
+                              Flexible(child: Text('${listing['areaDecimal']} শতাংশ', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF166534)), overflow: TextOverflow.ellipsis)),
                             ],
                           ),
                         ),
@@ -121,10 +127,9 @@ class PropertyCardWidget extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
-                              const Text('মূল্য', style: TextStyle(fontSize: 10.5, color: Colors.black54)),
                               TkCurrencyRollingOdometerTransition(amount: int.tryParse(listing['expectedPriceBdt']?.toString().replaceAll(RegExp(r'[^0-9]'), '') ?? '') ?? 0),
                               if (listing['pricePerDecimalBdt'] != null)
-                                Text('(৳${listing['pricePerDecimalBdt']}/শতাংশ)', style: const TextStyle(fontSize: 10, color: Colors.black54, fontWeight: FontWeight.w600)),
+                                Text('(৳${listing['pricePerDecimalBdt']}/শতাংশ)', style: TextStyle(fontSize: 9.5, color: Colors.green.shade800, fontWeight: FontWeight.w600)),
                             ],
                           ),
                         ),

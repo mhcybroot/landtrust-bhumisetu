@@ -50,8 +50,8 @@ class ListingFilterBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      elevation: 3,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: const BorderSide(color: Color(0xFFE2E8F0))),
       child: Padding(
         padding: EdgeInsets.all(isMobile ? 12 : 16),
         child: Column(
@@ -168,10 +168,13 @@ class ListingFilterBar extends StatelessWidget {
         label: Text(label),
         selected: sel,
         selectedColor: const Color(0xFF0B4F32),
+        backgroundColor: Colors.white,
+        side: BorderSide(color: sel ? const Color(0xFF0B4F32) : const Color(0xFFE2E8F0)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         labelStyle: TextStyle(
           color: sel ? Colors.white : Colors.black87,
           fontSize: 12,
-          fontWeight: sel ? FontWeight.bold : FontWeight.normal,
+          fontWeight: sel ? FontWeight.bold : FontWeight.w500,
         ),
         onSelected: (_) => onTap(),
       ),
