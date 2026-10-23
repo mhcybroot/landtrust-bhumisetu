@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../../../core/animations/bouncing_pressable.dart';
 
 class PaymentInfoBox extends StatelessWidget {
   final dynamic fee;
@@ -47,7 +48,7 @@ class PaymentInfoBox extends StatelessWidget {
                         ),
                       ),
                     ),
-                    InkWell(
+                    BouncingPressable(
                       onTap: () {
                         Clipboard.setData(
                           ClipboardData(text: pm['accountNumber'].toString()),
@@ -58,9 +59,20 @@ class PaymentInfoBox extends StatelessWidget {
                           ),
                         );
                       },
-                      child: const Padding(
-                        padding: EdgeInsets.all(4),
-                        child: Icon(Icons.copy, size: 15, color: Color(0xFF0B4F32)),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF0B4F32).withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.copy, size: 13, color: Color(0xFF0B4F32)),
+                            SizedBox(width: 3),
+                            Text('কপি', style: TextStyle(fontSize: 10, color: Color(0xFF0B4F32), fontWeight: FontWeight.bold)),
+                          ],
+                        ),
                       ),
                     ),
                   ],
