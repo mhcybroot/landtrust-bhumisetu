@@ -2,7 +2,7 @@
 
 **Document ID:** `2026-10-23-comprehensive-per-widget-animations-design`  
 **Date:** 2026-10-23  
-**Status:** DRAFT (Under Review)  
+**Status:** REVIEWED & PENDING FINAL APPROVAL  
 **Author:** Antigravity Team & Human Partner  
 **Target Repository:** `Work/LandApp` (`frontend/lib/modules/` & `frontend/lib/core/animations/`)  
 
@@ -93,7 +93,7 @@ The objective of this project is to implement **Approach 2 (Component-by-Compone
 24. `MarketplaceSearchBar`: Search icon spin and active query tag insertion.
 25. `MarketplaceFilterBar`: Sliding pill category selector (`SlidingPillBar`) and cascading dropdown menu unroll.
 26. `MarketplaceStatsRow`: Live count-up animation for all 4 metrics (`AnimatedCountText`).
-27. `MarketplacePagination`: Smooth slide between pages (`PaginationPageSlide`) and page number bubble jump.
+27. `MarketplacePagination`: Smooth animated page indicator / jump-to-top control (`PaginationPageSlide`) during continuous scrolling, preserving reactive listing state and existing tests.
 
 ### Module 3: Authentication & Onboarding (8 Widgets)
 28. [`AuthScreen`](file:///home/mhcybroot/Work/LandApp/frontend/lib/modules/auth/views/auth_screen.dart): Tab crossfade between Login and Register (`RoleSwitchCrossfadeTransition`).
@@ -102,7 +102,7 @@ The objective of this project is to implement **Approach 2 (Component-by-Compone
 31. [`LoginFormCard`](file:///home/mhcybroot/Work/LandApp/frontend/lib/modules/auth/widgets/login_form_card.dart): Password eye morph transition (`PasswordEyeMorph`) and validation shake (`ErrorShakeAnimation`).
 32. [`RegisterFormCard`](file:///home/mhcybroot/Work/LandApp/frontend/lib/modules/auth/widgets/register_form_card.dart): Stepper progress bar growth (`StepProgressGrowthTransition`) and field error shake.
 33. [`DemoAccountsBar`](file:///home/mhcybroot/Work/LandApp/frontend/lib/modules/auth/widgets/demo_accounts_bar.dart): Quick-fill account chip tap spring bounce (`BouncingPressable`) with sheen sweep.
-34. `OtpVerificationView`: Automatic cursor hop and box pulse highlight (`OtpDigitBoxPulseTransition`) and countdown timer pulse.
+34. [`PaymentInfoBox`](file:///home/mhcybroot/Work/LandApp/frontend/lib/modules/auth/widgets/payment_info_box.dart): Registration fee TrxID input box pulse focus highlight (`OtpDigitBoxPulseTransition`) and account copy button spring tap (`BouncingPressable`), keeping live phone+password authentication reliable and untouched.
 35. `RoleSelectionCard`: 3D perspective flip between Buyer, Seller, and Marketing Officer perspectives (`RoadToPlotFlipTransition`).
 
 ### Module 4: Member Portal & Dashboard (12 Widgets)
@@ -150,7 +150,26 @@ The objective of this project is to implement **Approach 2 (Component-by-Compone
 
 ---
 
-## 6. What's Left to the Builder
+## 6. Builder Check Review & Settled Architectural Decisions
+
+Following the project builder check, three key architectural decisions were categorized and settled:
+
+1. **Widget #34 Resolution (`PaymentInfoBox` & TrxID Polish) [Settled by Human Partner]:**
+   - The backend authentication architecture operates strictly on phone + password without an SMS gateway.
+   - The human partner confirmed: Polish `PaymentInfoBox` & the registration fee TrxID input card using `OtpDigitBoxPulseTransition` for payment transaction ID digit inputs, plus tactile spring feedback on account copy actions.
+   - Live phone+password authentication and registration pipelines remain fast, reliable, and untouched by fake timers.
+
+2. **Scope of Interactive Child Widgets [Settled as Assistant's Call]:**
+   - To strictly fulfill Goal 1 ("100% Interactive Coverage: Every interactive button, chip, card..."), micro-animations will directly wrap the interactive child cards where user touch and hover physically occur (e.g., `AdminListingCard`, `AdminUserCard`, `ChatMessageBubble`, `HeroBannerWidget`, `NrbRequestCard`).
+   - The implementation plan will budget and maintain the project's $\le 200$ line cap across both parent containers and their respective child widgets.
+
+3. **Continuous Browsing vs. Pagination [Settled as Assistant's Call]:**
+   - In `MarketplaceViewModel`, listings are fetched reactively and rendered via continuous sliver/grid scrolling.
+   - `MarketplacePagination` (#27) will serve as an animated page indicator / jump-to-top control (`PaginationPageSlide`) for smooth continuous scrolling, rather than breaking the reactive listings state or introducing client-side slicing that would regress existing widget tests.
+
+---
+
+## 7. What's Left to the Builder
 
 - The exact duration offsets (e.g. 250ms vs 300ms) for micro-animations to ensure smooth 60fps across varying GPU profiles.
 - Splitting large widgets into clean sub-components whenever adding animation logic threatens the $\le 200$ line cap.
@@ -158,7 +177,7 @@ The objective of this project is to implement **Approach 2 (Component-by-Compone
 
 ---
 
-## 7. Verification & Quality Gates
+## 8. Verification & Quality Gates
 
 1. **Automated Widget Tests:** Every module will have dedicated test cases verifying that animated widgets mount, trigger, and render properly without throwing `Ticker` or `setState` exceptions.
 2. **Line Count Audit:** `wc -l` check ensuring every modified and created `.dart` file is $\le 200$ lines.
