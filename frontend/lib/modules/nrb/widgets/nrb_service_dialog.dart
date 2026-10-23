@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:landtrust_app/core/animations/bouncing_pressable.dart';
+import 'package:landtrust_app/core/animations/legal_verification_animations.dart';
 import 'package:landtrust_app/core/network/api_client.dart';
 
 class NrbServiceDialog extends StatefulWidget {
-  final VoidCallback onSuccess;
+  final VoidCallback? onSuccess;
   final bool isMobile;
 
-  const NrbServiceDialog({super.key, required this.onSuccess, required this.isMobile});
+  const NrbServiceDialog({super.key, this.onSuccess, required this.isMobile});
 
-  static void show(BuildContext context, {required VoidCallback onSuccess, required bool isMobile}) {
+  static void show(BuildContext context, {VoidCallback? onSuccess, required bool isMobile}) {
     showDialog(context: context, builder: (ctx) => NrbServiceDialog(onSuccess: onSuccess, isMobile: isMobile));
   }
 
@@ -60,7 +62,7 @@ class _NrbServiceDialogState extends State<NrbServiceDialog> {
       if (res.statusCode == 200 && mounted) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('প্রবাসী প্রতিনিধিত্ব ও PoA আবেদন জমা হয়েছে!')));
-        widget.onSuccess();
+        widget.onSuccess?.call();
       }
     } catch (_) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('আবেদন জমায় ত্রুটি হয়েছে')));
@@ -129,7 +131,9 @@ class _NrbServiceDialogState extends State<NrbServiceDialog> {
       Container(padding: const EdgeInsets.all(6), decoration: BoxDecoration(color: const Color(0xFFE8F5E9), borderRadius: BorderRadius.circular(8)), child: const Icon(Icons.flight_takeoff, color: Color(0xFF0B4F32), size: 22)),
       const SizedBox(width: 8),
       const Expanded(child: Text('প্রবাসী জমি বিক্রয় ও PoA সেবা', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF0B4F32)))),
-      IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close)),
+      const TrustSealStamp(size: 26),
+      const SizedBox(width: 4),
+      BouncingPressable(onTap: () => Navigator.pop(context), child: const Icon(Icons.close)),
     ]);
   }
 
@@ -143,9 +147,9 @@ class _NrbServiceDialogState extends State<NrbServiceDialog> {
 
   Widget _buildTypeRow() {
     return Row(children: [
-      Expanded(child: ChoiceChip(label: const Text('১. প্রাতিষ্ঠানিক প্রতিনিধি', style: TextStyle(fontSize: 11)), selected: _serviceType == 'INSTITUTIONAL_REPRESENTATION', onSelected: (_) => setState(() => _serviceType = 'INSTITUTIONAL_REPRESENTATION'))),
+      Expanded(child: BouncingPressable(onTap: () => setState(() => _serviceType = 'INSTITUTIONAL_REPRESENTATION'), child: ChoiceChip(label: const Text('১. প্রাতিষ্ঠানিক প্রতিনিধি', style: TextStyle(fontSize: 11)), selected: _serviceType == 'INSTITUTIONAL_REPRESENTATION', onSelected: (_) => setState(() => _serviceType = 'INSTITUTIONAL_REPRESENTATION')))),
       const SizedBox(width: 6),
-      Expanded(child: ChoiceChip(label: const Text('২. পাওয়ার অব অ্যাটর্নি', style: TextStyle(fontSize: 11)), selected: _serviceType == 'POWER_OF_ATTORNEY', onSelected: (_) => setState(() => _serviceType = 'POWER_OF_ATTORNEY'))),
+      Expanded(child: BouncingPressable(onTap: () => setState(() => _serviceType = 'POWER_OF_ATTORNEY'), child: ChoiceChip(label: const Text('২. পাওয়ার অব অ্যাটর্নি', style: TextStyle(fontSize: 11)), selected: _serviceType == 'POWER_OF_ATTORNEY', onSelected: (_) => setState(() => _serviceType = 'POWER_OF_ATTORNEY')))),
     ]);
   }
 
@@ -160,14 +164,21 @@ class _NrbServiceDialogState extends State<NrbServiceDialog> {
   }
 
   Widget _buildButtons() {
-    return Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-      TextButton(onPressed: () => Navigator.pop(context), child: const Text('বাতিল')),
-      const SizedBox(width: 8),
-      ElevatedButton(
-        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
-        onPressed: _isLoading ? null : _submit,
-        child: _isLoading ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) : const Text('আবেদন জমা দিন'),
-      ),
-    ]);
+    return Wrap(
+      alignment: WrapAlignment.end,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      spacing: 8,
+      children: [
+        BouncingPressable(onTap: () => Navigator.pop(context), child: TextButton(onPressed: () => Navigator.pop(context), child: const Text('বাতিল'))),
+        BouncingPressable(
+          onTap: _isLoading ? null : _submit,
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
+            onPressed: _isLoading ? null : _submit,
+            child: _isLoading ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) : const Text('আবেদন জমা দিন'),
+          ),
+        ),
+      ],
+    );
   }
 }
