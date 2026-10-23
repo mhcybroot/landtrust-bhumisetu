@@ -57,7 +57,7 @@ public class AdminFinanceController {
             p.setStatus(String.valueOf(body.get("status")));
         } else if (body.containsKey("action")) {
             String act = String.valueOf(body.get("action"));
-            if ("ACCEPT".equalsIgnoreCase(act) || "APPROVE".equalsIgnoreCase(act)) {
+            if ("ACCEPT".equalsIgnoreCase(act) || "APPROVE".equalsIgnoreCase(act) || "AGREE".equalsIgnoreCase(act)) {
                 p.setStatus("MUTUALLY_AGREED");
             } else if ("REJECT".equalsIgnoreCase(act)) {
                 p.setStatus("REJECTED");

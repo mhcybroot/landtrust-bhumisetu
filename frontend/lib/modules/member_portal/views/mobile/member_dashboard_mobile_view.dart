@@ -150,7 +150,12 @@ class MemberDashboardMobileView extends StatelessWidget {
                         onMarkSold: (id) async { await ApiClient.post('/member/seller/listings/$id/sold'); await viewModel.loadData(); onRefreshParent(); },
                       ),
                       const SizedBox(height: 16),
-                      MemberProposalsSection(proposals: viewModel.myProposals, isMobile: true, onShowCertificate: (p) => AgreementCertificateDialog.show(context, proposal: p, isMobile: true)),
+                      MemberProposalsSection(
+                        proposals: viewModel.myProposals,
+                        isMobile: true,
+                        onShowCertificate: (p) => AgreementCertificateDialog.show(context, proposal: p, isMobile: true),
+                        onRespondProposal: (id, act) async { await viewModel.respondProposal(id, act); onRefreshParent(); },
+                      ),
                     ] else ...[
                       BuyerWorkspaceView(
                         myRequirements: viewModel.myRequirements,
@@ -162,7 +167,12 @@ class MemberDashboardMobileView extends StatelessWidget {
                         onFulfillRequirement: (id) async { await ApiClient.post('/member/buyer/requirements/$id/fulfill'); await viewModel.loadData(); onRefreshParent(); },
                       ),
                       const SizedBox(height: 16),
-                      MemberProposalsSection(proposals: viewModel.myProposals, isMobile: true, onShowCertificate: (p) => AgreementCertificateDialog.show(context, proposal: p, isMobile: true)),
+                      MemberProposalsSection(
+                        proposals: viewModel.myProposals,
+                        isMobile: true,
+                        onShowCertificate: (p) => AgreementCertificateDialog.show(context, proposal: p, isMobile: true),
+                        onRespondProposal: (id, act) async { await viewModel.respondProposal(id, act); onRefreshParent(); },
+                      ),
                     ],
                   ],
                 ),

@@ -14,7 +14,7 @@ class StatusBadge extends StatelessWidget {
         t.contains('APPROVED') ||
         t.contains('VERIFIED') ||
         t.contains('PAID') ||
-        t.contains('AGREED') ||
+        t.contains('AGREE') ||
         t.contains('CLOSED');
     final isDanger = t.contains('SUSPENDED') || t.contains('REJECTED');
 

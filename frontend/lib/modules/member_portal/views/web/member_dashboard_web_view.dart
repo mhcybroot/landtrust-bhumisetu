@@ -132,7 +132,12 @@ class MemberDashboardWebView extends StatelessWidget {
                   onMarkSold: (id) async { await ApiClient.post('/member/seller/listings/$id/sold'); await viewModel.loadData(); onRefreshParent(); },
                 ),
                 const SizedBox(height: 20),
-                MemberProposalsSection(proposals: viewModel.myProposals, isMobile: false, onShowCertificate: (p) => AgreementCertificateDialog.show(context, proposal: p, isMobile: false)),
+                MemberProposalsSection(
+                  proposals: viewModel.myProposals,
+                  isMobile: false,
+                  onShowCertificate: (p) => AgreementCertificateDialog.show(context, proposal: p, isMobile: false),
+                  onRespondProposal: (id, act) async { await viewModel.respondProposal(id, act); onRefreshParent(); },
+                ),
               ] else ...[
                 BuyerWorkspaceView(
                   myRequirements: viewModel.myRequirements,
@@ -159,7 +164,12 @@ class MemberDashboardWebView extends StatelessWidget {
                   onFulfillRequirement: (id) async { await ApiClient.post('/member/buyer/requirements/$id/fulfill'); await viewModel.loadData(); onRefreshParent(); },
                 ),
                 const SizedBox(height: 20),
-                MemberProposalsSection(proposals: viewModel.myProposals, isMobile: false, onShowCertificate: (p) => AgreementCertificateDialog.show(context, proposal: p, isMobile: false)),
+                MemberProposalsSection(
+                  proposals: viewModel.myProposals,
+                  isMobile: false,
+                  onShowCertificate: (p) => AgreementCertificateDialog.show(context, proposal: p, isMobile: false),
+                  onRespondProposal: (id, act) async { await viewModel.respondProposal(id, act); onRefreshParent(); },
+                ),
               ],
             ],
           ),

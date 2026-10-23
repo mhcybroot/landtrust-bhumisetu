@@ -22,8 +22,8 @@ class AgreementCertificateDialog extends StatelessWidget {
 সনদ নম্বর: LT-AGR-${proposal['id']}
 তারিখ: ${proposal['agreedAt'] ?? proposal['updatedAt'] ?? '২০২৬'}
 
-গ্রাহক / সদস্য: ${proposal['customerName']}
-ভূমিকা: ${proposal['customerRole']}
+গ্রাহক / সদস্য: ${proposal['userName'] ?? proposal['customerName'] ?? 'সদস্য'}
+ভূমিকা: ${proposal['userRole'] ?? proposal['customerRole'] ?? 'গ্রাহক'}
 প্রস্তাব শিরোনাম: ${proposal['proposalTitle']}
 কাজের বিবরণ: ${proposal['scopeDescription']}
 

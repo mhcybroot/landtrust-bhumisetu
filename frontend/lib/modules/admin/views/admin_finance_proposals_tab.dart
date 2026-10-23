@@ -110,7 +110,8 @@ class _AdminFinanceProposalsTabState extends State<AdminFinanceProposalsTab> {
     if (proposals.isEmpty) return const Card(child: Padding(padding: EdgeInsets.all(32), child: Center(child: Text('কোনো বিশেষ চুক্তি প্রস্তাব নেই।'))));
     return Column(
       children: proposals.map((p) {
-        final isAgreed = p['status'] == 'MUTUALLY_AGREED' || p['status'] == 'COMPLETED';
+        final status = (p['status'] ?? '').toString().toUpperCase();
+        final isAgreed = status == 'MUTUALLY_AGREED' || status == 'AGREE' || status == 'AGREED' || status == 'COMPLETED';
         return Card(
           margin: const EdgeInsets.only(bottom: 10),
           child: Padding(
@@ -125,7 +126,7 @@ class _AdminFinanceProposalsTabState extends State<AdminFinanceProposalsTab> {
                 ]),
               ]),
               const SizedBox(height: 4),
-              Text('গ্রাহক: ${p['customerName']} (${p['customerRole']})'),
+              Text('গ্রাহক: ${p['userName'] ?? p['customerName'] ?? 'সদস্য'} (${p['userRole'] ?? p['customerRole'] ?? 'গ্রাহক'})'),
               const SizedBox(height: 2),
               Text(p['scopeDescription'] ?? '', style: const TextStyle(fontSize: 12, color: Colors.black87)),
               const SizedBox(height: 4),
