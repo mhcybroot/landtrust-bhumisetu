@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/animations/bouncing_pressable.dart';
 import '../../../core/constants/app_constants.dart';
 import '../view_models/admin_view_model.dart';
 import '../widgets/admin_listing_fees_card.dart';
@@ -43,9 +44,7 @@ class _AdminSettingsTabState extends State<AdminSettingsTab> {
 
   void _syncField(TextEditingController ctrl, dynamic val, String baseline) {
     if (val == null) return;
-    if (ctrl.text.isEmpty || ctrl.text == baseline) {
-      ctrl.text = '$val';
-    }
+    if (ctrl.text.isEmpty || ctrl.text == baseline) ctrl.text = '$val';
   }
 
   void _syncSettings() {
@@ -76,7 +75,6 @@ class _AdminSettingsTabState extends State<AdminSettingsTab> {
     try {
       await widget.viewModel.updateSettings({
         'buyerRegistrationFee': double.tryParse(_buyerFeeCtrl.text.trim()) ?? 1000,
-        'sellerRegistrationFee': double.tryParse(_sellerFeeUnionCtrl.text.trim()) ?? 1000,
         'sellerRegistrationFeePourashava': double.tryParse(_sellerFeePourashavaCtrl.text.trim()) ?? 2000,
         'sellerRegistrationFeeUnion': double.tryParse(_sellerFeeUnionCtrl.text.trim()) ?? 1000,
         'officerRegistrationFee': double.tryParse(_officerFeeCtrl.text.trim()) ?? 1000,
@@ -86,7 +84,11 @@ class _AdminSettingsTabState extends State<AdminSettingsTab> {
         'officeAddress': _addrCtrl.text.trim(),
       });
       widget.onSettingsSaved?.call();
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('সেটিংস সফলভাবে সংরক্ষিত হয়েছে!')));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('পলিসি ও সাপোর্ট সেটিংস সফলভাবে সংরক্ষিত হয়েছে!')),
+        );
+      }
     } catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
     } finally {
@@ -99,20 +101,20 @@ class _AdminSettingsTabState extends State<AdminSettingsTab> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildFeesCard(),
-        const SizedBox(height: 14),
-        AdminRepresentativePolicyCard(viewModel: widget.viewModel, isMobile: widget.isMobile, onSaved: widget.onSettingsSaved),
-        const SizedBox(height: 14),
+        _buildGeneralSettingsCard(),
+        const SizedBox(height: 16),
         AdminListingFeesCard(viewModel: widget.viewModel, isMobile: widget.isMobile, onSaved: widget.onSettingsSaved),
-        const SizedBox(height: 14),
+        const SizedBox(height: 16),
+        AdminRepresentativePolicyCard(viewModel: widget.viewModel, isMobile: widget.isMobile, onSaved: widget.onSettingsSaved),
+        const SizedBox(height: 16),
         AdminPaymentMethodsCard(viewModel: widget.viewModel, isMobile: widget.isMobile, onSaved: widget.onSettingsSaved),
-        const SizedBox(height: 14),
+        const SizedBox(height: 16),
         AdminLocationsCard(viewModel: widget.viewModel, isMobile: widget.isMobile, onSaved: widget.onSettingsSaved),
       ],
     );
   }
 
-  Widget _buildFeesCard() {
+  Widget _buildGeneralSettingsCard() {
     return Card(
       elevation: 2,
       child: Padding(
@@ -123,8 +125,7 @@ class _AdminSettingsTabState extends State<AdminSettingsTab> {
             const Text('নিবন্ধন ফি ও প্ল্যাটফর্ম পলিসি কনফিগারেশন', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF0A2E1F))),
             const SizedBox(height: 12),
             Wrap(
-              spacing: 10,
-              runSpacing: 10,
+              spacing: 10, runSpacing: 10,
               children: [
                 _w(TextField(controller: _buyerFeeCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'ক্রেতা নিবন্ধন ফি (৳)', isDense: true))),
                 _w(TextField(controller: _sellerFeePourashavaCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'শহর/পৌরসভা বিক্রেতা ফি (৳)', isDense: true))),
@@ -137,11 +138,14 @@ class _AdminSettingsTabState extends State<AdminSettingsTab> {
               ],
             ),
             const SizedBox(height: 14),
-            ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
-              onPressed: _saving ? null : _saveSettings,
-              icon: const Icon(Icons.save, size: 16),
-              label: const Text('সংরক্ষণ করুন'),
+            BouncingPressable(
+              onTap: _saving ? null : _saveSettings,
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
+                onPressed: _saving ? null : _saveSettings,
+                icon: const Icon(Icons.save, size: 16),
+                label: const Text('সংরক্ষণ করুন'),
+              ),
             ),
           ],
         ),
@@ -149,10 +153,5 @@ class _AdminSettingsTabState extends State<AdminSettingsTab> {
     );
   }
 
-  Widget _w(Widget child) {
-    return LayoutBuilder(builder: (ctx, constraints) {
-      final width = widget.isMobile ? constraints.maxWidth : (constraints.maxWidth - 20) / 3;
-      return SizedBox(width: width, child: child);
-    });
-  }
+  Widget _w(Widget child) => LayoutBuilder(builder: (ctx, constraints) => SizedBox(width: widget.isMobile ? constraints.maxWidth : (constraints.maxWidth - 20) / 3, child: child));
 }

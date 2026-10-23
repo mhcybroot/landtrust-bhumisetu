@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:landtrust_app/core/animations/bouncing_pressable.dart';
 import 'package:landtrust_app/core/animations/transitions/admin_auth_transitions.dart';
 import 'package:landtrust_app/core/widgets/status_badge.dart';
 import '../view_models/admin_view_model.dart';
@@ -29,16 +30,19 @@ class AdminOverviewTab extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             const Text('কেন্দ্রীয় রিয়েল-টাইম ওভারভিউ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-            ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
-              onPressed: () => AdminNrbDialog.show(context, isMobile: isMobile),
-              icon: const Icon(Icons.flight_takeoff, size: 16),
-              label: const Text('প্রবাসী সেবা ও PoA আবেদন', style: TextStyle(fontSize: 12)),
+            BouncingPressable(
+              onTap: () => AdminNrbDialog.show(context, isMobile: isMobile),
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
+                onPressed: () => AdminNrbDialog.show(context, isMobile: isMobile),
+                icon: const Icon(Icons.flight_takeoff, size: 16),
+                label: const Text('প্রবাসী সেবা ও PoA আবেদন', style: TextStyle(fontSize: 12)),
+              ),
             ),
           ],
         ),
         const SizedBox(height: 12),
-        _buildFundBuckets(totalFunds, revFund, fieldFund, reserveFund),
+        AdminDashboardCardStaggerSlide(index: 0, child: _buildFundBuckets(totalFunds, revFund, fieldFund, reserveFund)),
         const SizedBox(height: 20),
         _buildMetricsGrid(dash),
       ],
@@ -54,8 +58,7 @@ class AdminOverviewTab extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Wrap(
-              spacing: 8,
-              runSpacing: 4,
+              spacing: 8, runSpacing: 4,
               alignment: WrapAlignment.spaceBetween,
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
@@ -69,8 +72,7 @@ class AdminOverviewTab extends StatelessWidget {
             LayoutBuilder(builder: (ctx, constraints) {
               final cardWidth = isMobile ? constraints.maxWidth : (constraints.maxWidth - 20) / 3;
               return Wrap(
-                spacing: 10,
-                runSpacing: 10,
+                spacing: 10, runSpacing: 10,
                 children: [
                   StatCardWidget(title: '১. প্ল্যাটফর্ম পরিচালনা আয় (৬০%)', value: '৳$rev', subtitle: 'সার্ভার ও অফিস পরিচালনা', color: const Color(0xFF0B4F32), width: cardWidth),
                   StatCardWidget(title: '২. সরজমিন যাচাই তহবিল (২৫%)', value: '৳$field', subtitle: 'মাঠ পরিদর্শন ও আমিন সার্ভে', color: const Color(0xFF1E88E5), width: cardWidth),
@@ -99,7 +101,7 @@ class AdminOverviewTab extends StatelessWidget {
         spacing: 10,
         runSpacing: 10,
         children: List.generate(items.length, (i) => AdminDashboardCardStaggerSlide(
-          index: i,
+          index: i + 1,
           child: StatCardWidget(title: items[i].$1, value: items[i].$2, subtitle: items[i].$3, color: items[i].$4, width: cardWidth),
         )),
       );

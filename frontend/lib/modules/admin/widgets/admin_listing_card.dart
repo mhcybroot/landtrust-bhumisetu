@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:landtrust_app/core/animations/bouncing_pressable.dart';
+import 'package:landtrust_app/core/animations/transitions/admin_auth_transitions.dart';
 import 'package:landtrust_app/core/utils/whatsapp_helper.dart';
 import 'package:landtrust_app/core/widgets/smart_image_viewer.dart';
 import 'package:landtrust_app/core/widgets/status_badge.dart';
@@ -87,58 +89,60 @@ class AdminListingCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 8),
-            Text(
-              'অবস্থান: ${l['areaName'] ?? ''}${subArea != null && subArea.isNotEmpty ? ', $subArea' : ''}, ${l['upazila']}, ${l['district']} • মৌজা: ${l['mouzaName'] ?? '-'}',
-              style: const TextStyle(fontSize: 12.5),
-            ),
+            Text('অবস্থান: ${l['areaName'] ?? ''}${subArea != null && subArea.isNotEmpty ? ', $subArea' : ''}, ${l['upazila']}, ${l['district']} • মৌজা: ${l['mouzaName'] ?? '-'}', style: const TextStyle(fontSize: 12.5)),
             const SizedBox(height: 2),
-            Text(
-              'পরিমাণ: ${l['areaDecimal']} শতাংশ • মূল্য: ৳${l['expectedPriceBdt']}',
-              style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0B4F32)),
-            ),
+            Text('পরিমাণ: ${l['areaDecimal']} শতাংশ • মূল্য: ৳${l['expectedPriceBdt']}', style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0B4F32))),
             if (fee > 0 || l['transactionId'] != null) ...[
               const SizedBox(height: 4),
               Container(
                 padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(color: Colors.grey.shade100, borderRadius: BorderRadius.circular(6)),
-                child: Text(
-                  '💳 ফি: ৳$fee | মাধ্যম: ${l['paymentMethod'] ?? '-'} | প্রেরক: ${l['senderPhone'] ?? '-'} | TrxID: ${l['transactionId'] ?? '-'}',
-                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500),
-                ),
+                child: Text('💳 ফি: ৳$fee | মাধ্যম: ${l['paymentMethod'] ?? '-'} | প্রেরক: ${l['senderPhone'] ?? '-'} | TrxID: ${l['transactionId'] ?? '-'}', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500)),
               ),
             ],
             const SizedBox(height: 10),
             Wrap(
-              spacing: 8,
-              runSpacing: 6,
+              spacing: 8, runSpacing: 6,
               children: [
                 if (!isApproved)
-                  ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
-                    onPressed: onApproveTap,
-                    icon: const Icon(Icons.check_circle, size: 15),
-                    label: const Text('পেমেন্ট ও বিজ্ঞাপন অনুমোদন', style: TextStyle(fontSize: 11)),
+                  BouncingPressable(
+                    onTap: onApproveTap,
+                    child: AdminApprovalStampSlam(
+                      isApproved: isApproved,
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white),
+                        onPressed: onApproveTap,
+                        icon: const Icon(Icons.check_circle, size: 15),
+                        label: const Text('পেমেন্ট ও বিজ্ঞাপন অনুমোদন', style: TextStyle(fontSize: 11)),
+                      ),
+                    ),
                   ),
-                ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.blueGrey, foregroundColor: Colors.white),
-                  onPressed: onVerifyTap,
-                  icon: const Icon(Icons.verified, size: 15),
-                  label: const Text('যাচাইকরণ স্ট্যাটাস', style: TextStyle(fontSize: 11)),
+                BouncingPressable(
+                  onTap: onVerifyTap,
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.blueGrey, foregroundColor: Colors.white),
+                    onPressed: onVerifyTap,
+                    icon: const Icon(Icons.verified, size: 15),
+                    label: const Text('যাচাইকরণ স্ট্যাটাস', style: TextStyle(fontSize: 11)),
+                  ),
                 ),
                 if (hasDoc)
-                  OutlinedButton.icon(
-                    onPressed: () => PrivateDocumentPreviewDialog.show(context, listing: l, isMobile: isMobile),
-                    icon: const Icon(Icons.description, size: 15),
-                    label: const Text('দলিল', style: TextStyle(fontSize: 11)),
+                  BouncingPressable(
+                    onTap: () => PrivateDocumentPreviewDialog.show(context, listing: l, isMobile: isMobile),
+                    child: OutlinedButton.icon(
+                      onPressed: () => PrivateDocumentPreviewDialog.show(context, listing: l, isMobile: isMobile),
+                      icon: const Icon(Icons.description, size: 15),
+                      label: const Text('দলিল', style: TextStyle(fontSize: 11)),
+                    ),
                   ),
                 if (l['sellerPhone'] != null)
-                  OutlinedButton.icon(
-                    onPressed: () => WhatsAppHelper.openChat(
-                      phone: l['sellerPhone'].toString(),
-                      message: 'আসসালামু আলাইকুম, bdHousing থেকে আপনার লিস্টিং "${l['title']}" এর TrxID ও তথ্য যাচাই সংক্রান্ত যোগাযোগ করছি।',
+                  BouncingPressable(
+                    onTap: () => WhatsAppHelper.openChat(phone: l['sellerPhone'].toString(), message: 'আসসালামু আলাইকুম, bdHousing থেকে আপনার লিস্টিং "${l['title']}" সংক্রান্ত যোগাযোগ করছি।'),
+                    child: OutlinedButton.icon(
+                      onPressed: () => WhatsAppHelper.openChat(phone: l['sellerPhone'].toString(), message: 'আসসালামু আলাইকুম, bdHousing থেকে আপনার লিস্টিং "${l['title']}" সংক্রান্ত যোগাযোগ করছি।'),
+                      icon: const Icon(Icons.chat, size: 14, color: Colors.green),
+                      label: const Text('WhatsApp', style: TextStyle(fontSize: 11, color: Colors.green)),
                     ),
-                    icon: const Icon(Icons.chat, size: 14, color: Colors.green),
-                    label: const Text('WhatsApp', style: TextStyle(fontSize: 11, color: Colors.green)),
                   ),
               ],
             ),
