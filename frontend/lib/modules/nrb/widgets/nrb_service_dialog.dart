@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:landtrust_app/core/animations/bouncing_pressable.dart';
 import 'package:landtrust_app/core/animations/legal_verification_animations.dart';
@@ -19,16 +20,9 @@ class NrbServiceDialog extends StatefulWidget {
 
 class _NrbServiceDialogState extends State<NrbServiceDialog> {
   final _formKey = GlobalKey<FormState>();
-  final _countryCtrl = TextEditingController(text: 'সৌদি আরব');
-  final _phoneCtrl = TextEditingController();
-  final _passportCtrl = TextEditingController();
-  final _districtCtrl = TextEditingController(text: 'নোয়াখালী');
-  final _upazilaCtrl = TextEditingController(text: 'নোয়াখালী সদর');
-  final _khatianCtrl = TextEditingController();
-  final _dagCtrl = TextEditingController();
-  final _areaCtrl = TextEditingController();
-  final _priceCtrl = TextEditingController();
-  final _notesCtrl = TextEditingController();
+  final _countryCtrl = TextEditingController(text: 'সৌদি আরব'), _phoneCtrl = TextEditingController(), _passportCtrl = TextEditingController();
+  final _districtCtrl = TextEditingController(text: 'নোয়াখালী'), _upazilaCtrl = TextEditingController(text: 'নোয়াখালী সদর');
+  final _khatianCtrl = TextEditingController(), _dagCtrl = TextEditingController(), _areaCtrl = TextEditingController(), _priceCtrl = TextEditingController(), _notesCtrl = TextEditingController();
   String _serviceType = 'INSTITUTIONAL_REPRESENTATION';
   bool _isLoading = false;
 
@@ -59,10 +53,18 @@ class _NrbServiceDialogState extends State<NrbServiceDialog> {
         'notes': _notesCtrl.text.trim(),
       };
       final res = await ApiClient.post('/member/nrb/request', body: payload);
-      if (res.statusCode == 200 && mounted) {
+      if (!mounted) return;
+      if (res.statusCode == 200) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('প্রবাসী প্রতিনিধিত্ব ও PoA আবেদন জমা হয়েছে!')));
         widget.onSuccess?.call();
+      } else {
+        String msg = 'আবেদন জমায় সমস্যা হয়েছে (${res.statusCode})';
+        try {
+          final data = jsonDecode(utf8.decode(res.bodyBytes));
+          if (data is Map && data['message'] != null) msg = data['message'].toString();
+        } catch (_) {}
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg), backgroundColor: Colors.red.shade700));
       }
     } catch (_) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('আবেদন জমায় ত্রুটি হয়েছে')));
@@ -74,6 +76,7 @@ class _NrbServiceDialogState extends State<NrbServiceDialog> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 24),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: ConstrainedBox(
         constraints: BoxConstraints(maxWidth: widget.isMobile ? 360 : 500),
@@ -126,30 +129,41 @@ class _NrbServiceDialogState extends State<NrbServiceDialog> {
     );
   }
 
-  Widget _buildHeader() {
-    return Row(children: [
-      Container(padding: const EdgeInsets.all(6), decoration: BoxDecoration(color: const Color(0xFFE8F5E9), borderRadius: BorderRadius.circular(8)), child: const Icon(Icons.flight_takeoff, color: Color(0xFF0B4F32), size: 22)),
-      const SizedBox(width: 8),
-      const Expanded(child: Text('প্রবাসী জমি বিক্রয় ও PoA সেবা', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF0B4F32)))),
-      const TrustSealStamp(size: 26),
-      const SizedBox(width: 4),
-      BouncingPressable(onTap: () => Navigator.pop(context), child: const Icon(Icons.close)),
-    ]);
-  }
+  Widget _buildHeader() => Row(children: [
+    Container(padding: const EdgeInsets.all(6), decoration: BoxDecoration(color: const Color(0xFFE8F5E9), borderRadius: BorderRadius.circular(8)), child: const Icon(Icons.flight_takeoff, color: Color(0xFF0B4F32), size: 22)),
+    const SizedBox(width: 8),
+    const Expanded(child: Text('প্রবাসী জমি বিক্রয় ও PoA সেবা', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF0B4F32)))),
+    const TrustSealStamp(size: 26),
+    const SizedBox(width: 4),
+    BouncingPressable(onTap: () => Navigator.pop(context), child: const Icon(Icons.close)),
+  ]);
 
-  Widget _buildNoticeBox() {
-    return Container(
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(color: const Color(0xFFFFF8E1), borderRadius: BorderRadius.circular(8), border: Border.all(color: Colors.amber.shade400)),
-      child: const Text('🛡️ সুরক্ষা শর্ত: জমির সকল মূল্য সরাসরি প্রবাসীর ব্যাংক একাউন্টে জমা হবে। কোনো প্রতিনিধি নগদ টাকা গ্রহণ করবে না। PoA দূতাবাসের মাধ্যমে সত্যায়িত হতে হবে।', style: TextStyle(fontSize: 10.5, color: Color(0xFF5D4037), height: 1.3)),
+  Widget _buildNoticeBox() => Container(
+    padding: const EdgeInsets.all(8),
+    decoration: BoxDecoration(color: const Color(0xFFFFF8E1), borderRadius: BorderRadius.circular(8), border: Border.all(color: Colors.amber.shade400)),
+    child: const Text('🛡️ সুরক্ষা শর্ত: জমির সকল মূল্য সরাসরি প্রবাসীর ব্যাংক একাউন্টে জমা হবে। কোনো প্রতিনিধি নগদ টাকা গ্রহণ করবে না। PoA দূতাবাসের মাধ্যমে সত্যায়িত হতে হবে।', style: TextStyle(fontSize: 10.5, color: Color(0xFF5D4037), height: 1.3)),
+  );
+
+  Widget _buildTypeBtn(String type, String label) {
+    final sel = _serviceType == type;
+    return Expanded(
+      child: InkWell(
+        borderRadius: BorderRadius.circular(8),
+        onTap: () => setState(() => _serviceType = type),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+          decoration: BoxDecoration(color: sel ? const Color(0xFF0B4F32) : const Color(0xFFF1F8F4), borderRadius: BorderRadius.circular(8), border: Border.all(color: const Color(0xFF0B4F32))),
+          child: Text(label, textAlign: TextAlign.center, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: sel ? Colors.white : const Color(0xFF0B4F32))),
+        ),
+      ),
     );
   }
 
   Widget _buildTypeRow() {
     return Row(children: [
-      Expanded(child: BouncingPressable(onTap: () => setState(() => _serviceType = 'INSTITUTIONAL_REPRESENTATION'), child: ChoiceChip(label: const Text('১. প্রাতিষ্ঠানিক প্রতিনিধি', style: TextStyle(fontSize: 11)), selected: _serviceType == 'INSTITUTIONAL_REPRESENTATION', onSelected: (_) => setState(() => _serviceType = 'INSTITUTIONAL_REPRESENTATION')))),
-      const SizedBox(width: 6),
-      Expanded(child: BouncingPressable(onTap: () => setState(() => _serviceType = 'POWER_OF_ATTORNEY'), child: ChoiceChip(label: const Text('২. পাওয়ার অব অ্যাটর্নি', style: TextStyle(fontSize: 11)), selected: _serviceType == 'POWER_OF_ATTORNEY', onSelected: (_) => setState(() => _serviceType = 'POWER_OF_ATTORNEY')))),
+      _buildTypeBtn('INSTITUTIONAL_REPRESENTATION', '১. প্রাতিষ্ঠানিক প্রতিনিধি'),
+      const SizedBox(width: 8),
+      _buildTypeBtn('POWER_OF_ATTORNEY', '২. পাওয়ার অব অ্যাটর্নি'),
     ]);
   }
 

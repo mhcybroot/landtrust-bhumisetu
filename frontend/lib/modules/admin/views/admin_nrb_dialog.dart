@@ -105,22 +105,27 @@ class _AdminNrbDialogState extends State<AdminNrbDialog> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 24),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: ConstrainedBox(
         constraints: BoxConstraints(maxWidth: widget.isMobile ? 380 : 700, maxHeight: 620),
         child: Padding(
-          padding: const EdgeInsets.all(18),
+          padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Row(children: [
-                    Icon(Icons.flight_takeoff, color: Color(0xFF0B4F32)),
-                    SizedBox(width: 8),
-                    Text('প্রবাসী প্রতিনিধিত্ব ও PoA আবেদনসমূহ', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                  ]),
+                  const Icon(Icons.flight_takeoff, color: Color(0xFF0B4F32), size: 20),
+                  const SizedBox(width: 8),
+                  const Expanded(
+                    child: Text(
+                      'প্রবাসী প্রতিনিধিত্ব ও PoA আবেদনসমূহ',
+                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
                   BouncingPressable(onTap: () => Navigator.pop(context), child: const Icon(Icons.close)),
                 ],
               ),

@@ -59,22 +59,27 @@ class _MyNrbRequestsDialogState extends State<MyNrbRequestsDialog> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 24),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: ConstrainedBox(
         constraints: BoxConstraints(maxWidth: widget.isMobile ? 380 : 600, maxHeight: 600),
         child: Padding(
-          padding: const EdgeInsets.all(18),
+          padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Row(children: [
-                    Icon(Icons.flight_takeoff, color: Color(0xFF0B4F32)),
-                    SizedBox(width: 8),
-                    Text('আমার প্রবাসী সেবা ও PoA আবেদন', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                  ]),
+                  const Icon(Icons.flight_takeoff, color: Color(0xFF0B4F32), size: 20),
+                  const SizedBox(width: 8),
+                  const Expanded(
+                    child: Text(
+                      'আমার প্রবাসী সেবা ও PoA আবেদন',
+                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
                   BouncingPressable(onTap: () => Navigator.pop(context), child: const Icon(Icons.close)),
                 ],
               ),
@@ -85,8 +90,11 @@ class _MyNrbRequestsDialogState extends State<MyNrbRequestsDialog> {
               const SizedBox(height: 12),
               Expanded(child: _buildBody()),
               const SizedBox(height: 12),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              Wrap(
+                alignment: WrapAlignment.spaceBetween,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                spacing: 8,
+                runSpacing: 8,
                 children: [
                   BouncingPressable(
                     onTap: () => NrbServiceDialog.show(context, onSuccess: _loadRequests, isMobile: widget.isMobile),
