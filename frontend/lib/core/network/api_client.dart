@@ -17,14 +17,14 @@ class ApiClient {
       }
       return '${Uri.base.origin}/api';
     }
-    return 'https://api.bdhousing.com.bd/api';
+    return 'http://45.132.241.64:9999/api';
   }
 
   static String get publicWebOrigin {
     if (kIsWeb && Uri.base.port != 8086) {
       return Uri.base.origin;
     }
-    return 'https://bdhousing.com.bd';
+    return 'http://45.132.241.64:9999';
   }
 
   static Map<String, String> get headers {
