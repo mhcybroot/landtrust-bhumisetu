@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:landtrust_app/core/animations/bouncing_pressable.dart';
 import 'package:landtrust_app/core/widgets/smart_image_viewer.dart';
 import 'package:landtrust_app/core/widgets/status_badge.dart';
 
@@ -35,22 +34,16 @@ class SellerWorkspaceView extends StatelessWidget {
           children: [
             Text('আমার জমির বিজ্ঞাপন (${myListings.length})', style: TextStyle(fontSize: isMobile ? 17 : 19, fontWeight: FontWeight.bold)),
             Wrap(spacing: 8, runSpacing: 8, children: [
-              BouncingPressable(
-                onTap: onAddListing,
-                child: ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10)),
-                  onPressed: onAddListing,
-                  icon: const Icon(Icons.add_home_work, size: 16),
-                  label: const Text('নতুন বিজ্ঞাপন জমা দিন', style: TextStyle(fontSize: 12)),
-                ),
+              ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10)),
+                onPressed: onAddListing,
+                icon: const Icon(Icons.add_home_work, size: 16),
+                label: const Text('নতুন বিজ্ঞাপন জমা দিন', style: TextStyle(fontSize: 12)),
               ),
-              BouncingPressable(
-                onTap: onAddProposal,
-                child: OutlinedButton.icon(
-                  onPressed: onAddProposal,
-                  icon: const Icon(Icons.handshake, size: 16),
-                  label: const Text('বিশেষ সেবা প্রস্তাব', style: TextStyle(fontSize: 12)),
-                ),
+              OutlinedButton.icon(
+                onPressed: onAddProposal,
+                icon: const Icon(Icons.handshake, size: 16),
+                label: const Text('বিশেষ সেবা প্রস্তাব', style: TextStyle(fontSize: 12)),
               ),
             ]),
           ],
@@ -107,32 +100,23 @@ class SellerWorkspaceView extends StatelessWidget {
                     Wrap(
                       spacing: 8, runSpacing: 6,
                       children: [
-                        BouncingPressable(
-                          onTap: () => onEditListing(item),
-                          child: OutlinedButton.icon(
-                            onPressed: () => onEditListing(item),
-                            icon: const Icon(Icons.edit_outlined, size: 15),
-                            label: const Text('সম্পাদনা (Edit)', style: TextStyle(fontSize: 11)),
-                          ),
+                        OutlinedButton.icon(
+                          onPressed: () => onEditListing(item),
+                          icon: const Icon(Icons.edit_outlined, size: 15),
+                          label: const Text('সম্পাদনা (Edit)', style: TextStyle(fontSize: 11)),
                         ),
                         if (hasDoc)
-                          BouncingPressable(
-                            onTap: () => onPreviewDoc(item),
-                            child: OutlinedButton.icon(
-                              onPressed: () => onPreviewDoc(item),
-                              icon: const Icon(Icons.description_outlined, size: 15),
-                              label: const Text('সংযুক্ত দলিল দেখুন', style: TextStyle(fontSize: 11)),
-                            ),
+                          OutlinedButton.icon(
+                            onPressed: () => onPreviewDoc(item),
+                            icon: const Icon(Icons.description_outlined, size: 15),
+                            label: const Text('সংযুক্ত দলিল দেখুন', style: TextStyle(fontSize: 11)),
                           ),
                         if (!isSold)
-                          BouncingPressable(
-                            onTap: () => onMarkSold(item['id'] as int),
-                            child: OutlinedButton.icon(
-                              style: OutlinedButton.styleFrom(foregroundColor: Colors.red.shade700),
-                              onPressed: () => onMarkSold(item['id'] as int),
-                              icon: const Icon(Icons.lock_outline, size: 15),
-                              label: const Text('বিক্রি সম্পন্ন (SOLD)', style: TextStyle(fontSize: 11)),
-                            ),
+                          OutlinedButton.icon(
+                            style: OutlinedButton.styleFrom(foregroundColor: Colors.red.shade700),
+                            onPressed: () => onMarkSold(item['id'] as int),
+                            icon: const Icon(Icons.lock_outline, size: 15),
+                            label: const Text('বিক্রি সম্পন্ন (SOLD)', style: TextStyle(fontSize: 11)),
                           ),
                       ],
                     ),

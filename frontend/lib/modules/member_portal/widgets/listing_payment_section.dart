@@ -72,6 +72,7 @@ class ListingPaymentSection extends StatelessWidget {
           if (paymentMethods.isNotEmpty)
             DropdownButtonFormField<String>(
               key: ValueKey('method_$selectedMethod'),
+              isExpanded: true,
               initialValue: paymentMethods.any((m) => m['providerName'] == selectedMethod)
                   ? selectedMethod
                   : paymentMethods.first['providerName'].toString(),
@@ -79,7 +80,7 @@ class ListingPaymentSection extends StatelessWidget {
               items: paymentMethods
                   .map((m) => DropdownMenuItem(
                         value: m['providerName'].toString(),
-                        child: Text('${m['providerName']} (${m['accountNumber'] ?? ''})', style: const TextStyle(fontSize: 12)),
+                        child: Text('${m['providerName']} (${m['accountNumber'] ?? ''})', style: const TextStyle(fontSize: 12), overflow: TextOverflow.ellipsis),
                       ))
                   .toList(),
               onChanged: (val) {
@@ -91,27 +92,43 @@ class ListingPaymentSection extends StatelessWidget {
             Text(currentMethod['instructions'].toString(), style: const TextStyle(fontSize: 11, color: Colors.blueGrey)),
           ],
           const SizedBox(height: 8),
-          Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: senderPhoneCtrl,
-                  keyboardType: TextInputType.phone,
-                  decoration: const InputDecoration(labelText: 'প্রেরক মোবাইল নম্বর *', isDense: true),
-                ),
+          if (isMobile) ...[
+            TextField(
+              controller: senderPhoneCtrl,
+              keyboardType: TextInputType.phone,
+              decoration: const InputDecoration(labelText: 'প্রেরক মোবাইল নম্বর *', isDense: true),
+            ),
+            const SizedBox(height: 8),
+            OtpDigitBoxPulseTransition(
+              isFocused: trxIdCtrl.text.isNotEmpty,
+              child: TextField(
+                controller: trxIdCtrl,
+                decoration: const InputDecoration(labelText: 'ট্রানজেকশন আইডি (TrxID) *', isDense: true),
               ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: OtpDigitBoxPulseTransition(
-                  isFocused: trxIdCtrl.text.isNotEmpty,
+            ),
+          ] else ...[
+            Row(
+              children: [
+                Expanded(
                   child: TextField(
-                    controller: trxIdCtrl,
-                    decoration: const InputDecoration(labelText: 'ট্রানজেকশন আইডি (TrxID) *', isDense: true),
+                    controller: senderPhoneCtrl,
+                    keyboardType: TextInputType.phone,
+                    decoration: const InputDecoration(labelText: 'প্রেরক মোবাইল নম্বর *', isDense: true),
                   ),
                 ),
-              ),
-            ],
-          ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: OtpDigitBoxPulseTransition(
+                    isFocused: trxIdCtrl.text.isNotEmpty,
+                    child: TextField(
+                      controller: trxIdCtrl,
+                      decoration: const InputDecoration(labelText: 'ট্রানজেকশন আইডি (TrxID) *', isDense: true),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
         ],
       ),
     );
