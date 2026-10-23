@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:landtrust_app/core/network/api_client.dart';
 import 'package:landtrust_app/core/session/session_manager.dart';
 import 'package:landtrust_app/core/widgets/account_status_lock_dialog.dart';
+import '../../../member_portal/widgets/requirement_form_dialog.dart';
 import '../../view_models/marketplace_view_model.dart';
 import '../../widgets/seller_offer_dialog.dart';
 
@@ -34,6 +36,51 @@ class BuyerDemandsWebView extends StatelessWidget {
     );
   }
 
+  void _handlePostDemand(BuildContext context) {
+    final user = SessionManager.instance.currentUser;
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('চাহিদা নিবন্ধন করতে প্রথমে লগইন করুন।')),
+      );
+      onNavigateToAuth();
+      return;
+    }
+    if ((user['accountStatus'] ?? 'PENDING') != 'ACTIVE') {
+      AccountStatusLockDialog.show(context, user: user);
+      return;
+    }
+    if (user['role'] == 'SELLER') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('চাহিদা পোস্ট করার সুবিধা ক্রেতা সদস্যদের জন্য।')),
+      );
+      return;
+    }
+    final locations = (viewModel.config['locations'] as List<dynamic>?) ?? [];
+    final districts = locations.map((l) => l['districtNameBn'].toString()).toSet().toList();
+    List<String> getUpazilas(String dist) => locations
+        .where((l) => l['districtNameBn'] == dist)
+        .map((l) => l['upazilaNameBn'].toString())
+        .toSet()
+        .toList();
+
+    RequirementFormDialog.show(
+      context,
+      isMobile: false,
+      districts: districts,
+      getUpazilas: getUpazilas,
+      rawLocations: locations,
+      onSubmit: (p) async {
+        await ApiClient.post('/member/buyer/requirements', body: p);
+        await viewModel.loadInitialData();
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('আপনার জমি কেনার চাহিদা সফলভাবে নিবন্ধিত হয়েছে!')),
+          );
+        }
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final reqs = viewModel.requirements;
@@ -45,8 +92,11 @@ class BuyerDemandsWebView extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              Wrap(
+                alignment: WrapAlignment.spaceBetween,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                spacing: 12,
+                runSpacing: 10,
                 children: [
                   const Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -61,14 +111,7 @@ class BuyerDemandsWebView extends StatelessWidget {
                   ),
                   ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12)),
-                    onPressed: () {
-                      final user = SessionManager.instance.currentUser;
-                      if (user != null && (user['accountStatus'] ?? 'PENDING') != 'ACTIVE') {
-                        AccountStatusLockDialog.show(context, user: user);
-                      } else {
-                        onNavigateToAuth();
-                      }
-                    },
+                    onPressed: () => _handlePostDemand(context),
                     icon: const Icon(Icons.add_circle_outline, size: 16),
                     label: const Text('চাহিদা নিবন্ধন করুন'),
                   ),
@@ -95,10 +138,14 @@ class BuyerDemandsWebView extends StatelessWidget {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(
-                                '${map['preferredUpazila']}, ${map['preferredDistrict']} — ${map['landType']} জমি',
-                                style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Color(0xFF0B4F32)),
+                              Expanded(
+                                child: Text(
+                                  '${map['preferredUpazila']}, ${map['preferredDistrict']} — ${map['landType']} জমি',
+                                  style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Color(0xFF0B4F32)),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                               ),
+                              const SizedBox(width: 8),
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                                 decoration: BoxDecoration(color: Colors.amber.shade100, borderRadius: BorderRadius.circular(12)),

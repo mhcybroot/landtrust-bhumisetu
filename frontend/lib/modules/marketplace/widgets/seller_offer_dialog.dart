@@ -19,40 +19,47 @@ class SellerOfferDialog {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) => AlertDialog(
+          insetPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 20),
           title: Text(
             'জমির প্রস্তাব (${requirement['preferredUpazila']})',
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
           ),
           content: SizedBox(
             width: 440,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'ক্রেতা: ${requirement['buyerName']} • বাজেট: ৳${requirement['minBudgetBdt']}–৳${requirement['maxBudgetBdt']}',
-                  style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0B4F32), fontSize: 13),
-                ),
-                const SizedBox(height: 10),
-                TextField(
-                  controller: detailsCtrl,
-                  maxLines: 3,
-                  decoration: const InputDecoration(labelText: 'আপনার জমির সংক্ষিপ্ত বিবরণ *', isDense: true),
-                ),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: priceCtrl,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(labelText: 'প্রত্যাশিত মোট মূল্য (৳) *', isDense: true),
-                ),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: feeCtrl,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(labelText: 'প্রস্তাবিত প্ল্যাটফর্ম সমন্বয় ফি (৳)', isDense: true),
-                ),
-              ],
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'ক্রেতা: ${requirement['buyerName']} • বাজেট: ৳${requirement['minBudgetBdt']}–৳${requirement['maxBudgetBdt']}',
+                    style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0B4F32), fontSize: 13),
+                  ),
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: detailsCtrl,
+                    maxLines: 3,
+                    decoration: const InputDecoration(labelText: 'আপনার জমির সংক্ষিপ্ত বিবরণ *', isDense: true),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: priceCtrl,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(labelText: 'প্রত্যাশিত মোট মূল্য (৳) *', isDense: true),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: feeCtrl,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(labelText: 'প্রস্তাবিত প্ল্যাটফর্ম সমন্বয় ফি (৳)', isDense: true),
+                  ),
+                ],
+              ),
             ),
           ),
+          actionsAlignment: MainAxisAlignment.end,
+          actionsOverflowButtonSpacing: 8,
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),

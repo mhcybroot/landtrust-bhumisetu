@@ -109,6 +109,8 @@ class PropertyDetailsDialog {
               ),
             ),
           ),
+          actionsAlignment: MainAxisAlignment.end,
+          actionsOverflowButtonSpacing: 8,
           actions: [
             TextButton(onPressed: () => Navigator.pop(ctx), child: Text(ctx.tr('close'))),
             ElevatedButton.icon(

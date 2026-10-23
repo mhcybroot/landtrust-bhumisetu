@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:landtrust_app/core/animations/bouncing_pressable.dart';
 import 'package:landtrust_app/core/widgets/status_badge.dart';
 
 class BuyerWorkspaceView extends StatelessWidget {
@@ -34,22 +33,16 @@ class BuyerWorkspaceView extends StatelessWidget {
           children: [
             Text('আমার জমি কেনার চাহিদা (${myRequirements.length})', style: TextStyle(fontSize: isMobile ? 17 : 19, fontWeight: FontWeight.bold)),
             Wrap(spacing: 8, runSpacing: 8, children: [
-              BouncingPressable(
-                onTap: onAddRequirement,
-                child: ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10)),
-                  onPressed: onAddRequirement,
-                  icon: const Icon(Icons.post_add, size: 16),
-                  label: const Text('নতুন চাহিদা দিন', style: TextStyle(fontSize: 12)),
-                ),
+              ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0B4F32), foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10)),
+                onPressed: onAddRequirement,
+                icon: const Icon(Icons.post_add, size: 16),
+                label: const Text('নতুন চাহিদা দিন', style: TextStyle(fontSize: 12)),
               ),
-              BouncingPressable(
-                onTap: onAddProposal,
-                child: OutlinedButton.icon(
-                  onPressed: onAddProposal,
-                  icon: const Icon(Icons.handshake, size: 16),
-                  label: const Text('বিশেষ সেবা প্রস্তাব', style: TextStyle(fontSize: 12)),
-                ),
+              OutlinedButton.icon(
+                onPressed: onAddProposal,
+                icon: const Icon(Icons.handshake, size: 16),
+                label: const Text('বিশেষ সেবা প্রস্তাব', style: TextStyle(fontSize: 12)),
               ),
             ]),
           ],
@@ -71,7 +64,8 @@ class BuyerWorkspaceView extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('ধরন: ${reqItem['landType']}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                        Expanded(child: Text('ধরন: ${reqItem['landType']}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14), overflow: TextOverflow.ellipsis)),
+                        const SizedBox(width: 8),
                         StatusBadge(status: reqItem['status'] ?? 'PENDING'),
                       ],
                     ),
@@ -85,23 +79,17 @@ class BuyerWorkspaceView extends StatelessWidget {
                     Wrap(
                       spacing: 8, runSpacing: 6,
                       children: [
-                        BouncingPressable(
-                          onTap: () => onEditRequirement(reqItem),
-                          child: OutlinedButton.icon(
-                            onPressed: () => onEditRequirement(reqItem),
-                            icon: const Icon(Icons.edit_outlined, size: 15),
-                            label: const Text('সম্পাদনা (Edit)', style: TextStyle(fontSize: 11)),
-                          ),
+                        OutlinedButton.icon(
+                          onPressed: () => onEditRequirement(reqItem),
+                          icon: const Icon(Icons.edit_outlined, size: 15),
+                          label: const Text('সম্পাদনা (Edit)', style: TextStyle(fontSize: 11)),
                         ),
                         if (!isFulfilled)
-                          BouncingPressable(
-                            onTap: () => onFulfillRequirement(reqItem['id'] as int),
-                            child: OutlinedButton.icon(
-                              style: OutlinedButton.styleFrom(foregroundColor: Colors.green.shade800),
-                              onPressed: () => onFulfillRequirement(reqItem['id'] as int),
-                              icon: const Icon(Icons.check_circle_outline, size: 15),
-                              label: const Text('চাহিদা পূরণ হয়েছে', style: TextStyle(fontSize: 11)),
-                            ),
+                          OutlinedButton.icon(
+                            style: OutlinedButton.styleFrom(foregroundColor: Colors.green.shade800),
+                            onPressed: () => onFulfillRequirement(reqItem['id'] as int),
+                            icon: const Icon(Icons.check_circle_outline, size: 15),
+                            label: const Text('চাহিদা পূরণ হয়েছে', style: TextStyle(fontSize: 11)),
                           ),
                       ],
                     ),
@@ -133,6 +121,7 @@ class BuyerWorkspaceView extends StatelessWidget {
                           ],
                         ),
                       ),
+                      const SizedBox(width: 8),
                       StatusBadge(status: inq['status']),
                     ],
                   ),

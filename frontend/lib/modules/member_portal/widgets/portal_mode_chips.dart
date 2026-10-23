@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:landtrust_app/core/animations/bouncing_pressable.dart';
 import 'package:landtrust_app/core/widgets/horizontal_scroll_fade_view.dart';
 
 class PortalModeChips extends StatelessWidget {
@@ -49,19 +48,16 @@ class PortalModeChips extends StatelessWidget {
 
   Widget _chip(String mode, String label) {
     final sel = currentMode == mode;
-    return BouncingPressable(
-      onTap: () => onModeChanged(mode),
-      child: ChoiceChip(
-        selected: sel,
-        selectedColor: const Color(0xFF0B4F32),
-        labelStyle: TextStyle(
-          color: sel ? Colors.white : Colors.black87,
-          fontWeight: FontWeight.bold,
-          fontSize: 12,
-        ),
-        label: Text(label),
-        onSelected: (_) => onModeChanged(mode),
+    return ChoiceChip(
+      selected: sel,
+      selectedColor: const Color(0xFF0B4F32),
+      labelStyle: TextStyle(
+        color: sel ? Colors.white : Colors.black87,
+        fontWeight: FontWeight.bold,
+        fontSize: 12,
       ),
+      label: Text(label),
+      onSelected: (_) => onModeChanged(mode),
     );
   }
 }
