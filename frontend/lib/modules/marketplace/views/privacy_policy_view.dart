@@ -67,7 +67,7 @@ class PrivacyPolicyView extends StatelessWidget {
                   Icons.delete_forever_rounded,
                   [
                     '• ইন-অ্যাপ ডিলিট: প্রোফাইল সেটিংস থেকে "অ্যাকাউন্ট ডিলিট করুন" চেপে সরাসরি অ্যাকাউন্ট মোছা যায়।',
-                    '• ওয়েব আবেদন: অ্যাপ ছাড়া আমাদের ওয়েবসাইট (https://bdhousing.com.bd/delete-account) থেকেও ডেটা মোছার আবেদন করা যাবে।',
+                    '• ওয়েব আবেদন: অ্যাপ ছাড়া আমাদের ওয়েবসাইট (https://codemiq.mhr.bd/delete-account) থেকেও ডেটা মোছার আবেদন করা যাবে।',
                     '• অনুরোধ প্রাপ্তির ৪৮ ঘণ্টার মধ্যে সার্ভার থেকে ব্যক্তিগত তথ্য স্থায়ীভাবে অপসারিত হয়।',
                   ],
                 ),
@@ -76,9 +76,9 @@ class PrivacyPolicyView extends StatelessWidget {
                   '৫. যোগাযোগ ও অভিযোগ কর্মকর্তা (Contact Support)',
                   Icons.support_agent_rounded,
                   [
-                    '• ইমেইল: support@bdhousing.com.bd',
-                    '• ঠিকানা: প্রধান কার্যালয়, মাইজদী কোর্ট, সদর, নোয়াখালী।',
-                    '• হটলাইন: 01711-889900',
+                    '• ইমেইল: support@mhr.bd',
+                    '• ঠিকানা: Babul Market, Sadar, Noakhali - 3800, Bangladesh',
+                    '• হেল্পলাইন: +8801410749454',
                   ],
                 ),
                 const SizedBox(height: 24),
