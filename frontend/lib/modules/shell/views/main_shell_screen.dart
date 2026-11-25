@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:landtrust_app/core/animations/transitions/transitions.dart';
+import 'package:landtrust_app/core/localization/locale_notifier.dart';
 import 'package:landtrust_app/modules/admin/views/admin_panel_screen.dart';
 import 'package:landtrust_app/modules/auth/views/auth_screen.dart';
 import 'package:landtrust_app/modules/marketplace/view_models/marketplace_view_model.dart';
@@ -41,7 +42,7 @@ class _MainShellScreenState extends State<MainShellScreen> {
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-      listenable: Listenable.merge([_shellVm, _marketplaceVm]),
+      listenable: Listenable.merge([_shellVm, _marketplaceVm, LocaleNotifier.instance]),
       builder: (context, _) {
         final isMobile = !kIsWeb || MediaQuery.of(context).size.width < 960;
         final selectedTab = _shellVm.selectedTabIndex;

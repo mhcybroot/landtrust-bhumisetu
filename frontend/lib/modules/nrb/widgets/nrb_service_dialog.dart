@@ -80,7 +80,7 @@ class _NrbServiceDialogState extends State<NrbServiceDialog> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: ConstrainedBox(
         constraints: BoxConstraints(maxWidth: widget.isMobile ? 360 : 500),
-        child: SingleChildScrollView(
+        child: Padding(
           padding: const EdgeInsets.all(18),
           child: Form(
             key: _formKey,
@@ -90,35 +90,45 @@ class _NrbServiceDialogState extends State<NrbServiceDialog> {
               children: [
                 _buildHeader(),
                 const SizedBox(height: 12),
-                _buildNoticeBox(),
-                const SizedBox(height: 12),
-                _buildTypeRow(),
-                const SizedBox(height: 12),
-                _field(_countryCtrl, 'বসবাসরত দেশ (Country)', 'সৌদি আরব, ইউএই, ওমান', true),
-                const SizedBox(height: 8),
-                _field(_phoneCtrl, 'বিদেশের মোবাইল/WhatsApp', '+966xxxxxxxxx', true),
-                const SizedBox(height: 8),
-                _field(_passportCtrl, 'পাসপোর্ট / এনআইডি নম্বর', 'যাচাইয়ের জন্য আবশ্যক', false),
-                const SizedBox(height: 8),
-                Row(children: [
-                  Expanded(child: _field(_districtCtrl, 'জমির জেলা', 'জেলা', true)),
-                  const SizedBox(width: 8),
-                  Expanded(child: _field(_upazilaCtrl, 'উপজেলা/থানা', 'উপজেলা', true)),
-                ]),
-                const SizedBox(height: 8),
-                Row(children: [
-                  Expanded(child: _field(_khatianCtrl, 'খতিয়ান নং', 'খতিয়ান', false)),
-                  const SizedBox(width: 8),
-                  Expanded(child: _field(_dagCtrl, 'দাগ নং', 'দাগ', false)),
-                ]),
-                const SizedBox(height: 8),
-                Row(children: [
-                  Expanded(child: _field(_areaCtrl, 'পরিমাণ (শতক)', '৫', false, isNum: true)),
-                  const SizedBox(width: 8),
-                  Expanded(child: _field(_priceCtrl, 'কাঙ্ক্ষিত মূল্য (৳)', '২৫০০০০০', false, isNum: true)),
-                ]),
-                const SizedBox(height: 8),
-                _field(_notesCtrl, 'বিশেষ নির্দেশনা বা শর্তাবলী', 'মালিকের কোনো বিশেষ শর্ত থাকলে...', false, maxLines: 2),
+                Flexible(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _buildNoticeBox(),
+                        const SizedBox(height: 12),
+                        _buildTypeRow(),
+                        const SizedBox(height: 12),
+                        _field(_countryCtrl, 'বসবাসরত দেশ (Country)', 'সৌদি আরব, ইউএই, ওমান', true),
+                        const SizedBox(height: 8),
+                        _field(_phoneCtrl, 'বিদেশের মোবাইল/WhatsApp', '+966xxxxxxxxx', true),
+                        const SizedBox(height: 8),
+                        _field(_passportCtrl, 'পাসপোর্ট / এনআইডি নম্বর', 'যাচাইয়ের জন্য আবশ্যক', false),
+                        const SizedBox(height: 8),
+                        Row(children: [
+                          Expanded(child: _field(_districtCtrl, 'জমির জেলা', 'জেলা', true)),
+                          const SizedBox(width: 8),
+                          Expanded(child: _field(_upazilaCtrl, 'উপজেলা/থানা', 'উপজেলা', true)),
+                        ]),
+                        const SizedBox(height: 8),
+                        Row(children: [
+                          Expanded(child: _field(_khatianCtrl, 'খতিয়ান নং', 'খতিয়ান', false)),
+                          const SizedBox(width: 8),
+                          Expanded(child: _field(_dagCtrl, 'দাগ নং', 'দাগ', false)),
+                        ]),
+                        const SizedBox(height: 8),
+                        Row(children: [
+                          Expanded(child: _field(_areaCtrl, 'পরিমাণ (শতক)', '৫', false, isNum: true)),
+                          const SizedBox(width: 8),
+                          Expanded(child: _field(_priceCtrl, 'কাঙ্ক্ষিত মূল্য (৳)', '২৫০০০০০', false, isNum: true)),
+                        ]),
+                        const SizedBox(height: 8),
+                        _field(_notesCtrl, 'বিশেষ নির্দেশনা বা শর্তাবলী', 'মালিকের কোনো বিশেষ শর্ত থাকলে...', false, maxLines: 2),
+                      ],
+                    ),
+                  ),
+                ),
                 const SizedBox(height: 16),
                 _buildButtons(),
               ],

@@ -98,6 +98,7 @@ class RequirementFormDialog {
             content: SizedBox(
               width: isMobile ? double.infinity : 620,
               child: SingleChildScrollView(
+                padding: const EdgeInsets.only(top: 8),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [

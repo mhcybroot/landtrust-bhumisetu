@@ -18,10 +18,11 @@ class AdminOverviewTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dash = viewModel.dashboard;
-    final totalFunds = dash['totalFundsCollected'] ?? 0;
-    final revFund = dash['platformRevenueFund'] ?? 0;
-    final fieldFund = dash['fieldVerificationFund'] ?? 0;
-    final reserveFund = dash['disputeReserveFund'] ?? 0;
+    final finance = dash['finance'] as Map<String, dynamic>? ?? {};
+    final totalFunds = finance['regFeeCollected'] ?? 0;
+    final revFund = finance['serviceRevenue'] ?? 0;
+    final fieldFund = finance['advisoryReserveRecommendation'] ?? 0;
+    final reserveFund = finance['pendingCommissionPayable'] ?? 0;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -90,13 +91,14 @@ class AdminOverviewTab extends StatelessWidget {
   }
 
   Widget _buildMetricsGrid(Map<String, dynamic> dash) {
+    final finance = dash['finance'] as Map<String, dynamic>? ?? {};
     final items = [
-      ('মোট নিবন্ধিত সদস্য', '${dash['totalUsers'] ?? 0} জন', 'ক্রেতা, বিক্রেতা ও অফিসার', const Color(0xFF0B4F32)),
-      ('যাচাইকৃত সক্রিয় সদস্য', '${dash['activeUsers'] ?? 0} জন', 'অনুমোদিত একাউন্ট', const Color(0xFF1B5E20)),
+      ('মোট নিবন্ধিত সদস্য', '${dash['totalMembers'] ?? 0} জন', 'ক্রেতা, বিক্রেতা ও অফিসার', const Color(0xFF0B4F32)),
+      ('যাচাইকৃত সক্রিয় সদস্য', '${(dash['totalMembers'] ?? 0) - (dash['pendingUsers'] ?? 0)} জন', 'অনুমোদিত একাউন্ট', const Color(0xFF1B5E20)),
       ('মোট জমির বিজ্ঞাপন', '${dash['totalListings'] ?? 0} টি', 'যাচাই ও প্রকাশিত', const Color(0xFF1565C0)),
       ('সরাসরি ক্রেতার চাহিদা', '${dash['totalRequirements'] ?? 0} টি', 'জমির ক্রয়ের আগ্রহ', const Color(0xFF6A1B9A)),
       ('আগ্রহ প্রকাশ (Inquiries)', '${dash['totalInquiries'] ?? 0} টি', 'ক্রেতা-বিক্রেতা সংযোগ', const Color(0xFF00695C)),
-      ('মোট কমিশন পরিশোধিত', '৳${dash['totalCommissionsPaid'] ?? 0}', 'অফিসারদের বিতরণকৃত', const Color(0xFFAD1457)),
+      ('মোট কমিশন পরিশোধিত', '৳${finance['totalCommissionPaid'] ?? 0}', 'অফিসারদের বিতরণকৃত', const Color(0xFFAD1457)),
     ];
     return LayoutBuilder(builder: (ctx, constraints) {
       final cardWidth = isMobile ? (constraints.maxWidth - 10) / 2 : (constraints.maxWidth - 36) / 4;

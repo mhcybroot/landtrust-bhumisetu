@@ -25,7 +25,7 @@ class AuthMobileView extends StatelessWidget {
     final isLogin = viewModel.isLogin;
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(14, 14, 14, 30),
+      padding: const EdgeInsets.fromLTRB(14, 14, 14, 60),
       children: [
         Container(
           padding: const EdgeInsets.all(4),
